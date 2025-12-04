@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firebase Storage - Bulldogo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .status-box {
+            background: #f8f9fa;
+            border-left: 4px solid #dee2e6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .status-box.success {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .status-box.error {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .status-box.warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .status-box h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-box pre {
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .test-section {
+            margin: 30px 0;
+        }
+
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .test-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-input {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Test Firebase Storage</h1>
+
+        <div class="test-section">
+            <h2>📋 Kontrola Firebase konfigurace</h2>
+            <button class="test-button" onclick="checkFirebaseConfig()">Zkontrolovat konfiguraci</button>
+            <div id="configResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📤 Test nahrání obrázku</h2>
+            <p>Tento test zkusí nahrát testovací obrázek do Storage.</p>
+            
+            <div class="file-input">
+                <label for="testImage">Vyber testovací obrázek:</label><br><br>
+                <input type="file" id="testImage" accept="image/*">
+            </div>
+
+            <button class="test-button" onclick="testUpload()">Nahrát testovací obrázek</button>
+            <div id="uploadResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Diagnostika</h2>
+            <button class="test-button" onclick="runFullDiagnostics()">Spustit úplnou diagnostiku</button>
+            <div id="diagnosticsResult"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        // Firebase konfigurace
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1FEmsY458LLKQLGcUaOVXsYr3Ii55QeQ",
+            authDomain: "inzerio-inzerce.firebaseapp.com",
+            projectId: "inzerio-inzerce",
+            storageBucket: "inzerio-inzerce.firebasestorage.app",
+            messagingSenderId: "262039290071",
+            appId: "1:262039290071:web:30af0eb1c65cd75e307092",
+            measurementId: "G-7VD0ZE08M3"
+        };
+
+        // Inicializace Firebase
+        let app, auth, storage, currentUser = null;
+
+        try {
+            if (getApps().length) {
+                app = getApps()[0];
+            } else {
+                app = initializeApp(firebaseConfig);
+            }
+            auth = getAuth(app);
+            storage = getStorage(app);
+
+            console.log('✅ Firebase inicializován');
+            
+            // Sledovat auth state
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    console.log('✅ Uživatel přihlášen:', user.email);
+                } else {
+                    console.log('⚠️ Uživatel není přihlášen');
+                }
+            });
+
+            // Publikovat globálně pro testovací funkce
+            window.firebaseApp = app;
+            window.firebaseAuth = auth;
+            window.firebaseStorage = storage;
+            window.getCurrentUser = () => currentUser;
+        } catch (error) {
+            console.error('❌ Chyba při inicializaci Firebase:', error);
+        }
+
+        // Export funkcí pro testování
+        window.uploadBytesTest = uploadBytes;
+        window.getDownloadURLTest = getDownloadURL;
+        window.refTest = ref;
+    </script>
+
+    <script>
+        // Funkce pro kontrolu Firebase konfigurace
+        function checkFirebaseConfig() {
+            const resultDiv = document.getElementById('configResult');
+            resultDiv.innerHTML = '<div class="status-box"><h3>🔄 Kontroluji...</h3></div>';
+
+            setTimeout(() => {
+                let html = '';
+                const checks = [];
+
+                // 1. Firebase App
+                if (window.firebaseApp) {
+                    checks.push({
+                        name: 'Firebase App',
+                        status: 'success',
+                        message: 'Firebase App je inicializovaná',
+                        details: {
+                            projectId: window.firebaseApp.options.projectId,
+                            storageBucket: window.firebaseApp.options.storageBucket
+                        }
+                    });
+                } else {
+                    checks.push({
+                        name: 'Firebase App',
+                        status: 'error',
+                        message: 'Firebase App není inicializovaná'
+                    });
+                }
+
+                // 2. Firebase Auth
+                if (window.firebaseAuth) {
+                    const user = window.getCurrentUser();
+                    if (user) {
+                        checks.push({
+                            name: 'Firebase Auth',
+                            status: 'success',
+                            message: `Přihlášený uživatel: ${user.email}`,
+                            details: { uid: user.uid }
+                        });
+                    } else {
+                        checks.push({
+                            name: 'Firebase Auth',
+                            status: 'warning',
+                            message: 'Auth je inicializovaný, ale uživatel není přihlášen',
+                            note: 'Pro test nahrání obrázku musíš být přihlášený'
+                        });
+                    }
+                } else {
+                    checks.push({
+                        name: 'Firebase Auth',
+                        status: 'error',
+                        message: 'Firebase Auth není inicializovaný'
+                    });
+                }
+
+                // 3. Firebase Storage
+                if (window.firebaseStorage) {
+                    const bucketName = window.firebaseApp?.options?.storageBucket;
+                    if (bucketName) {
+                        checks.push({
+                            name: 'Firebase Storage',
+                            status: 'success',
+                            message: 'Storage je inicializovaný',
+                            details: {
+                                bucket: bucketName,
+                                url: `gs://${bucketName}`
+                            }
+                        });
+                    } else {
+                        checks.push({
+                            name: 'Firebase Storage',
+                            status: 'error',
+                            message: 'Storage bucket není nakonfigurovaný'
+                        });
+                    }
+                } else {
+                    checks.push({
+                        name: 'Firebase Storage',
+                        status: 'error',
+                        message: 'Firebase Storage není inicializovaný'
+                    });
+                }
+
+                // Vykreslit výsledky
+                checks.forEach(check => {
+                    html += `
+                        <div class="status-box ${check.status}">
+                            <h3>
+                                ${check.status === 'success' ? '✅' : check.status === 'warning' ? '⚠️' : '❌'}
+                                ${check.name}
+                            </h3>
+                            <p>${check.message}</p>
+                            ${check.details ? `<pre>${JSON.stringify(check.details, null, 2)}</pre>` : ''}
+                            ${check.note ? `<p style="margin-top: 10px; font-style: italic;">${check.note}</p>` : ''}
+                        </div>
+                    `;
+                });
+
+                resultDiv.innerHTML = html;
+            }, 500);
+        }
+
+        // Funkce pro test nahrání obrázku
+        async function testUpload() {
+            const resultDiv = document.getElementById('uploadResult');
+            const fileInput = document.getElementById('testImage');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                resultDiv.innerHTML = '<div class="status-box error"><h3>❌ Chyba</h3><p>Prosím vyber obrázek</p></div>';
+                return;
+            }
+
+            // Zkontrolovat přihlášení
+            const user = window.getCurrentUser();
+            if (!user) {
+                resultDiv.innerHTML = '<div class="status-box error"><h3>❌ Chyba</h3><p>Musíš být přihlášený pro nahrání obrázku. <a href="index.html">Přihlásit se</a></p></div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="status-box"><h3>🔄 Nahrávám...</h3><p>Prosím počkej...</p></div>';
+
+            try {
+                console.log('📤 Začínám test nahrání...');
+                console.log('📁 Soubor:', file.name, file.size, 'bytes', file.type);
+                console.log('👤 Uživatel:', user.uid);
+
+                // Vytvořit referenci na soubor
+                const fileName = `test/${user.uid}/${Date.now()}_${file.name}`;
+                console.log('📍 Cesta:', fileName);
+
+                const storageRef = window.refTest(window.firebaseStorage, fileName);
+                console.log('✅ Reference vytvořena');
+
+                // Nahrát soubor
+                console.log('📤 Nahrávám...');
+                const snapshot = await window.uploadBytesTest(storageRef, file, {
+                    contentType: file.type
+                });
+                console.log('✅ Nahrání úspěšné');
+
+                // Získat URL
+                console.log('🔗 Získávám URL...');
+                const downloadURL = await window.getDownloadURLTest(snapshot.ref);
+                console.log('✅ URL získána:', downloadURL);
+
+                resultDiv.innerHTML = `
+                    <div class="status-box success">
+                        <h3>✅ Nahrání úspěšné!</h3>
+                        <p>Soubor: <span class="code">${file.name}</span></p>
+                        <p>Velikost: <span class="code">${(file.size / 1024).toFixed(2)} KB</span></p>
+                        <p>Cesta: <span class="code">${fileName}</span></p>
+                        <p>URL: <a href="${downloadURL}" target="_blank">Otevřít obrázek</a></p>
+                        <img src="${downloadURL}" style="max-width: 100%; margin-top: 10px; border-radius: 8px;" alt="Nahraný obrázek">
+                    </div>
+                `;
+            } catch (error) {
+                console.error('❌ Chyba při nahrávání:', error);
+                
+                let errorMessage = error.message;
+                let solution = '';
+
+                if (error.code === 'storage/unauthorized') {
+                    solution = 'Zkontroluj Storage Rules v Firebase Console.';
+                } else if (error.message.includes('404')) {
+                    solution = 'Storage není aktivovaný v Firebase Console. Aktivuj ho v Storage sekci.';
+                } else if (error.message.includes('CORS')) {
+                    solution = 'CORS není správně nakonfigurovaný. Spusť apply-cors.sh script.';
+                }
+
+                resultDiv.innerHTML = `
+                    <div class="status-box error">
+                        <h3>❌ Chyba při nahrávání</h3>
+                        <p><strong>Chyba:</strong> ${errorMessage}</p>
+                        ${solution ? `<p><strong>Řešení:</strong> ${solution}</p>` : ''}
+                        <pre>${JSON.stringify(error, null, 2)}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Funkce pro úplnou diagnostiku
+        async function runFullDiagnostics() {
+            const resultDiv = document.getElementById('diagnosticsResult');
+            resultDiv.innerHTML = '<div class="status-box"><h3>🔄 Spouštím diagnostiku...</h3></div>';
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            let html = '<div class="status-box success"><h3>📊 Diagnostické informace</h3>';
+
+            // Prohlížeč
+            html += `<p><strong>Prohlížeč:</strong> ${navigator.userAgent}</p>`;
+
+            // Firebase
+            if (window.firebaseApp) {
+                html += `<p><strong>Firebase Project ID:</strong> <span class="code">${window.firebaseApp.options.projectId}</span></p>`;
+                html += `<p><strong>Storage Bucket:</strong> <span class="code">${window.firebaseApp.options.storageBucket}</span></p>`;
+            }
+
+            // Uživatel
+            const user = window.getCurrentUser();
+            if (user) {
+                html += `<p><strong>Uživatel:</strong> <span class="code">${user.email}</span> (UID: <span class="code">${user.uid}</span>)</p>`;
+            } else {
+                html += `<p><strong>Uživatel:</strong> Nepřihlášen</p>`;
+            }
+
+            // Console logy
+            html += `<p style="margin-top: 20px;"><strong>📝 Další diagnostika:</strong></p>`;
+            html += `<p>Zkontroluj konzoli prohlížeče (F12) pro detailní logy.</p>`;
+
+            html += '</div>';
+
+            resultDiv.innerHTML = html;
+        }
+
+        // Automaticky spustit kontrolu po načtení
+        window.addEventListener('load', () => {
+            setTimeout(checkFirebaseConfig, 1000);
+        });
+    </script>
+</body>
+</html>
+

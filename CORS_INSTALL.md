@@ -31,13 +31,13 @@ cd /Users/adam/Desktop/abulldogo3
 **Možnost B: Ruční příkazy**
 ```bash
 cd /Users/adam/Desktop/abulldogo3
-gsutil cors set cors.json gs://inzerio-inzerce.appspot.com
+gsutil cors set cors.json gs://inzerio-inzerce.firebasestorage.app
 ```
 
 ## KROK 4: Ověření
 
 ```bash
-gsutil cors get gs://inzerio-inzerce.appspot.com
+gsutil cors get gs://inzerio-inzerce.firebasestorage.app
 ```
 
 Mělo by zobrazit obsah z `cors.json`.
@@ -52,10 +52,10 @@ Mělo by zobrazit obsah z `cors.json`.
 
 **Problém?** Pokud `gsutil cors get` vrátí prázdný výsledek nebo chybu, zkus:
 ```bash
-gsutil cors set cors.json gs://inzerio-inzerce.appspot.com
+gsutil cors set cors.json gs://inzerio-inzerce.firebasestorage.app
 ```
 
 Znovu zkontroluj:
 ```bash
-gsutil cors get gs://inzerio-inzerce.appspot.com
+gsutil cors get gs://inzerio-inzerce.firebasestorage.app
 ```
