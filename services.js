@@ -247,15 +247,13 @@ async function setupRealtimeListener() {
             });
             console.log('📊 Rozdělení podle statusu:', statusCount);
             
-            // Pokud nejsou žádné služby, přidáme testovací
+            // Pokud nejsou žádné služby, přidáme testovací            
             if (allServices.length === 0) {
-                console.log('⚠️ Žádné služby v databázi, přidávám testovací služby...');
-                try {
-                    await addTestServices();
-                } catch (error) {
-                    console.error('❌ Chyba při přidávání testovacích služeb:', error);
-                    initLocalFallback();
-                }
+                console.log('📭 Žádné služby v databázi - zobrazuji prázdný stav');
+                // Nevytvářet stock inzeráty - zobrazit prázdný stav
+                filteredServices = [];
+                displayServices();
+                updateStats();
                 return;
             }
             
@@ -1278,7 +1276,6 @@ function showErrorMessage(message) {
                 <h3>Chyba při načítání</h3>
                 <p>${message}</p>
                 <button class="btn btn-primary" onclick="location.reload()">Zkusit znovu</button>
-                <button class="btn btn-secondary" onclick="initLocalFallback()">Použít lokální databázi</button>
             </div>
         `;
     } else {
