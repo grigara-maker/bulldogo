@@ -73,11 +73,9 @@ const GOPAY_CONFIG = {
     }
   },
   
-  // URL pro návrat z platby
-  returnUrls: {
-    success: "https://bulldogo8.vercel.app/success",
-    failed: "https://bulldogo8.vercel.app/failed"
-  }
+  // URL pro návrat z platby (dynamické podle aktuální domény)
+  // Při volání createGoPayUrl se použije aktuální doména
+  returnUrls: null // Bude nastaveno dynamicky
 };
 
 /**
@@ -103,6 +101,16 @@ function createGoPayUrl(type, id) {
     throw new Error(`Neznámé ID platby: ${id} pro typ ${type}`);
   }
   
+  // Získat return URLs (dynamicky podle aktuální domény)
+  const baseUrl = typeof window !== 'undefined' && window.location 
+    ? window.location.origin 
+    : 'https://bulldogo8.vercel.app';
+  
+  const returnUrls = {
+    success: `${baseUrl}/success.html`,
+    failed: `${baseUrl}/failed.html`
+  };
+  
   // Vytvoření URL parametrů
   const params = new URLSearchParams({
     'paymentCommand.targetGoId': config.targetGoId,
@@ -110,8 +118,8 @@ function createGoPayUrl(type, id) {
     'paymentCommand.currency': paymentConfig.currency,
     'paymentCommand.productName': paymentConfig.productName,
     'paymentCommand.orderNumber': paymentConfig.orderNumber,
-    'paymentCommand.successURL': config.returnUrls.success,
-    'paymentCommand.failedURL': config.returnUrls.failed,
+    'paymentCommand.successURL': returnUrls.success,
+    'paymentCommand.failedURL': returnUrls.failed,
     'paymentCommand.encryptedSignature': paymentConfig.encryptedSignature
   });
   
