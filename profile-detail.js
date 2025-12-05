@@ -351,7 +351,9 @@ function displayProfile() {
     
     // Display user reviews
     console.log('🖼️ Displaying user reviews');
-    displayUserReviews();
+    displayUserReviews().catch(error => {
+        console.error('❌ Error displaying reviews:', error);
+    });
     
     console.log('🖼️ displayProfile completed');
 }
@@ -561,7 +563,7 @@ function createServiceCard(service) {
 }
 
 // Display user reviews
-function displayUserReviews() {
+async function displayUserReviews() {
     const reviewsGrid = document.getElementById('userReviewsGrid');
     
     if (userReviews.length === 0) {
@@ -569,14 +571,63 @@ function displayUserReviews() {
         return;
     }
     
-    reviewsGrid.innerHTML = userReviews.map(review => createReviewCard(review)).join('');
+    // Načíst jména recenzentů
+    const reviewsWithNames = await Promise.all(
+        userReviews.map(async (review) => {
+            let reviewerName = review.reviewerName || review.reviewerEmail || 'Anonymní';
+            
+            // Pokud máme reviewerEmail, zkus načíst jméno z profilu
+            if (review.reviewerId && !review.reviewerName) {
+                try {
+                    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const reviewerProfileRef = doc(window.firebaseDb, 'users', review.reviewerId);
+                    const reviewerProfileSnap = await getDoc(reviewerProfileRef);
+                    
+                    if (reviewerProfileSnap.exists()) {
+                        const reviewerData = reviewerProfileSnap.data();
+                        reviewerName = reviewerData.name || 
+                                       (reviewerData.firstName && reviewerData.lastName 
+                                        ? `${reviewerData.firstName} ${reviewerData.lastName}`.trim()
+                                        : reviewerData.email?.split('@')[0] || reviewerName);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Nepodařilo se načíst jméno recenzenta:', error);
+                }
+            }
+            
+            return {
+                ...review,
+                reviewerName: reviewerName
+            };
+        })
+    );
+    
+    reviewsGrid.innerHTML = reviewsWithNames.map(review => createReviewCard(review)).join('');
 }
 
 // Create review card
 function createReviewCard(review) {
     const stars = '★'.repeat(review.rating || 0) + '☆'.repeat(5 - (review.rating || 0));
-    const createdAt = review.createdAt ? review.createdAt.toDate() : new Date();
+    
+    // Zpracovat createdAt (může být Timestamp nebo Date)
+    let createdAt;
+    if (review.createdAt) {
+        if (typeof review.createdAt.toDate === 'function') {
+            createdAt = review.createdAt.toDate();
+        } else if (review.createdAt instanceof Date) {
+            createdAt = review.createdAt;
+        } else {
+            createdAt = new Date(review.createdAt);
+        }
+    } else {
+        createdAt = new Date();
+    }
+    
     const timeAgo = getTimeAgo(createdAt);
+    
+    // Použít správná pole: text místo comment, reviewerName (už načtené)
+    const reviewText = review.text || review.comment || 'Recenze bez komentáře.';
+    const reviewerName = review.reviewerName || review.reviewerEmail?.split('@')[0] || 'Anonymní';
     
     return `
         <div class="review-card">
@@ -586,7 +637,7 @@ function createReviewCard(review) {
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="reviewer-details">
-                        <h4>${review.reviewerName || 'Anonymní'}</h4>
+                        <h4>${reviewerName}</h4>
                         <span class="review-date">${timeAgo}</span>
                     </div>
                 </div>
@@ -595,7 +646,7 @@ function createReviewCard(review) {
                 </div>
             </div>
             <div class="review-content">
-                <p>${review.comment || 'Recenze bez komentáře.'}</p>
+                <p>${reviewText}</p>
             </div>
         </div>
     `;
@@ -864,7 +915,7 @@ async function submitReview() {
         
         // Znovu načíst recenze
         await loadUserReviews(currentProfileUser.uid);
-        displayUserReviews();
+        await displayUserReviews();
         
     } catch (error) {
         console.error('❌ Chyba při ukládání recenze:', error);
