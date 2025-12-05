@@ -191,7 +191,7 @@
                         <h3 class="section-title">
                             <i class="fas fa-star"></i> Všechny recenze
                         </h3>
-                        <div id="allReviewsContainer" class="reviews-container">
+                        <div id="allReviewsContainer" class="reviews-list-container">
                             <div class="loading-reviews">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 <p>Načítám recenze...</p>
@@ -1389,13 +1389,7 @@
         function renderAllReviews(reviews, container) {
             console.log('🎨 Rendering reviews:', reviews);
             if (!reviews || reviews.length === 0) {
-                container.innerHTML = `
-                    <div class="no-reviews">
-                        <i class="fas fa-comment-slash"></i>
-                        <h4>Zatím žádné recenze</h4>
-                        <p>Jakmile získáte první recenzi, zobrazí se zde.</p>
-                    </div>
-                `;
+                container.innerHTML = '<p class="no-reviews">Uživatel nemá žádné recenze.</p>';
                 return;
             }
 
@@ -1403,6 +1397,83 @@
             const avgRating = (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1);
             const totalReviews = reviews.length;
 
+            // Helper function to get time ago
+            function getTimeAgo(date) {
+                if (!date) return 'Neznámé datum';
+                let reviewDate;
+                if (date.toDate && typeof date.toDate === 'function') {
+                    reviewDate = date.toDate();
+                } else if (date instanceof Date) {
+                    reviewDate = date;
+                } else {
+                    reviewDate = new Date(date);
+                }
+                
+                const now = new Date();
+                const diffMs = now - reviewDate;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Dnes';
+                if (diffDays === 1) return 'Včera';
+                if (diffDays < 7) return `Před ${diffDays} dny`;
+                if (diffDays < 30) return `Před ${Math.floor(diffDays / 7)} týdny`;
+                if (diffDays < 365) return `Před ${Math.floor(diffDays / 30)} měsíci`;
+                return `Před ${Math.floor(diffDays / 365)} lety`;
+            }
+            
+            // Helper function to create review card
+            function createReviewCard(review) {
+                const stars = '★'.repeat(review.rating || 0) + '☆'.repeat(5 - (review.rating || 0));
+                
+                // Zpracovat createdAt nebo updatedAt
+                let createdAt;
+                if (review.createdAt) {
+                    if (typeof review.createdAt.toDate === 'function') {
+                        createdAt = review.createdAt.toDate();
+                    } else if (review.createdAt instanceof Date) {
+                        createdAt = review.createdAt;
+                    } else {
+                        createdAt = new Date(review.createdAt);
+                    }
+                } else if (review.updatedAt) {
+                    if (typeof review.updatedAt.toDate === 'function') {
+                        createdAt = review.updatedAt.toDate();
+                    } else if (review.updatedAt instanceof Date) {
+                        createdAt = review.updatedAt;
+                    } else {
+                        createdAt = new Date(review.updatedAt);
+                    }
+                } else {
+                    createdAt = new Date();
+                }
+                
+                const timeAgo = getTimeAgo(createdAt);
+                const reviewText = review.text || review.comment || 'Recenze bez komentáře.';
+                const reviewerName = review.reviewerName || review.reviewerEmail?.split('@')[0] || 'Anonymní';
+                
+                return `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="reviewer-details">
+                                    <h4>${escapeHtml(reviewerName)}</h4>
+                                    <span class="review-date">${timeAgo}</span>
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                <span class="stars">${stars}</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            <p>${escapeHtml(reviewText)}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
             container.innerHTML = `
                 <div class="reviews-summary">
                     <div class="summary-stats">
@@ -1417,38 +1488,7 @@
                     </div>
                 </div>
                 <div class="reviews-list">
-                    ${reviews.map(review => {
-                        console.log('🔍 Review data for rendering:', {
-                            reviewerName: review.reviewerName,
-                            fromUserEmail: review.fromUserEmail,
-                            fromUserId: review.fromUserId,
-                            reviewerId: review.reviewerId
-                        });
-                        return `
-                        <div class="review-item">
-                            <div class="review-header">
-                                <div class="review-stars">
-                                    ${'★'.repeat(review.rating || 0)}${'☆'.repeat(5 - (review.rating || 0))}
-                                </div>
-                                <div class="review-meta">
-                                    <span class="review-type">${review.type === 'profile' ? 'Profil' : 'Inzerát'}</span>
-                                    <span class="review-date">${formatReviewDate(review.updatedAt)}</span>
-                                </div>
-                            </div>
-                            <div class="review-content">
-                                <div class="review-author">
-                                    <i class="fas fa-user"></i>
-                                    <span>${review.reviewerName || 'Anonymní'}</span>
-                                </div>
-                                ${review.text ? `
-                                    <div class="review-text">
-                                        <p>${escapeHtml(review.text)}</p>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                        `;
-                    }).join('')}
+                    ${reviews.map(review => createReviewCard(review)).join('')}
                 </div>
             `;
         }

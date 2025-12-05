@@ -4819,15 +4819,21 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 /* ===== MODERNÍ DESIGN RECENZÍ ===== */
-.reviews-list {
+.reviews-list,
+.reviews-list-container .reviews-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 20px;
     width: 100%;
 }
 
+.reviews-list-container {
+    width: 100%;
+}
+
 @media (max-width: 768px) {
-    .reviews-list {
+    .reviews-list,
+    .reviews-list-container .reviews-list {
         grid-template-columns: 1fr;
     }
 }
