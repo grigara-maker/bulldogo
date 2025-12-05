@@ -1194,7 +1194,14 @@
                 
                 // Load profile reviews
                 const profileReviewsRef = collection(window.firebaseDb, 'users', userId, 'reviews');
-                const profileSnap = await getDocs(profileReviewsRef);
+                let profileSnap;
+                try {
+                    profileSnap = await getDocs(profileReviewsRef);
+                } catch (error) {
+                    console.error('❌ Error loading profile reviews:', error);
+                    throw error; // Re-throw to be caught by outer try-catch
+                }
+                
                 const profileReviews = [];
                 
                 for (const docSnap of profileSnap.docs) {
@@ -1203,51 +1210,40 @@
                     // Load reviewer info if reviewerId exists
                     if (reviewData.reviewerId) {
                         try {
-                            console.log('🔍 Loading reviewer profile for ID:', reviewData.reviewerId);
-                            const reviewerProfileRef = doc(window.firebaseDb, 'users', reviewData.reviewerId, 'profile', 'profile');
-                            const reviewerSnap = await getDoc(reviewerProfileRef);
-                            if (reviewerSnap.exists()) {
-                                const reviewerProfile = reviewerSnap.data();
-                                console.log('👤 Reviewer profile data:', reviewerProfile);
+                            // Try loading from user's main profile document first (simpler path)
+                            const userDocRef = doc(window.firebaseDb, 'users', reviewData.reviewerId);
+                            const userDocSnap = await getDoc(userDocRef);
+                            if (userDocSnap.exists()) {
+                                const userData = userDocSnap.data();
                                 
-                                // Get firstName and lastName from database
                                 let reviewerName = 'Anonymní';
-                                if (reviewerProfile.firstName && reviewerProfile.lastName) {
-                                    reviewerName = `${reviewerProfile.firstName} ${reviewerProfile.lastName}`;
-                                } else if (reviewerProfile.firstName) {
-                                    reviewerName = reviewerProfile.firstName;
-                                } else if (reviewerProfile.lastName) {
-                                    reviewerName = reviewerProfile.lastName;
+                                if (userData.firstName && userData.lastName) {
+                                    reviewerName = `${userData.firstName} ${userData.lastName}`;
+                                } else if (userData.firstName) {
+                                    reviewerName = userData.firstName;
+                                } else if (userData.lastName) {
+                                    reviewerName = userData.lastName;
+                                } else if (userData.email) {
+                                    reviewerName = userData.email.split('@')[0];
+                                } else if (reviewData.reviewerEmail) {
+                                    reviewerName = reviewData.reviewerEmail.split('@')[0];
                                 }
                                 
                                 reviewData.reviewerName = reviewerName;
-                                console.log('✅ Set reviewer name to:', reviewerName);
-                            } else {
-                                console.log('❌ Reviewer profile not found anywhere');
-                                // Try loading from user's main profile document
-                                const userDocRef = doc(window.firebaseDb, 'users', reviewData.reviewerId);
-                                const userDocSnap = await getDoc(userDocRef);
-                                if (userDocSnap.exists()) {
-                                    const userData = userDocSnap.data();
-                                    console.log('👤 User document data:', userData);
-                                    
-                                    let reviewerName = 'Anonymní';
-                                    if (userData.firstName && userData.lastName) {
-                                        reviewerName = `${userData.firstName} ${userData.lastName}`;
-                                    } else if (userData.firstName) {
-                                        reviewerName = userData.firstName;
-                                    } else if (userData.lastName) {
-                                        reviewerName = userData.lastName;
-                                    }
-                                    
-                                    reviewData.reviewerName = reviewerName;
-                                }
+                            } else if (reviewData.reviewerEmail) {
+                                // Fallback to email if user doc doesn't exist
+                                reviewData.reviewerName = reviewData.reviewerEmail.split('@')[0];
                             }
                         } catch (error) {
                             console.log('⚠️ Could not load reviewer profile:', error);
+                            // Fallback to email
+                            if (reviewData.reviewerEmail) {
+                                reviewData.reviewerName = reviewData.reviewerEmail.split('@')[0];
+                            }
                         }
-                    } else {
-                        console.log('❌ No reviewerId found in review data:', reviewData);
+                    } else if (reviewData.reviewerEmail) {
+                        // Fallback to email if no reviewerId
+                        reviewData.reviewerName = reviewData.reviewerEmail.split('@')[0];
                     }
                     
                     profileReviews.push({ 
@@ -1260,7 +1256,14 @@
                 // Load ad reviews using collectionGroup
                 const adReviewsGroup = collectionGroup(window.firebaseDb, 'reviews');
                 const adReviews = [];
-                const groupSnap = await getDocs(adReviewsGroup);
+                let groupSnap;
+                try {
+                    groupSnap = await getDocs(adReviewsGroup);
+                } catch (error) {
+                    console.error('❌ Error loading ad reviews via collectionGroup:', error);
+                    // Continue without ad reviews if collectionGroup fails
+                    groupSnap = { docs: [] };
+                }
                 
                 for (const docSnap of groupSnap.docs) {
                     const parent = docSnap.ref.parent; // reviews collection
@@ -1274,51 +1277,40 @@
                         // Load reviewer info if reviewerId exists
                         if (reviewData.reviewerId) {
                             try {
-                                console.log('🔍 Loading reviewer profile for ID:', reviewData.reviewerId);
-                                const reviewerProfileRef = doc(window.firebaseDb, 'users', reviewData.reviewerId, 'profile', 'profile');
-                                const reviewerSnap = await getDoc(reviewerProfileRef);
-                                if (reviewerSnap.exists()) {
-                                    const reviewerProfile = reviewerSnap.data();
-                                    console.log('👤 Reviewer profile data:', reviewerProfile);
+                                // Try loading from user's main profile document (simpler path)
+                                const userDocRef = doc(window.firebaseDb, 'users', reviewData.reviewerId);
+                                const userDocSnap = await getDoc(userDocRef);
+                                if (userDocSnap.exists()) {
+                                    const userData = userDocSnap.data();
                                     
-                                    // Get firstName and lastName from database
                                     let reviewerName = 'Anonymní';
-                                    if (reviewerProfile.firstName && reviewerProfile.lastName) {
-                                        reviewerName = `${reviewerProfile.firstName} ${reviewerProfile.lastName}`;
-                                    } else if (reviewerProfile.firstName) {
-                                        reviewerName = reviewerProfile.firstName;
-                                    } else if (reviewerProfile.lastName) {
-                                        reviewerName = reviewerProfile.lastName;
+                                    if (userData.firstName && userData.lastName) {
+                                        reviewerName = `${userData.firstName} ${userData.lastName}`;
+                                    } else if (userData.firstName) {
+                                        reviewerName = userData.firstName;
+                                    } else if (userData.lastName) {
+                                        reviewerName = userData.lastName;
+                                    } else if (userData.email) {
+                                        reviewerName = userData.email.split('@')[0];
+                                    } else if (reviewData.reviewerEmail) {
+                                        reviewerName = reviewData.reviewerEmail.split('@')[0];
                                     }
                                     
                                     reviewData.reviewerName = reviewerName;
-                                    console.log('✅ Set reviewer name to:', reviewerName);
-                                } else {
-                                    console.log('❌ Reviewer profile not found anywhere');
-                                    // Try loading from user's main profile document
-                                    const userDocRef = doc(window.firebaseDb, 'users', reviewData.reviewerId);
-                                    const userDocSnap = await getDoc(userDocRef);
-                                    if (userDocSnap.exists()) {
-                                        const userData = userDocSnap.data();
-                                        console.log('👤 User document data:', userData);
-                                        
-                                        let reviewerName = 'Anonymní';
-                                        if (userData.firstName && userData.lastName) {
-                                            reviewerName = `${userData.firstName} ${userData.lastName}`;
-                                        } else if (userData.firstName) {
-                                            reviewerName = userData.firstName;
-                                        } else if (userData.lastName) {
-                                            reviewerName = userData.lastName;
-                                        }
-                                        
-                                        reviewData.reviewerName = reviewerName;
-                                    }
+                                } else if (reviewData.reviewerEmail) {
+                                    // Fallback to email if user doc doesn't exist
+                                    reviewData.reviewerName = reviewData.reviewerEmail.split('@')[0];
                                 }
                             } catch (error) {
                                 console.log('⚠️ Could not load reviewer profile:', error);
+                                // Fallback to email
+                                if (reviewData.reviewerEmail) {
+                                    reviewData.reviewerName = reviewData.reviewerEmail.split('@')[0];
+                                }
                             }
-                        } else {
-                            console.log('❌ No reviewerId found in review data:', reviewData);
+                        } else if (reviewData.reviewerEmail) {
+                            // Fallback to email if no reviewerId
+                            reviewData.reviewerName = reviewData.reviewerEmail.split('@')[0];
                         }
                         
                         adReviews.push({ 
