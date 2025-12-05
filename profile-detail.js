@@ -567,7 +567,23 @@ async function displayUserReviews() {
     const reviewsGrid = document.getElementById('userReviewsGrid');
     
     if (userReviews.length === 0) {
-        reviewsGrid.innerHTML = '<p class="no-reviews">Uživatel nemá žádné recenze.</p>';
+        reviewsGrid.innerHTML = `
+            <div style="
+                text-align: center;
+                padding: 60px 20px;
+                background: white;
+                border-radius: 16px;
+                border: 2px dashed #e5e7eb;
+            ">
+                <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                <p style="
+                    font-size: 16px;
+                    color: #6b7280;
+                    margin: 0;
+                    font-weight: 500;
+                ">Uživatel zatím nemá žádné recenze.</p>
+            </div>
+        `;
         return;
     }
     
@@ -629,24 +645,31 @@ function createReviewCard(review) {
     const reviewText = review.text || review.comment || 'Recenze bez komentáře.';
     const reviewerName = review.reviewerName || review.reviewerEmail?.split('@')[0] || 'Anonymní';
     
+    // Vytvořit hvězdičky s lepším designem
+    const filledStars = '★'.repeat(review.rating || 0);
+    const emptyStars = '☆'.repeat(5 - (review.rating || 0));
+    
     return `
-        <div class="review-card">
-            <div class="review-header">
-                <div class="reviewer-info">
-                    <div class="reviewer-avatar">
+        <div class="review-card-modern">
+            <div class="review-card-header">
+                <div class="reviewer-info-modern">
+                    <div class="reviewer-avatar-modern">
                         <i class="fas fa-user"></i>
                     </div>
-                    <div class="reviewer-details">
-                        <h4>${reviewerName}</h4>
-                        <span class="review-date">${timeAgo}</span>
+                    <div class="reviewer-details-modern">
+                        <h4 class="reviewer-name">${reviewerName}</h4>
+                        <span class="review-date-modern">${timeAgo}</span>
                     </div>
                 </div>
-                <div class="review-rating">
-                    <span class="stars">${stars}</span>
+                <div class="review-rating-modern">
+                    <div class="stars-container">
+                        <span class="stars-filled">${filledStars}</span>
+                        <span class="stars-empty">${emptyStars}</span>
+                    </div>
                 </div>
             </div>
-            <div class="review-content">
-                <p>${reviewText}</p>
+            <div class="review-card-content">
+                <p class="review-text">${reviewText}</p>
             </div>
         </div>
     `;
@@ -928,3 +951,4 @@ window.toggleReviewForm = toggleReviewForm;
 window.highlightStars = highlightStars;
 window.selectRating = selectRating;
 window.submitReview = submitReview;
+
