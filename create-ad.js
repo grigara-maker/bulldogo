@@ -265,7 +265,8 @@
 
         // Odeslání formuláře
         const form = document.getElementById('addServiceForm');
-        if (form) {
+        if (form && !form.hasAttribute('data-submit-handler')) {
+            form.setAttribute('data-submit-handler', 'true');
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 // Poskládat cenu jako text podle výběru

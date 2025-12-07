@@ -1882,8 +1882,10 @@ function setupEventListeners() {
     setupImagePreviews();
     
     // Formulář pro přidání služby
+    // Event listener pro formulář přidání služby - pouze pro modaly na jiných stránkách
+    // Na stránce create-ad.html se používá create-ad.js, ne tento listener
     const addServiceForm = document.getElementById('addServiceForm');
-    if (addServiceForm) {
+    if (addServiceForm && !window.location.pathname.includes('create-ad.html')) {
         addServiceForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
