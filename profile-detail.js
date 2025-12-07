@@ -560,7 +560,7 @@ function createServiceCard(service) {
                     </div>
                     <div class="ad-meta-item">
                         <i class="fas fa-tag"></i>
-                        <span class="ad-price-value">${service.price ? `${service.price} Kč` : 'Cena na dotaz'}</span>
+                        <span class="ad-price-value">${service.price || 'Cena na dotaz'}</span>
                     </div>
                     <div class="ad-meta-item">
                         <i class="fas fa-calendar"></i>
