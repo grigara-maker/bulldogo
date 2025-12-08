@@ -186,7 +186,7 @@ function displayAdDetail() {
     document.getElementById('adPrice').textContent = formattedPrice || 'Cena na vyžádání';
     
     // Meta information
-    document.getElementById('adLocation').textContent = currentAd.location || 'Neznámá lokalita';
+    document.getElementById('adLocation').textContent = getLocationName(currentAd.location) || 'Neznámá lokalita';
     document.getElementById('adCategory').textContent = getCategoryName(currentAd.category);
     
     // Debug date information
@@ -499,7 +499,7 @@ function displayOtherAds(ads) {
                     <div class="ad-meta-details">
                         <div class="ad-meta-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${ad.location || 'Lokace neuvedena'}</span>
+                            <span>${getLocationName(ad.location) || 'Lokace neuvedena'}</span>
                         </div>
                         <div class="ad-meta-item">
                             <i class="fas fa-tags"></i>
@@ -721,6 +721,35 @@ function getCategoryName(category) {
         'specialized_custom': 'Specializované služby / na přání'
     };
     return categories[category] || category;
+}
+
+// Získání názvu lokace s diakritikou
+function getLocationName(location) {
+    const locations = {
+        'Praha': 'Hlavní město Praha',
+        'Stredocesky': 'Středočeský kraj',
+        'Jihocesky': 'Jihočeský kraj',
+        'Plzensky': 'Plzeňský kraj',
+        'Karlovarsky': 'Karlovarský kraj',
+        'Ustecky': 'Ústecký kraj',
+        'Liberecky': 'Liberecký kraj',
+        'Kralovehradecky': 'Královéhradecký kraj',
+        'Pardubicky': 'Pardubický kraj',
+        'Vysocina': 'Kraj Vysočina',
+        'Jihomoravsky': 'Jihomoravský kraj',
+        'Olomoucky': 'Olomoucký kraj',
+        'Zlinsky': 'Zlínský kraj',
+        'Moravskoslezsky': 'Moravskoslezský kraj',
+        'Bratislavsky': 'Bratislavský kraj',
+        'Trnavsky': 'Trnavský kraj',
+        'Trenciansky': 'Trenčianský kraj',
+        'Nitriansky': 'Nitriansky kraj',
+        'Zilinsky': 'Žilinský kraj',
+        'Banskobystricky': 'Banskobystrický kraj',
+        'Presovsky': 'Prešovský kraj',
+        'Kosicky': 'Košický kraj'
+    };
+    return locations[location] || location;
 }
 
 // Format date

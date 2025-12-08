@@ -25,6 +25,35 @@ const categoryNames = {
     'specialized_custom': 'Specializované služby na přání'
 };
 
+// Získání názvu lokace s diakritikou
+function getLocationName(location) {
+    const locations = {
+        'Praha': 'Hlavní město Praha',
+        'Stredocesky': 'Středočeský kraj',
+        'Jihocesky': 'Jihočeský kraj',
+        'Plzensky': 'Plzeňský kraj',
+        'Karlovarsky': 'Karlovarský kraj',
+        'Ustecky': 'Ústecký kraj',
+        'Liberecky': 'Liberecký kraj',
+        'Kralovehradecky': 'Královéhradecký kraj',
+        'Pardubicky': 'Pardubický kraj',
+        'Vysocina': 'Kraj Vysočina',
+        'Jihomoravsky': 'Jihomoravský kraj',
+        'Olomoucky': 'Olomoucký kraj',
+        'Zlinsky': 'Zlínský kraj',
+        'Moravskoslezsky': 'Moravskoslezský kraj',
+        'Bratislavsky': 'Bratislavský kraj',
+        'Trnavsky': 'Trnavský kraj',
+        'Trenciansky': 'Trenčianský kraj',
+        'Nitriansky': 'Nitriansky kraj',
+        'Zilinsky': 'Žilinský kraj',
+        'Banskobystricky': 'Banskobystrický kraj',
+        'Presovsky': 'Prešovský kraj',
+        'Kosicky': 'Košický kraj'
+    };
+    return locations[location] || location;
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('📄 Profile detail page DOM loaded');
@@ -552,7 +581,7 @@ function createServiceCard(service) {
                 <div class="ad-meta-details">
                     <div class="ad-meta-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span>${service.location || 'Lokace neuvedena'}</span>
+                        <span>${getLocationName(service.location) || 'Lokace neuvedena'}</span>
                     </div>
                     <div class="ad-meta-item">
                         <i class="fas fa-tags"></i>

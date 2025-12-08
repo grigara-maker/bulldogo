@@ -726,7 +726,7 @@ function createAdCard(service, showActions = true) {
             </div>
             <div class="ad-body">
                 <h3 class="ad-title">${service.title || 'Bez názvu'}</h3>
-                <div class="ad-meta"><span>${service.location || 'Neuvedeno'}</span> • <span>${getCategoryName(service.category || '')}</span></div>
+                <div class="ad-meta"><span>${getLocationName(service.location || '') || 'Neuvedeno'}</span> • <span>${getCategoryName(service.category || '')}</span></div>
                 ${formattedPrice ? `<div class="ad-price">${formattedPrice}</div>` : ''}
             </div>
             ${service.isTop ? `
@@ -769,6 +769,35 @@ function getCategoryName(category) {
         'specialized_custom': 'Specializované služby / na přání'
     };
     return categories[category] || category;
+}
+
+// Získání názvu lokace s diakritikou
+function getLocationName(location) {
+    const locations = {
+        'Praha': 'Hlavní město Praha',
+        'Stredocesky': 'Středočeský kraj',
+        'Jihocesky': 'Jihočeský kraj',
+        'Plzensky': 'Plzeňský kraj',
+        'Karlovarsky': 'Karlovarský kraj',
+        'Ustecky': 'Ústecký kraj',
+        'Liberecky': 'Liberecký kraj',
+        'Kralovehradecky': 'Královéhradecký kraj',
+        'Pardubicky': 'Pardubický kraj',
+        'Vysocina': 'Kraj Vysočina',
+        'Jihomoravsky': 'Jihomoravský kraj',
+        'Olomoucky': 'Olomoucký kraj',
+        'Zlinsky': 'Zlínský kraj',
+        'Moravskoslezsky': 'Moravskoslezský kraj',
+        'Bratislavsky': 'Bratislavský kraj',
+        'Trnavsky': 'Trnavský kraj',
+        'Trenciansky': 'Trenčianský kraj',
+        'Nitriansky': 'Nitriansky kraj',
+        'Zilinsky': 'Žilinský kraj',
+        'Banskobystricky': 'Banskobystrický kraj',
+        'Presovsky': 'Prešovský kraj',
+        'Kosicky': 'Košický kraj'
+    };
+    return locations[location] || location;
 }
 
 // Formátování data
@@ -1198,7 +1227,7 @@ function showServiceDetails(serviceId) {
                     <div class="service-details-grid">
                         <div class="detail-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span><strong>Lokalita:</strong> ${service.location}</span>
+                            <span><strong>Lokalita:</strong> ${getLocationName(service.location)}</span>
                         </div>
                         ${service.price ? `
                         <div class="detail-item">
