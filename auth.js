@@ -1310,30 +1310,60 @@ function humanizePhoneError(error) {
     }
 }
 
-// Zobrazení zprávy
-function showMessage(message, type = 'info') {
+// Zobrazení zprávy (banner ve stylu pejska s gradientem)
+function showMessage(message, type = 'info', options = {}) {
     console.log(`💬 Zobrazuji zprávu: ${message} (${type})`);
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message message-${type}`;
-    messageDiv.textContent = message;
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 1rem;
-        background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#fff3cd'};
-        color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#856404'};
-        border: 1px solid ${type === 'success' ? '#c3e6cb' : type === 'error' ? '#f5c6cb' : '#ffeaa7'};
-        border-radius: 5px;
-        z-index: 10000;
-        max-width: 300px;
+    const timeoutMs = typeof options.timeout === 'number' ? options.timeout : 5000;
+    
+    // Kontejner (pro snadné centrování a stacking)
+    let host = document.getElementById('notice-host');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'notice-host';
+        host.style.cssText = `
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10050;
+            width: min(92vw, 760px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            pointer-events: none;
+        `;
+        document.body.appendChild(host);
+    }
+    
+    const banner = document.createElement('div');
+    banner.className = `notice-banner notice-${type}`;
+    banner.setAttribute('role', 'status');
+    banner.setAttribute('aria-live', 'polite');
+    banner.style.pointerEvents = 'auto';
+    banner.innerHTML = `
+        <div class="notice-hero">
+            <img src="fotky/bulldogo-overlay.png" alt="" aria-hidden="true">
+        </div>
+        <div class="notice-content">
+            <strong class="notice-title">${message}</strong>
+            <button class="notice-close" aria-label="Zavřít" title="Zavřít">×</button>
+        </div>
     `;
     
-    document.body.appendChild(messageDiv);
+    // Zavření
+    const close = () => {
+        try {
+            banner.classList.add('closing');
+            setTimeout(() => banner.remove(), 180);
+        } catch (_) {
+            banner.remove();
+        }
+    };
+    banner.querySelector('.notice-close')?.addEventListener('click', close);
+    if (timeoutMs > 0) setTimeout(close, timeoutMs);
     
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 5000);
+    host.appendChild(banner);
 }
 
 // Přidání služby
