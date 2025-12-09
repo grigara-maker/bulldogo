@@ -284,6 +284,42 @@ document.addEventListener('click', (e) => {
     } catch (_) {}
 });
 
+// Redundantní přímé navázání – kdyby delegace nestačila (některé podstránky)
+function bindAuthOpeners(root = document) {
+    const sel = '.btn-login, .btn-register, [data-open-auth], [data-auth], a[href="#login"], a[href="#register"]';
+    root.querySelectorAll(sel).forEach(el => {
+        if (el.dataset.authBound === '1') return;
+        el.addEventListener('click', (e) => {
+            const href = el.getAttribute('href') || '';
+            const dataOpen = el.getAttribute('data-open-auth') || el.getAttribute('data-auth') || '';
+            const isLogin = el.classList.contains('btn-login') || href === '#login' || dataOpen === 'login';
+            const isRegister = el.classList.contains('btn-register') || href === '#register' || dataOpen === 'register';
+            if (isLogin || isRegister) {
+                e.preventDefault();
+                e.stopPropagation();
+                showAuthModal(isLogin ? 'login' : 'register');
+            }
+        }, { passive: false });
+        el.dataset.authBound = '1';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Přímé navázání po načtení
+    try { bindAuthOpeners(document); } catch (_) {}
+    // Sledovat přidávání prvků dynamicky
+    const mo = new MutationObserver((muts) => {
+        muts.forEach(m => {
+            m.addedNodes?.forEach?.(node => {
+                if (node.nodeType === 1) {
+                    try { bindAuthOpeners(node); } catch (_) {}
+                }
+            });
+        });
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+});
+
 // Inicializace autentifikace
 function initAuth() {
     console.log('🔧 Inicializuji auth s Firebase:', { firebaseAuth: !!firebaseAuth, firebaseDb: !!firebaseDb });
