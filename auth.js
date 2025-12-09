@@ -1025,6 +1025,7 @@ function showAuthModal(type = 'login') {
     const phoneCode = modal.querySelector('#phoneCode');
     const authEmail = modal.querySelector('#authEmail');
     const authPhone = modal.querySelector('#authPhone');
+    const phoneRow = modal.querySelector('#phoneRow');
 
     if (type === 'login') {
         console.log('🔧 Nastavuji modal pro přihlášení');
@@ -1035,8 +1036,9 @@ function showAuthModal(type = 'login') {
         registrationType.style.display = 'none';
         personForm.style.display = 'none';
         companyForm.style.display = 'none';
-        if (groupAuthEmail) { groupAuthEmail.style.display = 'none'; }
-        if (authEmail) { authEmail.required = false; }
+        // Přihlášení: e‑mail + heslo
+        if (groupAuthEmail) { groupAuthEmail.style.display = ''; }
+        if (authEmail) { authEmail.required = true; }
         
         // Odstranit required atribut ze skrytých polí při přihlášení
         toggleRequired(personForm, false);
@@ -1046,9 +1048,9 @@ function showAuthModal(type = 'login') {
         if (btnSendPhoneCode) btnSendPhoneCode.style.display = 'none';
         if (btnAuthSubmit) btnAuthSubmit.style.display = 'none';
         if (submitBtn) submitBtn.style.display = '';
-        if (phoneRight) {
-            if (phoneCode) phoneCode.style.display = 'none';
-        }
+        // Skrytí telefonní řádky v přihlášení
+        if (phoneRow) phoneRow.style.display = 'none';
+        if (phoneRight && phoneCode) phoneCode.style.display = 'none';
 
         console.log('✅ Modal nastaven pro přihlášení:', { 
             title: modalTitle.textContent, 
@@ -1079,6 +1081,8 @@ function showAuthModal(type = 'login') {
         if (phoneRight) {
             if (phoneCode) phoneCode.style.display = 'none';
         }
+        // Zobrazit telefonní řádku pro registraci
+        if (phoneRow) phoneRow.style.display = '';
         if (authPhone && (!authPhone.value || authPhone.value.trim() === '')) {
             authPhone.value = '+420';
         }
