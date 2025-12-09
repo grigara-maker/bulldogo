@@ -1323,14 +1323,15 @@ function showMessage(message, type = 'info', options = {}) {
         host.style.cssText = `
             position: fixed;
             top: 120px;
-            left: 24px;
+            right: 24px;
+            left: auto;
             transform: none;
             z-index: 10050;
             width: min(90vw, 520px);
             display: flex;
             flex-direction: column;
             gap: 12px;
-            align-items: flex-start;
+            align-items: flex-end;
             pointer-events: none;
         `;
         document.body.appendChild(host);
