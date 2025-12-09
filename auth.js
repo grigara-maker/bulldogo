@@ -1029,6 +1029,7 @@ function showAuthModal(type = 'login') {
 
     if (type === 'login') {
         console.log('🔧 Nastavuji modal pro přihlášení');
+        modal.setAttribute('data-mode', 'login');
         modalTitle.textContent = 'Přihlášení';
         submitBtn.textContent = 'Přihlásit se';
         switchBtn.textContent = 'Nemáte účet? Zaregistrujte se';
@@ -1059,6 +1060,7 @@ function showAuthModal(type = 'login') {
         });
     } else {
         modalTitle.textContent = 'Registrace';
+        modal.setAttribute('data-mode', 'register');
         submitBtn.textContent = 'Zaregistrovat se';
         switchBtn.textContent = 'Již máte účet? Přihlaste se';
         switchBtn.setAttribute('data-type', 'login');
@@ -1607,13 +1609,11 @@ function setupEventListeners() {
             
             console.log('📧 Formulář data:', { email, password: password ? '***' : 'prázdné' });
             
-            const modalTitle = document.querySelector('.modal-title');
-            const titleText = modalTitle ? modalTitle.textContent : 'NENALEZEN';
-            const isLogin = titleText === 'Přihlášení';
+            const modalEl = document.getElementById('authModal');
+            const mode = modalEl?.getAttribute('data-mode') || '';
+            const isLogin = mode === 'login';
             console.log('🔍 Typ akce:', { 
-                modalTitle: !!modalTitle, 
-                titleText: titleText, 
-                isLogin: isLogin 
+                mode, isLogin 
             });
             
             try {
