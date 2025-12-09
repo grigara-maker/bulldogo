@@ -397,72 +397,37 @@ function resetTopAds() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Auth modal functions (reused from main script)
+// Auth modal – deleguj na globální implementaci z auth.js
 function showAuthModal(type) {
-    const modal = document.getElementById('authModal');
-    const title = modal.querySelector('.modal-title');
-    const form = modal.querySelector('.auth-form');
-    const submitBtn = modal.querySelector('.auth-submit-btn');
-    const switchBtn = modal.querySelector('.auth-switch-btn');
-    
-    if (type === 'login') {
-        title.textContent = 'Přihlášení';
-        submitBtn.textContent = 'Přihlásit se';
-        switchBtn.textContent = 'Nemáte účet? Zaregistrujte se';
-        switchBtn.setAttribute('data-type', 'register');
-    } else {
-        title.textContent = 'Registrace';
-        submitBtn.textContent = 'Zaregistrovat se';
-        switchBtn.textContent = 'Máte účet? Přihlaste se';
-        switchBtn.setAttribute('data-type', 'login');
+    if (window.showAuthModal) {
+        window.showAuthModal(type || 'login');
     }
-    
-    modal.style.display = 'block';
 }
 
 function closeAuthModal() {
-    document.getElementById('authModal').style.display = 'none';
+    if (window.closeAuthModal) window.closeAuthModal();
 }
 
-// Close modal when clicking outside
+// Bezpečnostní guardy – prvky vytváří až auth.js
 window.addEventListener('click', function(event) {
     const modal = document.getElementById('authModal');
-    if (event.target === modal) {
+    if (modal && event.target === modal) {
         closeAuthModal();
     }
 });
 
-// Auth form handling
-document.getElementById('authForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    if (!email || !password) {
-        alert('Prosím vyplňte všechna pole.');
-        return;
-    }
-    
-    // Simulate auth process
-    const submitBtn = this.querySelector('.auth-submit-btn');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Zpracovávám...';
-    submitBtn.disabled = true;
-    
-    setTimeout(() => {
-        alert('Přihlášení úspěšné!');
-        closeAuthModal();
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-    }, 1500);
-});
+const authFormElTop = document.getElementById('authForm');
+if (authFormElTop) {
+    authFormElTop.addEventListener('submit', function(e) { e.preventDefault(); });
+}
 
-// Auth switch handling
-document.querySelector('.auth-switch-btn').addEventListener('click', function() {
-    const type = this.getAttribute('data-type');
-    showAuthModal(type);
-});
+const switchBtnElTop = document.querySelector('.auth-switch-btn');
+if (switchBtnElTop) {
+    switchBtnElTop.addEventListener('click', function() {
+        const type = this.getAttribute('data-type');
+        showAuthModal(type);
+    });
+}
 
 // Chat link handling with auth check
 document.querySelectorAll('a[href="chat.html"]').forEach(link => {
