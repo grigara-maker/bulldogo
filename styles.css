@@ -5965,6 +5965,14 @@ html {
     margin-bottom: 6px;
 }
 
+/* U firemní registrace drž konzistentní mezeru mezi IČ a dalším společným polem (email) */
+.auth-form .company-form {
+    margin-bottom: 0;
+}
+.auth-form #groupAuthEmail {
+    margin-top: 10px;
+}
+
 /* Datum narození – barevný obdélník vedle štítku */
 .date-inline {
     display: flex;
