@@ -292,14 +292,14 @@ function initAuth() {
     import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js').then(({ onAuthStateChanged }) => {
         console.log('✅ Firebase Auth modul načten');
         
-        // DEV bypass pro reCAPTCHA – pouze mimo produkci
+        // DEV bypass pro reCAPTCHA – pouze na lokálu (nikoliv na vercel.app)
         try {
-            const isDevHost = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.endsWith('.vercel.app');
+            const isDevHost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
             const isProd = location.hostname.endsWith('bulldogo.cz');
             if (isDevHost && !isProd && firebaseAuth?.settings) {
                 // Pozor: funguje jen s testovacími čísly definovanými v Firebase Console
                 firebaseAuth.settings.appVerificationDisabledForTesting = true;
-                console.log('⚙️ reCAPTCHA vypnuta pro vývoj (použijte testovací čísla ve Firebase Console).');
+                console.log('⚙️ reCAPTCHA vypnuta pro vývoj (použijte testovací čísla ve Firebase Console) – pouze localhost.');
             }
         } catch (e) {
             console.warn('⚠️ Nepodařilo se nastavit appVerificationDisabledForTesting:', e?.message || e);
