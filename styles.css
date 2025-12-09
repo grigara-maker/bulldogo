@@ -2,9 +2,9 @@
 .notice-banner {
   position: relative;
   width: 100%;
-  border-radius: 18px;
-  padding: 22px 56px 22px 28px;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+  border-radius: 16px;
+  padding: 16px 44px 16px 20px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
   overflow: visible;
   color: #0b0b0b;
   background: linear-gradient(90deg, #FFA62B 0%, #FCD34D 100%); /* default info (oranžovo-žlutá) */
@@ -18,7 +18,7 @@
 }
 .notice-banner .notice-title {
   font-weight: 800;
-  font-size: clamp(18px, 2.2vw, 28px);
+  font-size: clamp(16px, 1.9vw, 22px);
   line-height: 1.2;
   color: #0b0b0b;
 }
@@ -27,25 +27,25 @@
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border: 0;
   border-radius: 8px;
   background: transparent;
   color: #0b0b0b;
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
 }
 .notice-banner .notice-close:hover { opacity: 0.8; }
 .notice-banner .notice-hero {
   position: absolute;
-  top: -52px;
-  left: 24px;
+  top: -40px;
+  left: 12px;
   pointer-events: none;
 }
 .notice-banner .notice-hero img {
-  width: clamp(74px, 12vw, 120px);
+  width: clamp(60px, 10vw, 92px);
   height: auto;
   display: block;
 }

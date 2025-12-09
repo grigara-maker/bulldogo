@@ -1322,15 +1322,15 @@ function showMessage(message, type = 'info', options = {}) {
         host.id = 'notice-host';
         host.style.cssText = `
             position: fixed;
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 120px;
+            left: 24px;
+            transform: none;
             z-index: 10050;
-            width: min(92vw, 760px);
+            width: min(90vw, 520px);
             display: flex;
             flex-direction: column;
             gap: 12px;
-            align-items: center;
+            align-items: flex-start;
             pointer-events: none;
         `;
         document.body.appendChild(host);
