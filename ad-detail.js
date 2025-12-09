@@ -327,7 +327,7 @@ function displayAdImages(images) {
     
     if (images.length > 0) {
         // Set main image
-        mainImage.innerHTML = `<img src="${images[0]}" alt="Hlavní obrázek" class="ad-main-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+		mainImage.innerHTML = `<img src="${images[0]}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="no-image-placeholder" style="display: none;">
                 <i class="fas fa-image"></i>
                 <span>Obrázek se nepodařilo načíst</span>
@@ -337,7 +337,7 @@ function displayAdImages(images) {
         if (images.length > 1) {
             thumbnails.innerHTML = images.slice(1).map((img, index) => `
                 <div class="ad-thumbnail" onclick="changeMainImage('${img}')">
-                    <img src="${img}" alt="Obrázek ${index + 2}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+					<img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="no-image-placeholder" style="display: none;">
                         <i class="fas fa-image"></i>
                     </div>
@@ -369,7 +369,7 @@ function displayNoImages() {
 // Change main image
 function changeMainImage(imageSrc) {
     const mainImage = document.getElementById('adMainImage');
-    mainImage.innerHTML = `<img src="${imageSrc}" alt="Hlavní obrázek" class="ad-main-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+	mainImage.innerHTML = `<img src="${imageSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <div class="no-image-placeholder" style="display: none;">
             <i class="fas fa-image"></i>
             <span>Obrázek se nepodařilo načíst</span>

@@ -25,6 +25,26 @@
       "**/.*",
       "**/node_modules/**"
     ],
+		"headers": [
+			{
+				"source": "**/*.@(jpg|jpeg|png|gif|webp|avif|svg)",
+				"headers": [
+					{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+				]
+			},
+			{
+				"source": "fotky/**",
+				"headers": [
+					{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+				]
+			},
+			{
+				"source": "**/*.@(html)",
+				"headers": [
+					{ "key": "Cache-Control", "value": "public, max-age=300" }
+				]
+			}
+		],
     "rewrites": [
       {
         "source": "**",

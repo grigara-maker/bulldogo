@@ -367,7 +367,7 @@ async function igRenderRightAds(peerUserId = null) {
 		// Fallback – 3 statické karty s logem
 		el.innerHTML = Array.from({ length: 3 }).map((_, i) => `
 			<div class="ig-conv">
-				<div class="ig-avatar"><img src="fotky/bulldogo-logo.png" alt="Bulldogo logo"></div>
+				<div class="ig-avatar"><img src="fotky/bulldogo-logo.png" alt="Bulldogo logo" loading="lazy" decoding="async"></div>
 				<div>
 					<div class="ig-title">Bulldogo</div>
 					<div class="ig-last">Ukázka ${i + 1}</div>
@@ -519,7 +519,7 @@ function igRenderMessages() {
     }
 	box.innerHTML = msgs.map(m => {
 		const mine = igCurrentUser ? (m.uid === 'me' || m.uid === igCurrentUser.uid) : (m.uid === 'me');
-		const imgs = (m.images || []).map(img => `<img src="${img.url}" alt="${img.name||''}">`).join('');
+		const imgs = (m.images || []).map(img => `<img src="${img.url}" alt="${img.name||''}" loading="lazy" decoding="async">`).join('');
         return `
 			<div class="ig-row ${mine ? 'mine' : ''}">
 				<div class="ig-avatar"><i class="fas fa-user"></i></div>
