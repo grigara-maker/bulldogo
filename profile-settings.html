@@ -1307,12 +1307,8 @@ Prosím kontaktujte podporu.
                 fileInput.addEventListener('change', () => {
                     const file = fileInput.files && fileInput.files[0];
                     if (!file) return;
-                    const url = URL.createObjectURL(file);
-                    if (preview && placeholder) {
-                        preview.src = url;
-                        preview.style.display = 'block';
-                        placeholder.style.display = 'none';
-                    }
+                    // Otevřít ořezové okno
+                    openAvatarCrop(file);
                 });
             }
             
@@ -1324,6 +1320,213 @@ Prosím kontaktujte podporu.
             }
         }
         
+        // Stav pro ořez
+        let __avatarCrop = {
+            file: null,
+            objectUrl: '',
+            imgEl: null,
+            areaEl: null,
+            zoomEl: null,
+            baseScale: 1,
+            scale: 1,
+            offsetX: 0,
+            offsetY: 0,
+            naturalWidth: 0,
+            naturalHeight: 0
+        };
+        let __avatarBlob = null; // výsledný oříznutý blob (použije se při nahrání)
+        
+        function openAvatarCrop(file) {
+            try {
+                __avatarBlob = null;
+                __avatarCrop.file = file;
+                // Připravit modal
+                let modal = document.getElementById('avatarCropModal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'avatarCropModal';
+                    modal.className = 'modal';
+                    modal.style.display = 'none';
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width: 540px;">
+                            <div class="modal-header">
+                                <h2 style="margin:0;">Oříznout fotku</h2>
+                                <span class="close" onclick="closeAvatarCrop()">&times;</span>
+                            </div>
+                            <div class="modal-body" style="padding: 1rem;">
+                                <div id="cropArea" style="width:320px;height:320px;margin:0 auto;position:relative;overflow:hidden;background:#f3f4f6;border-radius:12px;border:1px solid #e5e7eb;">
+                                    <img id="cropImage" alt="Crop" style="position:absolute; left:0; top:0; transform-origin: top left; user-select:none; -webkit-user-drag:none;">
+                                </div>
+                                <div style="margin-top:12px;">
+                                    <input id="cropZoom" type="range" min="1" max="3" step="0.01" value="1" style="width:100%;">
+                                </div>
+                            </div>
+                            <div class="modal-actions" style="display:flex; gap:8px; justify-content:flex-end; padding: 0 1rem 1rem;">
+                                <button class="btn-save" onclick="confirmAvatarCrop()">
+                                    <i class="fas fa-check"></i> Potvrdit
+                                </button>
+                                <button class="btn-save" onclick="closeAvatarCrop()" style="background:#fff; border:1px solid #e5e7eb; color:#6b7280;">
+                                    Zrušit
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+                
+                const area = modal.querySelector('#cropArea');
+                const img = modal.querySelector('#cropImage');
+                const zoom = modal.querySelector('#cropZoom');
+                
+                // Naplnit stav
+                __avatarCrop.areaEl = area;
+                __avatarCrop.imgEl = img;
+                __avatarCrop.zoomEl = zoom;
+                
+                // Načíst obrázek
+                if (__avatarCrop.objectUrl) URL.revokeObjectURL(__avatarCrop.objectUrl);
+                __avatarCrop.objectUrl = URL.createObjectURL(file);
+                img.src = __avatarCrop.objectUrl;
+                img.onload = () => {
+                    const aw = area.clientWidth;
+                    const ah = area.clientHeight;
+                    const iw = img.naturalWidth;
+                    const ih = img.naturalHeight;
+                    __avatarCrop.naturalWidth = iw;
+                    __avatarCrop.naturalHeight = ih;
+                    // Fit-cover pro čtverec
+                    const scale = Math.max(aw / iw, ah / ih);
+                    __avatarCrop.baseScale = scale;
+                    __avatarCrop.scale = scale;
+                    __avatarCrop.offsetX = (aw - iw * scale) / 2;
+                    __avatarCrop.offsetY = (ah - ih * scale) / 2;
+                    applyCropTransform();
+                };
+                
+                // Drag to move
+                let dragging = false;
+                let startX = 0, startY = 0, initX = 0, initY = 0;
+                const startDrag = (e) => {
+                    dragging = true;
+                    const p = e.touches ? e.touches[0] : e;
+                    startX = p.clientX;
+                    startY = p.clientY;
+                    initX = __avatarCrop.offsetX;
+                    initY = __avatarCrop.offsetY;
+                    e.preventDefault();
+                };
+                const onDrag = (e) => {
+                    if (!dragging) return;
+                    const p = e.touches ? e.touches[0] : e;
+                    const dx = p.clientX - startX;
+                    const dy = p.clientY - startY;
+                    __avatarCrop.offsetX = initX + dx;
+                    __avatarCrop.offsetY = initY + dy;
+                    clampOffsets();
+                    applyCropTransform();
+                    e.preventDefault();
+                };
+                const endDrag = () => { dragging = false; };
+                img.onpointerdown = startDrag;
+                img.onpointermove = onDrag;
+                img.onpointerup = endDrag;
+                img.onpointercancel = endDrag;
+                img.ontouchstart = startDrag;
+                img.ontouchmove = onDrag;
+                img.ontouchend = endDrag;
+                
+                // Zoom
+                zoom.oninput = () => {
+                    __avatarCrop.scale = __avatarCrop.baseScale * parseFloat(zoom.value || '1');
+                    clampOffsets();
+                    applyCropTransform();
+                };
+                
+                modal.style.display = 'flex';
+            } catch (e) {
+                console.error('openAvatarCrop error', e);
+                showMessage('Nepodařilo se otevřít ořez fotky', 'error');
+            }
+        }
+        
+        function closeAvatarCrop() {
+            const modal = document.getElementById('avatarCropModal');
+            if (modal) modal.style.display = 'none';
+            if (__avatarCrop.objectUrl) {
+                URL.revokeObjectURL(__avatarCrop.objectUrl);
+                __avatarCrop.objectUrl = '';
+            }
+        }
+        
+        function clampOffsets() {
+            const aw = __avatarCrop.areaEl?.clientWidth || 320;
+            const ah = __avatarCrop.areaEl?.clientHeight || 320;
+            const w = __avatarCrop.naturalWidth * __avatarCrop.scale;
+            const h = __avatarCrop.naturalHeight * __avatarCrop.scale;
+            // Zajistit, aby obraz pokrýval výřez – tzn. horní/levý offset nesmí být větší než 0
+            // a pravý/dolní nesmí „odjet“ (offset >= aw - w, ah - h)
+            const minX = Math.min(0, aw - w);
+            const minY = Math.min(0, ah - h);
+            const maxX = Math.max(0, aw - w);
+            const maxY = Math.max(0, ah - h);
+            __avatarCrop.offsetX = Math.min(Math.max(__avatarCrop.offsetX, minX), maxX);
+            __avatarCrop.offsetY = Math.min(Math.max(__avatarCrop.offsetY, minY), maxY);
+        }
+        
+        function applyCropTransform() {
+            const img = __avatarCrop.imgEl;
+            if (!img) return;
+            img.style.transform = `translate(${__avatarCrop.offsetX}px, ${__avatarCrop.offsetY}px) scale(${__avatarCrop.scale})`;
+        }
+        
+        async function confirmAvatarCrop() {
+            try {
+                const aw = __avatarCrop.areaEl?.clientWidth || 320;
+                const ah = __avatarCrop.areaEl?.clientHeight || 320;
+                const scale = __avatarCrop.scale;
+                const iw = __avatarCrop.naturalWidth;
+                const ih = __avatarCrop.naturalHeight;
+                const ox = __avatarCrop.offsetX;
+                const oy = __avatarCrop.offsetY;
+                
+                // Výpočet zdrojového výřezu
+                const sx = Math.max(0, -ox / scale);
+                const sy = Math.max(0, -oy / scale);
+                const sWidth = Math.min(iw, aw / scale);
+                const sHeight = Math.min(ih, ah / scale);
+                
+                const size = 512; // export 512x512
+                const canvas = document.createElement('canvas');
+                canvas.width = size; canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingQuality = 'high';
+                const img = __avatarCrop.imgEl;
+                await new Promise(r => setTimeout(r, 0)); // yield
+                ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, size, size);
+                
+                // Blob (preferuj webp, fallback jpeg)
+                const toBlob = (type) => new Promise((resolve) => canvas.toBlob(resolve, type, 0.92));
+                __avatarBlob = await toBlob('image/webp') || await toBlob('image/jpeg');
+                
+                // Náhled do UI
+                const preview = document.getElementById('profilePhotoPreview');
+                const placeholder = document.getElementById('profilePhotoPlaceholder');
+                if (__avatarBlob && preview && placeholder) {
+                    const url = URL.createObjectURL(__avatarBlob);
+                    preview.src = url;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                closeAvatarCrop();
+                showMessage('Náhled ořezu připraven. Klikněte na Nahrát.', 'success');
+            } catch (e) {
+                console.error('confirmAvatarCrop error', e);
+                showMessage('Nepodařilo se oříznout fotku', 'error');
+            }
+        }
+        window.confirmAvatarCrop = confirmAvatarCrop;
+        window.closeAvatarCrop = closeAvatarCrop;
+        
         async function uploadProfilePhoto() {
             try {
                 if (!window.firebaseAuth || !window.firebaseDb) return showMessage('Firebase není inicializován', 'error');
@@ -1331,20 +1534,22 @@ Prosím kontaktujte podporu.
                 if (!user) return showMessage('Musíte být přihlášeni', 'error');
                 
                 const fileInput = document.getElementById('profilePhotoInput');
-                const file = fileInput?.files && fileInput.files[0];
-                if (!file) return showMessage('Vyberte prosím obrázek', 'error');
+                const pickedFile = fileInput?.files && fileInput.files[0];
+                if (!pickedFile && !__avatarBlob) return showMessage('Vyberte prosím obrázek', 'error');
                 
                 // Načti Firebase Storage dynamicky
                 const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
                 const storage = getStorage(window.firebaseApp);
                 
                 // Cíl v úložišti
-                const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-                const path = `users/${user.uid}/profile/avatar_${Date.now()}.${ext}`;
+                const ext = __avatarBlob ? 'webp' : (pickedFile.name.split('.').pop() || 'jpg').toLowerCase();
+                // Pozn.: ukládáme pod /services/{uid}/profile/… aby vyhovělo aktuálním Storage Rules
+                const path = `services/${user.uid}/profile/avatar_${Date.now()}.${ext}`;
                 const storageRef = ref(storage, path);
                 
                 // Nahrát
-                await uploadBytes(storageRef, file, { contentType: file.type });
+                const dataToUpload = __avatarBlob || pickedFile;
+                await uploadBytes(storageRef, dataToUpload, { contentType: __avatarBlob ? (__avatarBlob.type || 'image/webp') : pickedFile.type });
                 const publicUrl = await getDownloadURL(storageRef);
                 
                 // Uložit do Firestore
@@ -1360,6 +1565,7 @@ Prosím kontaktujte podporu.
                 fileInput.value = '';
                 const img = document.getElementById('profilePhotoPreview');
                 if (img) img.src = publicUrl;
+                __avatarBlob = null;
                 
             } catch (e) {
                 console.error('uploadProfilePhoto error', e);
