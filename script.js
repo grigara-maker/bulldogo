@@ -17,6 +17,14 @@ function toggleSidebar() {
     
     // Save preference to localStorage
     localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    
+    // Reaplikovat avatar (jiné zobrazení v collapsed režimu)
+    try {
+        const uid = window.firebaseAuth?.currentUser?.uid;
+        if (uid) {
+            loadAndApplyUserAvatar(uid);
+        }
+    } catch (_) {}
 }
 
 // Mobile menu toggle
@@ -483,19 +491,45 @@ function applySidebarAvatar(url) {
 	const ph = document.getElementById('sidebarUserAvatarPh');
 	const btn = document.querySelector('.sidebar .user-profile-section .btn-profile');
 	const btnIcon = btn ? btn.querySelector('i') : null;
+	const sidebar = document.querySelector('.sidebar');
+	const isCollapsed = !!(sidebar && sidebar.classList.contains('collapsed'));
 	if (img && ph) {
 		if (url) {
 			img.src = url;
 			img.style.display = 'block';
 			ph.style.display = 'none';
-			// Skrýt původní ikonu v tlačítku Profil (když máme profilovku)
-			if (btnIcon) btnIcon.style.display = 'none';
+			// Collapsed režim: zobraz avatar i přímo do ikony tlačítka
+			if (btnIcon) {
+				if (isCollapsed) {
+					btnIcon.style.display = '';
+					btnIcon.style.backgroundImage = `url(${url})`;
+					btnIcon.style.backgroundSize = 'cover';
+					btnIcon.style.backgroundPosition = 'center';
+					btnIcon.style.borderRadius = '50%';
+					btnIcon.style.width = '28px';
+					btnIcon.style.height = '28px';
+					btnIcon.style.color = 'transparent';
+				} else {
+					// Rozbalený – můžeme ikonu skrýt (viz avatar vedle odznaku)
+					btnIcon.style.display = 'none';
+					btnIcon.style.backgroundImage = '';
+					btnIcon.style.width = '';
+					btnIcon.style.height = '';
+					btnIcon.style.color = '';
+				}
+			}
 		} else {
 			img.src = '';
 			img.style.display = 'none';
 			ph.style.display = 'block';
 			// Zobrazit původní ikonu v tlačítku Profil (když profilovka není)
-			if (btnIcon) btnIcon.style.display = '';
+			if (btnIcon) {
+				btnIcon.style.display = '';
+				btnIcon.style.backgroundImage = '';
+				btnIcon.style.width = '';
+				btnIcon.style.height = '';
+				btnIcon.style.color = '';
+			}
 		}
 	}
 }
