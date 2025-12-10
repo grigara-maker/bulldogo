@@ -800,6 +800,46 @@ function getLocationName(location) {
     return locations[location] || location;
 }
 
+// Mapování: název kraje → kód (pro robustní porovnávání)
+function getRegionCode(input) {
+    const val = (input || '').toString().trim();
+    if (!val) return '';
+    // Pokud už je to kód, vrať bez změny
+    const validCodes = [
+        'Praha','Stredocesky','Jihocesky','Plzensky','Karlovarsky','Ustecky','Liberecky','Kralovehradecky','Pardubicky','Vysocina','Jihomoravsky','Olomoucky','Zlinsky','Moravskoslezsky',
+        'Bratislavsky','Trnavsky','Trenciansky','Nitriansky','Zilinsky','Banskobystricky','Presovsky','Kosicky'
+    ];
+    if (validCodes.includes(val)) return val;
+    // Bez diakritiky a malá písmena
+    const n = normalize(val);
+    const map = {
+        'hlavni mesto praha': 'Praha',
+        'praha': 'Praha',
+        'stredocesky kraj': 'Stredocesky',
+        'jihocesky kraj': 'Jihocesky',
+        'plzensky kraj': 'Plzensky',
+        'karlovarsky kraj': 'Karlovarsky',
+        'ustecky kraj': 'Ustecky',
+        'liberecky kraj': 'Liberecky',
+        'kralovehradecky kraj': 'Kralovehradecky',
+        'pardubicky kraj': 'Pardubicky',
+        'kraj vysocina': 'Vysocina',
+        'jihomoravsky kraj': 'Jihomoravsky',
+        'olomoucky kraj': 'Olomoucky',
+        'zlinsky kraj': 'Zlinsky',
+        'moravskoslezsky kraj': 'Moravskoslezsky',
+        'bratislavsky kraj': 'Bratislavsky',
+        'trnavsky kraj': 'Trnavsky',
+        'trenciansky kraj': 'Trenciansky',
+        'nitriansky kraj': 'Nitriansky',
+        'zilinsky kraj': 'Zilinsky',
+        'banskobystricky kraj': 'Banskobystricky',
+        'presovsky kraj': 'Presovsky',
+        'kosicky kraj': 'Kosicky'
+    };
+    return map[n] || '';
+}
+
 // Formátování data
 function formatDate(date) {
     if (!date) return 'Neznámé datum';
@@ -894,6 +934,7 @@ function filterServices() {
     const searchTerm = normalize(rawSearch);
     const categoryFilter = (document.getElementById('categoryFilter')?.value || '').trim();
     const regionFilter = (document.getElementById('regionFilter')?.value || '').trim();
+    const regionCode = getRegionCode(regionFilter);
 
     // Fallback: pokud ještě nemáme načtená data, filtruj přímo DOM karty
     if (!allServices || allServices.length === 0) {
@@ -904,11 +945,14 @@ function filterServices() {
     let filteredAds = allServices.filter((service) => {
         const title = normalize(service?.title || '');
         const desc = normalize(service?.description || '');
-        const loc = normalize(service?.location || '');
+        // Podpora různých polí pro kraj: location / region / serviceRegion
+        const storedLocRaw = service?.location || service?.region || service?.serviceRegion || '';
+        const locCode = getRegionCode(storedLocRaw);
+        const loc = normalize(storedLocRaw || '');
 
         const matchesSearch = !searchTerm || title.includes(searchTerm) || desc.includes(searchTerm) || loc.includes(searchTerm);
         const matchesCategory = !categoryFilter || (service?.category === categoryFilter);
-        const matchesRegion = !regionFilter || (service?.location === regionFilter);
+        const matchesRegion = !regionCode || (locCode === regionCode);
         // Zobrazit všechny inzeráty kromě smazaných nebo archivovaných
         // Pokud status není nastaven, považujeme ho za aktivní
         const status = service?.status || 'active';
@@ -937,6 +981,7 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
     const grid = document.getElementById('servicesGrid');
     const noServices = document.getElementById('noServices');
     if (!grid) return;
+    const regionCode = getRegionCode(regionFilter || '');
 
     const cards = Array.from(grid.querySelectorAll('.ad-card'));
     if (cards.length === 0) return;
@@ -950,10 +995,11 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
         // Extrahovat lokaci z meta (formát: "Lokace • Kategorie")
         const metaText = card.querySelector('.ad-meta')?.textContent || '';
         const locationMatch = metaText.split('•')[0]?.trim() || '';
+        const locationCode = getRegionCode(locationMatch);
 
         const matchesSearch = !searchTerm || title.includes(searchTerm) || meta.includes(searchTerm);
         const matchesCategory = !categoryFilter || dataCategory === categoryFilter;
-        const matchesRegion = !regionFilter || locationMatch === regionFilter;
+        const matchesRegion = !regionCode || locationCode === regionCode;
 
         const show = matchesSearch && matchesCategory && matchesRegion;
         card.style.display = show ? '' : 'none';
