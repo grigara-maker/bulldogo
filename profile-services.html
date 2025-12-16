@@ -236,7 +236,7 @@
                 </div>
             </div>
 
-            <div class="services-grid">
+            <div class="ads-grid" id="profileServicesGrid">
                 <!-- Služby se načtou dynamicky z Firebase -->
             </div>
         </div>
@@ -358,7 +358,7 @@
         }
 
         function updateServicesDisplay(userAds) {
-            const servicesContainer = document.querySelector('.services-grid');
+            const servicesContainer = document.getElementById('profileServicesGrid');
             if (!servicesContainer) return;
 
             if (userAds.length === 0) {
@@ -408,49 +408,61 @@
                 'paused': 'Pozastaveno'
             };
 
-            // Obrázek inzerátu (pokud existuje)
-            const imageUrl = (() => {
-                if (Array.isArray(ad.images) && ad.images.length > 0) {
-                    const first = ad.images[0];
-                    if (typeof first === 'string') return first;
-                    if (first && first.url) return first.url;
-                }
-                if (ad.image && typeof ad.image === 'string') return ad.image;
-                if (ad.image && ad.image.url) return ad.image.url;
-                if (ad.photo && ad.photo.url) return ad.photo.url;
-                return 'fotky/team.jpg';
-            })();
+            // Obrázek inzerátu (pokud existuje) – stejná logika jako u „Mé inzeráty“
+            let imageUrl = 'fotky/team.jpg';
+            if (Array.isArray(ad.images) && ad.images.length > 0) {
+                const first = ad.images[0];
+                if (typeof first === 'string') imageUrl = first;
+                else if (first && first.url) imageUrl = first.url;
+            } else if (ad.image) {
+                if (typeof ad.image === 'string') imageUrl = ad.image;
+                else if (ad.image.url) imageUrl = ad.image.url;
+            } else if (ad.photo && ad.photo.url) {
+                imageUrl = ad.photo.url;
+            }
+
+            const topStyle = ad.isTop
+                ? 'style="border: 3px solid #ff8a00 !important; box-shadow: 0 8px 28px rgba(255, 138, 0, 0.6), 0 0 0 2px rgba(255, 138, 0, 0.4) !important;"'
+                : '';
+
             return `
-                <div class="service-card">
-                    <div class="service-image" style="height:180px; overflow:hidden; border-radius:10px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                        <img src="${imageUrl}" alt="Náhled služby" style="width:100%; height:100%; object-fit:cover;" loading="lazy" decoding="async" onerror="this.src='fotky/team.jpg'">
+                <article class="ad-card${ad.isTop ? ' is-top' : ''}" ${topStyle}>
+                    <div class="ad-thumb">
+                        <img src="${imageUrl}" alt="Inzerát" loading="lazy" decoding="async" onerror="this.src='fotky/team.jpg'">
                     </div>
-                    <div class="service-content">
-                        <h3 class="service-title">${ad.title}</h3>
-                        <p class="service-description">${ad.description}</p>
-                        <div class="service-meta">
-                            <span class="service-price">${ad.price || 'Cena na dotaz'}</span>
-                            <span class="service-rating" style="display:none;"></span>
+                    <div class="ad-body">
+                        <h3 class="ad-title">${ad.title || ''}</h3>
+                        <div class="ad-meta">
+                            <span>${ad.location || ''}</span>
+                            •
+                            <span>${categoryNames[ad.category] || ad.category || ''}</span>
                         </div>
-                        <div class="service-status" style="background-color: ${statusColors[ad.status]}; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; margin: 0.5rem 0;">
-                            ${statusTexts[ad.status] || ad.status}
-                        </div>
-                        <div class="service-actions">
-                            <button class="btn-edit" onclick="editService('${ad.id}')">
-                                <i class="fas fa-edit"></i>
-                                Upravit
-                            </button>
-                            <button class="btn-deactivate" onclick="toggleServiceStatus('${ad.id}', '${ad.status}')">
-                                <i class="fas fa-${ad.status === 'active' ? 'pause' : 'play'}"></i>
-                                ${ad.status === 'active' ? 'Deaktivovat' : 'Aktivovat'}
-                            </button>
-                            <button class="btn-danger" onclick="deleteService('${ad.id}')">
-                                <i class="fas fa-trash"></i>
-                                Smazat
-                            </button>
+                        <div class="ad-status" style="background-color: ${statusColors[ad.status]}; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; margin-top: 0.5rem; display: inline-block;">
+                            ${statusTexts[ad.status] || ad.status || ''}
                         </div>
                     </div>
-                </div>
+                    ${ad.isTop ? `
+                    <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
+                    <div class="ad-flames" aria-hidden="true"></div>
+                    ` : ''}
+                    <div class="ad-actions">
+                        <button class="btn-edit" onclick="editService('${ad.id}')" title="Upravit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete" onclick="deleteService('${ad.id}')" title="Smazat">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ${ad.status === 'active' ? `
+                        <button class="btn-pause" onclick="toggleServiceStatus('${ad.id}', '${ad.status}')" title="Pozastavit">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        ` : `
+                        <button class="btn-activate" onclick="toggleServiceStatus('${ad.id}', '${ad.status}')" title="Aktivovat">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        `}
+                    </div>
+                </article>
             `;
         }
 

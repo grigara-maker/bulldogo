@@ -4690,13 +4690,13 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 
 /* Services Page Styles */
 .services-content {
-    text-align: left;
+    text-align: center;
 }
 
 .services-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 }
