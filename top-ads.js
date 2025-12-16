@@ -344,6 +344,39 @@ function processPayment() {
         oneweek: "price_1Sf29n1aQBd6ajy20hbq5x6L",
         onemonth: "price_1Sf2AQ1aQBd6ajy2IpqtOstt"
     };
+    // Pokus o dynamické zjištění priceId z Firestore (funguje v TEST i LIVE módu)
+    async function resolveStripePriceIdForTopAd(key) {
+        try {
+            if (!window.firebaseDb) return null;
+            const PRODUCT_NAME_BY_KEY = {
+                oneday: 'Topování 1 den',
+                oneweek: 'Topování 7 dní',
+                onemonth: 'Topování 30 dní'
+            };
+            const targetName = PRODUCT_NAME_BY_KEY[key];
+            if (!targetName) return null;
+            const { getDocs, collection, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const productsQ = query(
+                collection(window.firebaseDb, 'products'),
+                where('active', '==', true),
+                where('name', '==', targetName)
+            );
+            const productsSnap = await getDocs(productsQ);
+            if (productsSnap.empty) return null;
+            const prodDoc = productsSnap.docs[0];
+            const pricesSnap = await getDocs(collection(prodDoc.ref, 'prices'));
+            // Najdi aktivní one_time cenu
+            for (const priceDoc of pricesSnap.docs) {
+                const p = priceDoc.data() || {};
+                if (p.active && p.type === 'one_time') {
+                    return priceDoc.id; // price_...
+                }
+            }
+            return null;
+        } catch (_) {
+            return null;
+        }
+    }
     // Převod duration -> klíč
     let topAdKey = null;
     if (selectedPricing.duration === 1) topAdKey = 'oneday';
@@ -353,7 +386,10 @@ function processPayment() {
         alert('Neznámá délka topování: ' + selectedPricing.duration);
         return;
     }
-    const priceId = STRIPE_PRICE_IDS_TOPAD[topAdKey];
+    // 1) Zkusit dynamicky — pokud existují produkty/prices synchronizované z test/live Stripe
+    let priceId = await resolveStripePriceIdForTopAd(topAdKey);
+    // 2) Fallback na pevně zadané IDs (typicky LIVE)
+    if (!priceId) priceId = STRIPE_PRICE_IDS_TOPAD[topAdKey];
     if (!priceId) {
         alert("Chybí Stripe cena pro vybranou délku topování.");
         return;

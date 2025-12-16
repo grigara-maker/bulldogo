@@ -138,8 +138,43 @@ async function processPayment() {
         hobby: "price_1Sf26X1aQBd6ajy2BPS7ioTv",
         business: "price_1Sf26s1aQBd6ajy2a5mNNLst"
     };
+    // Pokus o dynamické zjištění priceId z Firestore (funguje v TEST i LIVE módu)
+    async function resolveStripePriceIdForPlan(plan) {
+        try {
+            if (!window.firebaseDb) return null;
+            const PRODUCT_NAME_BY_PLAN = {
+                hobby: 'Hobby balíček',
+                business: 'Firma balíček'
+            };
+            const targetName = PRODUCT_NAME_BY_PLAN[plan];
+            if (!targetName) return null;
+            const { getDocs, collection, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const productsQ = query(
+                collection(window.firebaseDb, 'products'),
+                where('active', '==', true),
+                where('name', '==', targetName)
+            );
+            const productsSnap = await getDocs(productsQ);
+            if (productsSnap.empty) return null;
+            const prodDoc = productsSnap.docs[0];
+            const pricesSnap = await getDocs(collection(prodDoc.ref, 'prices'));
+            // Najdi aktivní recurring cenu
+            for (const priceDoc of pricesSnap.docs) {
+                const p = priceDoc.data() || {};
+                if (p.active && p.type === 'recurring') {
+                    return priceDoc.id; // price_...
+                }
+            }
+            return null;
+        } catch (_) {
+            return null;
+        }
+    }
     const planId = window.selectedPlan.plan;
-    const priceId = STRIPE_PRICE_IDS[planId];
+    // 1) Zkusit dynamicky — pokud existují produkty/prices synchronizované z test/live Stripe
+    let priceId = await resolveStripePriceIdForPlan(planId);
+    // 2) Fallback na pevně zadané IDs (typicky LIVE)
+    if (!priceId) priceId = STRIPE_PRICE_IDS[planId];
     if (!priceId) {
         showMessage("Chybí Stripe cena pro vybraný balíček.", "error");
         return;
