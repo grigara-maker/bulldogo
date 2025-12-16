@@ -15,9 +15,19 @@ document.addEventListener('DOMContentLoaded', function() {
             // Vyčistit URL
             try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
             if (status === 'success') {
-                showSuccess();
+                // Po úspěšné platbě aktivuj TOP pro vybraný inzerát (uložený před redirectem)
+                (async () => {
+                    try {
+                        await activateTopFromPending();
+                    } catch (e) {
+                        console.error('activateTopFromPending failed:', e);
+                    } finally {
+                        showSuccess();
+                    }
+                })();
             } else if (status === 'canceled') {
                 alert("Platba byla zrušena.");
+                try { sessionStorage.removeItem('topad_pending'); } catch (_) {}
                 // Vrátit tlačítko do původního stavu
                 const payButton = document.querySelector('.payment-actions .btn-primary');
                 if (payButton) {
@@ -30,6 +40,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })();
 });
+
+// Aktivace TOP po návratu ze Stripe podle uloženého "pending" stavu.
+async function activateTopFromPending() {
+    if (!window.firebaseAuth || !window.firebaseDb) return;
+    const user = window.firebaseAuth.currentUser;
+    if (!user) return;
+    let pending = null;
+    try {
+        const raw = sessionStorage.getItem('topad_pending');
+        if (raw) pending = JSON.parse(raw);
+    } catch (_) {}
+    if (!pending || !pending.adId || !pending.durationDays) {
+        console.warn('No pending top activation data found.');
+        return;
+    }
+    const { doc, setDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+    const now = new Date();
+    const expires = new Date(now.getTime() + (Number(pending.durationDays) * 24 * 60 * 60 * 1000));
+
+    await setDoc(
+        doc(window.firebaseDb, 'users', user.uid, 'inzeraty', pending.adId),
+        {
+            isTop: true,
+            topActivatedAt: Timestamp.fromDate(now),
+            topExpiresAt: Timestamp.fromDate(expires),
+            topDurationDays: Number(pending.durationDays),
+            topPaymentProvider: 'stripe',
+            topPaymentCreatedAt: pending.startedAt ? Timestamp.fromMillis(Number(pending.startedAt)) : Timestamp.fromDate(now)
+        },
+        { merge: true }
+    );
+    try { sessionStorage.removeItem('topad_pending'); } catch (_) {}
+}
 
 function initializeTopAds() {
     console.log('🚀 Initializing top ads');
@@ -431,6 +474,14 @@ async function processPayment() {
         payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
         payButton.disabled = true;
     }
+    // Uložit pending aktivaci TOP (pro návrat ze Stripe)
+    try {
+        sessionStorage.setItem('topad_pending', JSON.stringify({
+            adId: selectedAd.id,
+            durationDays: selectedPricing.duration,
+            startedAt: Date.now()
+        }));
+    } catch (_) {}
     // Vytvořit Stripe Checkout Session přes Firebase Extension
     (async () => {
         try {
