@@ -1412,6 +1412,12 @@
     gap: 40px;
 }
 
+/* Topování: jen shrnutí + tlačítko (bez volby způsobu platby) */
+.payment-summary.single {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+}
+
 .summary-card {
     background: white;
     border-radius: 12px;
