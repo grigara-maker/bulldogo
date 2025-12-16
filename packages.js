@@ -70,34 +70,21 @@ function hidePayment() {
 function updatePaymentSummary() {
     if (!selectedPlan) return;
     
-    // Získat konfiguraci z GoPay config
+    // Stripe (Firebase Extension) – zobrazení informací bez GoPay konfigurace
     let planTitle = '';
     let planType = '';
     let price = 0;
-    
-    if (typeof window.getPaymentConfig === 'function') {
-        const config = window.getPaymentConfig('package', selectedPlan.plan);
-        if (config) {
-            planTitle = config.productName.replace('balicek ', '').replace('Hobby', 'Hobby uživatel').replace('Firma', 'Firma');
-            planType = config.description || '';
-            price = config.amount;
-        }
-    }
-    
-    // Fallback pokud GoPay config není načten
-    if (!planTitle) {
-        switch(selectedPlan.plan) {
-            case 'hobby':
-                planTitle = 'Hobby uživatel';
-                planType = 'První měsíc zdarma, poté 49 Kč/měsíc';
-                price = 49;
-                break;
-            case 'business':
-                planTitle = 'Firma';
-                planType = 'Měsíční předplatné';
-                price = 149;
-                break;
-        }
+    switch(selectedPlan.plan) {
+        case 'hobby':
+            planTitle = 'Hobby uživatel';
+            planType = 'První měsíc zdarma, poté 49 Kč/měsíc';
+            price = 49;
+            break;
+        case 'business':
+            planTitle = 'Firma';
+            planType = 'Měsíční předplatné';
+            price = 149;
+            break;
     }
     
     document.getElementById('selectedPlanTitle').textContent = planTitle;
@@ -111,71 +98,75 @@ function updatePaymentSummary() {
 }
 
 async function processPayment() {
-    // Zkontrolovat, zda je vybraný plán
+    // Kontrola výběru plánu
     if (!window.selectedPlan || !window.selectedPlan.plan) {
         showMessage("Prosím nejdříve vyberte balíček", "error");
         return;
     }
-    
-    // Zkontrolovat, zda je GoPay konfigurace načtena
-    if (typeof window.createGoPayUrl !== 'function') {
-        showMessage("GoPay konfigurace není načtena. Obnovte prosím stránku.", "error");
+    // Kontrola přihlášení
+    const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+    if (!user) {
+        showMessage("Pro pokračování se prosím přihlaste.", "error");
+        try { if (typeof window.showAuthModal === 'function') window.showAuthModal('login'); } catch (_) {}
         return;
     }
-    
-    try {
-        // Získat platební URL
-        const planId = window.selectedPlan.plan; // 'hobby' nebo 'business'
-        const paymentUrl = window.createGoPayUrl('package', planId);
-        
-        console.log('💳 Přesměrování na GoPay:', paymentUrl);
-        
-        // Zobrazit loading stav
-        const payButton = document.querySelector('.payment-actions .btn-primary');
-        const originalText = payButton.innerHTML;
+    // Mapování Stripe Price IDs (nahraďte skutečnými ID z Stripe)
+    const STRIPE_PRICE_IDS = {
+        hobby: "price_HOBBY_REPLACE_ME",
+        business: "price_BUSINESS_REPLACE_ME"
+    };
+    const planId = window.selectedPlan.plan;
+    const priceId = STRIPE_PRICE_IDS[planId];
+    if (!priceId) {
+        showMessage("Chybí Stripe cena pro vybraný balíček.", "error");
+        return;
+    }
+    // UI: loading
+    const payButton = document.querySelector('.payment-actions .btn-primary');
+    const originalText = payButton ? payButton.innerHTML : null;
+    if (payButton) {
         payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
         payButton.disabled = true;
-        
-        // Uložit informace o platbě do sessionStorage pro pozdější zpracování
-        const paymentConfig = window.getPaymentConfig('package', planId);
-        
-        // DŮLEŽITÉ: Uložit také informace o uživateli, protože Auth session se může neobnovit po návratu z GoPay
-        let userInfo = null;
-        if (window.firebaseAuth && window.firebaseAuth.currentUser) {
-            userInfo = {
-                uid: window.firebaseAuth.currentUser.uid,
-                email: window.firebaseAuth.currentUser.email
-            };
-        }
-        
-        sessionStorage.setItem('gopay_payment', JSON.stringify({
-            type: 'package',
-            id: planId,
-            orderNumber: paymentConfig.orderNumber,
-            amount: paymentConfig.amount,
-            timestamp: Date.now(),
-            userId: userInfo?.uid || null,
-            userEmail: userInfo?.email || null
-        }));
-        
-        // Uložit také samostatně pro snadný přístup
-        if (userInfo) {
-            sessionStorage.setItem('firebase_user', JSON.stringify(userInfo));
-        }
-        
-        console.log('💾 Uloženo do sessionStorage:', { payment: planId, user: userInfo });
-        
-        // Přesměrovat na GoPay platební bránu
-        window.location.href = paymentUrl;
-        
+    }
+    try {
+        const { addDoc, collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const successUrl = `${window.location.origin}/packages.html?payment=success`;
+        const cancelUrl = `${window.location.origin}/packages.html?payment=canceled`;
+        // Vytvořit Checkout Session dokument – Stripe (Firebase Extension)
+        const checkoutRef = await addDoc(
+            collection(window.firebaseDb, 'customers', user.uid, 'checkout_sessions'),
+            {
+                price: priceId,
+                mode: 'subscription',
+                success_url: successUrl,
+                cancel_url: cancelUrl
+            }
+        );
+        // Poslouchat na vytvoření URL a přesměrovat
+        const unsubscribe = onSnapshot(checkoutRef, (snap) => {
+            const data = snap.data() || {};
+            const url = data.url;
+            const error = data.error;
+            if (error) {
+                console.error('Stripe checkout error:', error);
+                showMessage("Chyba při vytváření platby. Zkuste to prosím znovu.", "error");
+                if (payButton && originalText) {
+                    payButton.innerHTML = originalText;
+                    payButton.disabled = false;
+                }
+                unsubscribe();
+                return;
+            }
+            if (url) {
+                unsubscribe();
+                window.location.assign(url);
+            }
+        });
     } catch (error) {
-        console.error('❌ Chyba při vytváření platební URL:', error);
-        showMessage("Nepodařilo se vytvořit platební odkaz. Zkuste to prosím znovu.", "error");
-        
-        // Obnovit tlačítko
-        const payButton = document.querySelector('.payment-actions .btn-primary');
-        if (payButton) {
-            payButton.innerHTML = '<i class="fas fa-credit-card"></i> Zaplatit';
+        console.error('❌ Stripe checkout error:', error);
+        showMessage("Nepodařilo se vytvořit platbu. Zkuste to prosím znovu.", "error");
+        if (payButton && originalText) {
+            payButton.innerHTML = originalText;
             payButton.disabled = false;
         }
     }

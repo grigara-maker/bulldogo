@@ -303,68 +303,89 @@ function updatePaymentSummary() {
 }
 
 function processPayment() {
-    // Zkontrolovat, zda je vybrané topování
+    // Kontroly výběrů
     if (!selectedPricing || !selectedAd) {
         alert("Prosím nejdříve vyberte inzerát a délku topování");
         return;
     }
-    
-    // Zkontrolovat, zda je GoPay konfigurace načtena
-    if (typeof window.createGoPayUrl !== 'function') {
-        alert("GoPay konfigurace není načtena. Obnovte prosím stránku.");
+    // Kontrola přihlášení
+    const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+    if (!user) {
+        alert("Pro pokračování se prosím přihlaste.");
+        try { if (typeof window.showAuthModal === 'function') window.showAuthModal('login'); } catch (_) {}
         return;
     }
-    
-    try {
-        // Mapovat duration na GoPay ID
-        let topAdId;
-        if (selectedPricing.duration === 1) {
-            topAdId = 'oneday';
-        } else if (selectedPricing.duration === 7) {
-            topAdId = 'oneweek';
-        } else if (selectedPricing.duration === 30) {
-            topAdId = 'onemonth';
-        } else {
-            throw new Error('Neznámá délka topování: ' + selectedPricing.duration);
-        }
-        
-        // Získat platební URL
-        const paymentUrl = window.createGoPayUrl('topAd', topAdId);
-        
-        console.log('💳 Přesměrování na GoPay pro topování:', paymentUrl);
-        
-        // Zobrazit loading stav
-        const payButton = document.querySelector('.payment-actions .btn-primary');
-        const originalText = payButton.innerHTML;
+    // Mapování Stripe Price IDs (nahraďte skutečnými ID)
+    const STRIPE_PRICE_IDS_TOPAD = {
+        oneday: "price_TOPAD_ONEDAY_REPLACE_ME",
+        oneweek: "price_TOPAD_ONEWEEK_REPLACE_ME",
+        onemonth: "price_TOPAD_ONEMONTH_REPLACE_ME"
+    };
+    // Převod duration -> klíč
+    let topAdKey = null;
+    if (selectedPricing.duration === 1) topAdKey = 'oneday';
+    else if (selectedPricing.duration === 7) topAdKey = 'oneweek';
+    else if (selectedPricing.duration === 30) topAdKey = 'onemonth';
+    else {
+        alert('Neznámá délka topování: ' + selectedPricing.duration);
+        return;
+    }
+    const priceId = STRIPE_PRICE_IDS_TOPAD[topAdKey];
+    if (!priceId) {
+        alert("Chybí Stripe cena pro vybranou délku topování.");
+        return;
+    }
+    // UI: loading
+    const payButton = document.querySelector('.payment-actions .btn-primary');
+    const originalText = payButton ? payButton.innerHTML : null;
+    if (payButton) {
         payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
         payButton.disabled = true;
-        
-        // Uložit informace o platbě do sessionStorage
-        const paymentConfig = window.getPaymentConfig('topAd', topAdId);
-        sessionStorage.setItem('gopay_payment', JSON.stringify({
-            type: 'topAd',
-            id: topAdId,
-            orderNumber: paymentConfig.orderNumber,
-            amount: paymentConfig.amount,
-            duration: selectedPricing.duration,
-            adId: selectedAd.id,
-            timestamp: Date.now()
-        }));
-        
-        // Přesměrovat na GoPay platební bránu
-        window.location.href = paymentUrl;
-        
-    } catch (error) {
-        console.error('❌ Chyba při vytváření platební URL:', error);
-        alert("Nepodařilo se vytvořit platební odkaz. Zkuste to prosím znovu.");
-        
-        // Obnovit tlačítko
-        const payButton = document.querySelector('.payment-actions .btn-primary');
-        if (payButton) {
-            payButton.innerHTML = '<i class="fas fa-credit-card"></i> Zaplatit';
-            payButton.disabled = false;
-        }
     }
+    // Vytvořit Stripe Checkout Session přes Firebase Extension
+    (async () => {
+        try {
+            const { addDoc, collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const successUrl = `${window.location.origin}/top-ads.html?payment=success`;
+            const cancelUrl = `${window.location.origin}/top-ads.html?payment=canceled`;
+            const checkoutRef = await addDoc(
+                collection(window.firebaseDb, 'customers', user.uid, 'checkout_sessions'),
+                {
+                    price: priceId,
+                    mode: 'payment',
+                    success_url: successUrl,
+                    cancel_url: cancelUrl,
+                    metadata: { adId: selectedAd.id, duration: selectedPricing.duration }
+                }
+            );
+            const unsubscribe = onSnapshot(checkoutRef, (snap) => {
+                const data = snap.data() || {};
+                const url = data.url;
+                const error = data.error;
+                if (error) {
+                    console.error('Stripe checkout error:', error);
+                    alert("Chyba při vytváření platby. Zkuste to prosím znovu.");
+                    if (payButton && originalText) {
+                        payButton.innerHTML = '<i class="fas fa-credit-card"></i> Zaplatit';
+                        payButton.disabled = false;
+                    }
+                    unsubscribe();
+                    return;
+                }
+                if (url) {
+                    unsubscribe();
+                    window.location.assign(url);
+                }
+            });
+        } catch (error) {
+            console.error('❌ Stripe checkout error:', error);
+            alert("Nepodařilo se vytvořit platbu. Zkuste to prosím znovu.");
+            if (payButton && originalText) {
+                payButton.innerHTML = '<i class="fas fa-credit-card"></i> Zaplatit';
+                payButton.disabled = false;
+            }
+        }
+    })();
 }
 
 function showSuccess() {
