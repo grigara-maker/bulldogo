@@ -23,24 +23,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const status = params.get('payment');
             if (!status) return;
-            // Vyčistit URL
-            try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
             if (status === 'success') {
-                // Po návratu ze Stripe: synchronizuj plán z extension (customers/{uid}/subscriptions)
+                // Po návratu ze Stripe: počkej na Auth a pak synchronizuj plán z extension
                 (async () => {
                     try {
+                        await waitForSignedInUser(15000);
                         await syncPlanFromStripeSubscription({ withRetry: true });
                     } catch (e) {
-                        console.warn('syncPlanFromStripeSubscription failed:', e);
+                        console.warn('Stripe success sync failed:', e);
                     } finally {
+                        // Vyčistit URL až po pokusu o sync (kvůli refresh/debug)
+                        try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
                         showSuccess();
-                        // Případně znovu načti manage UI
                         try { loadCurrentPlan(); } catch (_) {}
                     }
                 })();
             } else if (status === 'canceled') {
                 showMessage("Platba byla zrušena.", "error");
                 try { sessionStorage.removeItem('package_pending'); } catch (_) {}
+                try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
                 // Vrátit tlačítko do původního stavu
                 const payButton = document.querySelector('.payment-actions .btn-primary');
                 if (payButton) {
@@ -53,6 +54,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     })();
 });
+
+// Počká, než bude k dispozici Firebase Auth + přihlášený user.
+async function waitForSignedInUser(timeoutMs = 15000) {
+    const startedAt = Date.now();
+    // 1) Počkat na window.firebaseAuth
+    while (!window.firebaseAuth && (Date.now() - startedAt) < timeoutMs) {
+        await new Promise(r => setTimeout(r, 100));
+    }
+    if (!window.firebaseAuth) throw new Error('Firebase Auth not ready');
+
+    // 2) Počkat na auth state resolution
+    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    return await new Promise((resolve, reject) => {
+        const t = setTimeout(() => reject(new Error('Auth user not available in time')), Math.max(0, timeoutMs - (Date.now() - startedAt)));
+        const unsub = onAuthStateChanged(window.firebaseAuth, (u) => {
+            if (u) {
+                clearTimeout(t);
+                try { unsub(); } catch (_) {}
+                resolve(u);
+            }
+        });
+    });
+}
 
 // Zobrazit uživateli jen "jeho" balíček:
 // - person => hobby
