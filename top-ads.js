@@ -325,7 +325,7 @@ function updatePaymentSummary() {
     document.getElementById('totalPrice').textContent = selectedPricing.price + ' Kč';
 }
 
-function processPayment() {
+async function processPayment() {
     // Kontroly výběrů
     if (!selectedPricing || !selectedAd) {
         alert("Prosím nejdříve vyberte inzerát a délku topování");
