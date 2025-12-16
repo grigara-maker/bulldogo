@@ -132,15 +132,21 @@ async function processPayment() {
         const { addDoc, collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const successUrl = `${window.location.origin}/packages.html?payment=success`;
         const cancelUrl = `${window.location.origin}/packages.html?payment=canceled`;
-        // Vytvořit Checkout Session dokument – Stripe (Firebase Extension)
+        // Připravit data pro Checkout Session – Stripe (Firebase Extension)
+        const sessionData = {
+            price: priceId,
+            mode: 'subscription',
+            success_url: successUrl,
+            cancel_url: cancelUrl
+        };
+        // Nastavit 30denní trial pro Hobby
+        if (planId === 'hobby') {
+            sessionData.trial_period_days = 30;
+        }
+        // Vytvořit Checkout Session dokument
         const checkoutRef = await addDoc(
             collection(window.firebaseDb, 'customers', user.uid, 'checkout_sessions'),
-            {
-                price: priceId,
-                mode: 'subscription',
-                success_url: successUrl,
-                cancel_url: cancelUrl
-            }
+            sessionData
         );
         // Poslouchat na vytvoření URL a přesměrovat
         const unsubscribe = onSnapshot(checkoutRef, (snap) => {

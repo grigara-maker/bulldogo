@@ -99,5 +99,37 @@ service cloud.firestore {
       allow update: if request.auth != null && request.auth.uid == userId;
       allow delete: if false; // Platby nelze mazat
     }
+    
+    // ===== STRIPE FIRESTORE EXTENSION PRAVIDLA =====
+    // Zákazník vidí pouze svá data; checkout_sessions čitelné/zapisovatelné jen uživatelem
+    match /customers/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      
+      match /checkout_sessions/{id} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+      match /subscriptions/{id} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+      }
+      match /payments/{id} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+    
+    // Veřejné čtení produktů a cen synchronizovaných extension (bez zápisu z klienta)
+    match /products/{id} {
+      allow read: if true;
+      allow write: if false;
+      
+      match /prices/{id} {
+        allow read: if true;
+        allow write: if false;
+      }
+      
+      match /tax_rates/{id} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
   }
 }
