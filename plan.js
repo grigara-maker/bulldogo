@@ -144,6 +144,43 @@ async function openStripeCustomerPortal() {
 		if (!user) { showAuthModal('login'); return; }
 		if (!window.firebaseApp) { alert('Chyba: Firebase app není inicializována.'); return; }
 
+		// UI loading overlay
+		const btn = document.getElementById('btnManageSubscription');
+		const prevDisabled = btn ? btn.disabled : false;
+		const prevText = btn ? btn.innerHTML : null;
+		if (btn) {
+			btn.disabled = true;
+			btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Otevírám…';
+		}
+		let overlay = document.getElementById('stripePortalLoading');
+		if (!overlay) {
+			overlay = document.createElement('div');
+			overlay.id = 'stripePortalLoading';
+			overlay.style.cssText = `
+				position: fixed;
+				inset: 0;
+				background: rgba(17, 24, 39, 0.55);
+				backdrop-filter: blur(4px);
+				z-index: 99999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 24px;
+			`;
+			overlay.innerHTML = `
+				<div style="background:#fff; border-radius:16px; padding:22px 20px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.25); text-align:center;">
+					<div style="font-size:28px; color:#f77c00; margin-bottom:12px;">
+						<i class="fas fa-spinner fa-spin"></i>
+					</div>
+					<div style="font-weight:800; color:#111827; font-size:18px; margin-bottom:6px;">Otevírám správu předplatného</div>
+					<div style="color:#6b7280; font-size:14px;">Za chvíli budete přesměrováni do Stripe.</div>
+				</div>
+			`;
+			document.body.appendChild(overlay);
+		} else {
+			overlay.style.display = 'flex';
+		}
+
 		const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
 		// Extension běží v us-central1
 		const functions = getFunctions(window.firebaseApp, 'us-central1');
@@ -155,6 +192,19 @@ async function openStripeCustomerPortal() {
 		window.location.assign(url);
 	} catch (e) {
 		console.error('openStripeCustomerPortal:', e);
+		// Hide overlay + restore button on error
+		try {
+			const overlay = document.getElementById('stripePortalLoading');
+			if (overlay) overlay.style.display = 'none';
+		} catch (_) {}
+		try {
+			const btn = document.getElementById('btnManageSubscription');
+			if (btn) {
+				btn.disabled = false;
+				// restore label (best effort)
+				btn.innerHTML = '<i class="fas fa-credit-card"></i> Zrušit předplatné';
+			}
+		} catch (_) {}
 		alert('Nepodařilo se otevřít správu předplatného. Zkuste to prosím znovu.');
 	}
 }
