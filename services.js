@@ -719,8 +719,9 @@ function createAdCard(service, showActions = true) {
         formattedPrice = `${formattedPrice} Kč`;
     }
     
+    const status = (service?.status || 'active').toString().trim().toLowerCase();
     return `
-        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" ${topStyle}>
+        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle}>
             <div class="ad-thumb">
                 <img src="${service.images && service.images.length > 0 ? service.images[0].url : 'fotky/team.jpg'}" alt="Inzerát" loading="lazy" decoding="async">
             </div>
@@ -953,12 +954,12 @@ function filterServices() {
         const matchesSearch = !searchTerm || title.includes(searchTerm) || desc.includes(searchTerm) || loc.includes(searchTerm);
         const matchesCategory = !categoryFilter || (service?.category === categoryFilter);
         const matchesRegion = !regionCode || (locCode === regionCode);
-        // Zobrazit všechny inzeráty kromě smazaných nebo archivovaných
+        // Ve veřejném katalogu zobrazujeme jen aktivní inzeráty
         // Pokud status není nastaven, považujeme ho za aktivní
         const status = service?.status || 'active';
-        const isNotDeleted = status !== 'deleted' && status !== 'archived';
+        const isVisible = status === 'active';
 
-        return matchesSearch && matchesCategory && matchesRegion && isNotDeleted;
+        return matchesSearch && matchesCategory && matchesRegion && isVisible;
     });
 
     // TOP inzeráty vždy první
@@ -1001,7 +1002,10 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
         const matchesCategory = !categoryFilter || dataCategory === categoryFilter;
         const matchesRegion = !regionCode || locationCode === regionCode;
 
-        const show = matchesSearch && matchesCategory && matchesRegion;
+        // Ve veřejném katalogu zobrazujeme jen aktivní karty (fallback režim)
+        const st = (card.getAttribute('data-status') || 'active').toString().trim().toLowerCase();
+        const statusOk = !st || st === 'active';
+        const show = matchesSearch && matchesCategory && matchesRegion && statusOk;
         card.style.display = show ? '' : 'none';
         if (show) visible++;
     });
