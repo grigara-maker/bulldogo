@@ -734,12 +734,22 @@ async function login(email, password) {
 }
 
 // Odhlášení uživatele
-async function logout() {
+async function logout(options = {}) {
     try {
         const { signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
         
         await signOut(firebaseAuth);
         showMessage('Úspěšně jste se odhlásili!', 'success');
+
+        // Všude po webu po odhlášení přesměrovat na domovskou stránku
+        const redirect = options && options.redirect !== undefined ? !!options.redirect : true;
+        const redirectUrl = (options && options.redirectUrl) ? String(options.redirectUrl) : 'index.html';
+        const delayMs = (options && typeof options.delayMs === 'number') ? options.delayMs : 250;
+        if (redirect) {
+            setTimeout(() => {
+                try { window.location.href = redirectUrl; } catch (_) {}
+            }, delayMs);
+        }
     } catch (error) {
         handleAuthError(error);
     }
