@@ -610,14 +610,30 @@ async function validateICOWithARES(ico) {
         }
 
         // 2) Fallback: přímé ARES REST volání (může selhat na CORS v prohlížeči)
-        const urlV1 = `https://ares.gov.cz/ekonomicke-subjekty-v-be/v1/ekonomicke-subjekty/${n}`;
-        const res = await fetch(urlV1, { method: 'GET' });
-        if (!res.ok) return { ok: false, reason: 'Subjekt s tímto IČO nebyl nalezen.' };
-        const data = await res.json().catch(() => ({}));
-        if (!data || (!data.ico && !data.IC)) return { ok: false, reason: 'Subjekt s tímto IČO nebyl nalezen.' };
-        const companyName = data.obchodniJmeno || data.obchodni_name || data.obchodni_jmeno || '';
-        const seat = data.sidlo || data.sídlo || data.seat || null;
-        return { ok: true, name: companyName, seat };
+        // Tento fallback obvykle selže kvůli CORS, ale zkusíme to
+        try {
+            const urlV1 = `https://ares.gov.cz/ekonomicke-subjekty-v-be/v1/ekonomicke-subjekty/${n}`;
+            const res = await fetch(urlV1, { 
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (data && (data.ico || data.IC || data.obchodniJmeno || data.obchodni_jmeno)) {
+                    const companyName = data.obchodniJmeno || data.obchodni_jmeno || data.obchodni_name || '';
+                    const seat = data.sidlo || data.sídlo || data.seat || null;
+                    return { ok: true, name: companyName, seat };
+                }
+            }
+        } catch (corsError) {
+            // CORS error je očekávaný - prohlížeč blokuje přímé volání
+            console.warn('Direct ARES call blocked by CORS (expected)');
+        }
+        
+        // Pokud všechny metody selhaly, vrátit obecnou chybovou zprávu
+        return { ok: false, reason: 'ARES je dočasně nedostupný. Zkuste to později.' };
     } catch (e) {
         return { ok: false, reason: 'ARES je dočasně nedostupný. Zkuste to později.' };
     }
