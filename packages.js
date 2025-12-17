@@ -81,6 +81,13 @@ async function waitForSignedInUser(timeoutMs = 15000) {
 // Zobrazit uživateli jen "jeho" balíček:
 // - person => hobby
 // - company => business
+function normalizeUserType(value) {
+    const t = (value || '').toString().trim().toLowerCase();
+    if (t === 'company' || t === 'firma' || t === 'business') return 'company';
+    if (t === 'person' || t === 'hobby' || t === 'personal') return 'person';
+    return '';
+}
+
 async function filterPackagesByUserType() {
     try {
         if (!window.firebaseAuth || !window.firebaseDb) return;
@@ -89,9 +96,12 @@ async function filterPackagesByUserType() {
 
         const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const profileRef = doc(window.firebaseDb, 'users', user.uid, 'profile', 'profile');
-        const snap = await getDoc(profileRef);
-        const data = snap.exists() ? snap.data() : {};
-        const userType = (data?.userType || data?.type || '').toString().toLowerCase(); // person/company
+        const rootRef = doc(window.firebaseDb, 'users', user.uid);
+        const [profileSnap, rootSnap] = await Promise.all([getDoc(profileRef), getDoc(rootRef)]);
+        const profile = profileSnap.exists() ? (profileSnap.data() || {}) : {};
+        const root = rootSnap.exists() ? (rootSnap.data() || {}) : {};
+        const rawType = profile?.userType || profile?.type || root?.userType || root?.type || '';
+        const userType = normalizeUserType(rawType) || 'person'; // person/company
 
         const allowedPlan = userType === 'company' ? 'business' : 'hobby';
 
