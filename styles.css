@@ -4523,6 +4523,19 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     font-weight: 700;
 }
 
+/* profile-plan.html: stránka má jen jeden sloupec → vycentrovat obsah */
+body.profile-plan-page .profile-content {
+    grid-template-columns: 1fr;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+body.profile-plan-page .plan-info {
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .profile-content {
     display: grid;
     grid-template-columns: 2fr 1fr;
