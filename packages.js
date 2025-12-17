@@ -303,6 +303,11 @@ function initializePackages() {
     // Add event listeners to pricing buttons
     document.querySelectorAll('.btn-pricing').forEach(button => {
         button.addEventListener('click', function() {
+            // Pokud má uživatel aktivní balíček, jdi na správu balíčku
+            if (this.getAttribute('data-manage') === '1') {
+                window.location.href = 'profile-plan.html';
+                return;
+            }
             const plan = this.getAttribute('data-plan');
             const price = this.getAttribute('data-price');
             selectPlan(plan, price);
@@ -638,6 +643,8 @@ async function loadCurrentPlan() {
             planPeriodEnd = data.planPeriodEnd ? (data.planPeriodEnd.toDate ? data.planPeriodEnd.toDate() : new Date(data.planPeriodEnd)) : null;
             planCancelAt = data.planCancelAt ? (data.planCancelAt.toDate ? data.planCancelAt.toDate() : new Date(data.planCancelAt)) : null;
         }
+        // Aktivní plán = existuje a ještě nevypršel
+        const isActivePlan = plan && plan !== 'none' && (!planPeriodEnd || (new Date() < planPeriodEnd));
         const planLabel = plan === 'business' ? 'Firma' : plan === 'hobby' ? 'Hobby' : 'Žádný';
         pPlan.textContent = planLabel;
         pEnd.textContent = planPeriodEnd ? planPeriodEnd.toLocaleDateString('cs-CZ') : '-';
@@ -651,6 +658,20 @@ async function loadCurrentPlan() {
             if (btnCancel) btnCancel.style.display = plan === 'none' ? 'none' : '';
             if (btnUndo) btnUndo.style.display = 'none';
         }
+
+        // Pokud má uživatel aktivní plán, na kartách místo výběru nabídnout správu
+        try {
+            document.querySelectorAll('.btn-pricing[data-plan]').forEach((btn) => {
+                if (!isActivePlan) {
+                    // návrat do defaultu (když plán není aktivní)
+                    btn.removeAttribute('data-manage');
+                    btn.disabled = false;
+                    return;
+                }
+                btn.setAttribute('data-manage', '1');
+                btn.innerHTML = '<i class="fas fa-cog"></i> Spravovat balíček';
+            });
+        } catch (_) {}
     } catch (e) {
         console.error('❌ loadCurrentPlan:', e);
     }
