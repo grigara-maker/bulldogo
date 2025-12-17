@@ -22,6 +22,15 @@ function igFormatTime(date) {
 	return d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 }
 function igParams() { return new URLSearchParams(window.location.search); }
+function igNotify(message, type = 'info') {
+	try {
+		if (typeof window.showMessage === 'function') {
+			window.showMessage(message, type);
+		} else {
+			console.warn(`[chat notify:${type}]`, message);
+		}
+	} catch (_) {}
+}
 async function igWaitForFirebase(maxMs = 3000) {
 	const start = Date.now();
 	while (Date.now() - start < maxMs) {
@@ -29,6 +38,24 @@ async function igWaitForFirebase(maxMs = 3000) {
 		await new Promise(r => setTimeout(r, 50));
 	}
 	return !!(window.firebaseAuth && window.firebaseDb);
+}
+async function igResolveSellerUidByListingId(listingId) {
+	try {
+		if (!listingId) return null;
+		await igWaitForFirebase(3000);
+		if (!window.firebaseDb) return null;
+		const { collectionGroup, query, where, getDocs, documentId, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+		const ref = collectionGroup(window.firebaseDb, 'inzeraty');
+		const q = query(ref, where(documentId(), '==', listingId), limit(1));
+		const snap = await getDocs(q);
+		if (snap.empty) return null;
+		const docSnap = snap.docs[0];
+		const uid = docSnap.ref?.parent?.parent?.id || null;
+		return uid;
+	} catch (e) {
+		console.warn('igResolveSellerUidByListingId failed', e);
+		return null;
+	}
 }
 
 /** Inicializace po načtení DOM + auth watcher **/
@@ -193,11 +220,28 @@ async function igStartConversationsListener(uid) {
 }
 
 /** Deep link: ?userId=...&listingId=...&listingTitle=... **/
-function igHandleDeepLink() {
+async function igHandleDeepLink() {
 	const p = igParams();
-	const userId = p.get('userId');
+	let userId = p.get('userId');
 	const listingTitle = p.get('listingTitle');
 	const listingId = p.get('listingId');
+
+	// Pokud chybí userId, ale máme listingId, zkusit dohledat UID majitele podle ID inzerátu
+	if (!userId && listingId) {
+		const resolvedUid = await igResolveSellerUidByListingId(listingId);
+		if (resolvedUid) {
+			userId = resolvedUid;
+			try {
+				p.set('userId', resolvedUid);
+				const newUrl = `${window.location.pathname}?${p.toString()}`;
+				window.history.replaceState({}, '', newUrl);
+			} catch (_) {}
+		} else {
+			// Neumíme dohledat uživatele → necháme jen připnutý předmět, ale upozorníme
+			igNotify('Nepodařilo se zjistit majitele inzerátu pro chat. Otevřete chat z detailu inzerátu znovu.', 'error');
+		}
+	}
+
 	// Zajistit/otevřít konverzaci s daným uživatelem (pokud je přihlášeno)
 	if (userId && igCurrentUser) {
 		igEnsureChatWith(userId, listingId, listingTitle).then((chatId) => {
@@ -205,6 +249,8 @@ function igHandleDeepLink() {
 				igSelectedConvId = chatId;
 				// Předat userId pro načtení inzerátů (pro případ, že konverzace ještě není v seznamu)
 				igOpenConversation(chatId, userId);
+			} else {
+				igNotify('Chat se nepodařilo otevřít (chybí oprávnění nebo problém s databází).', 'error');
 			}
 		}).catch(()=>{});
 	}
@@ -658,9 +704,19 @@ async function igSendMessageToFirestore(chatId, text, files) {
 }
 
 // Export / integrace: voláno z inzerátu (přesměruje na chat s parametry)
-window.contactSeller = function(listingId, sellerUid, listingTitle) {
-	const url = new URL(window.location.origin + '/chat.html');
-	url.searchParams.set('userId', sellerUid || '');
+window.contactSeller = async function(listingId, sellerUid, listingTitle) {
+	let uid = sellerUid || '';
+	// Pokud UID chybí, zkusit ho dohledat podle listingId
+	if (!uid && listingId) {
+		const resolvedUid = await igResolveSellerUidByListingId(listingId);
+		if (resolvedUid) uid = resolvedUid;
+	}
+	if (!uid) {
+		igNotify('Nelze otevřít chat: chybí ID uživatele u inzerátu.', 'error');
+		return;
+	}
+	const url = new URL('chat.html', window.location.href);
+	url.searchParams.set('userId', uid);
 	if (listingId) url.searchParams.set('listingId', listingId);
 	if (listingTitle) url.searchParams.set('listingTitle', listingTitle);
 	window.location.href = url.toString();
