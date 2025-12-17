@@ -322,6 +322,34 @@
                         Nastavení účtu
                     </h3>
                     <div class="settings-form">
+                        <div class="form-group" style="margin-bottom: 6px;">
+                            <label style="font-weight:700;">Změnit email</label>
+                            <div style="font-size:13px; color:#6b7280; margin-top:4px;">
+                                Změní přihlašovací email (Firebase Auth). Pro potvrzení je potřeba současné heslo.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="newEmail">Nový email</label>
+                            <input type="email" id="newEmail" class="form-input" placeholder="Zadejte nový email">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmEmail">Potvrdit nový email</label>
+                            <input type="email" id="confirmEmail" class="form-input" placeholder="Zadejte nový email znovu">
+                        </div>
+                        <div class="form-group">
+                            <label for="currentPasswordForEmail">Současné heslo</label>
+                            <input type="password" id="currentPasswordForEmail" class="form-input" placeholder="Zadejte současné heslo">
+                        </div>
+                        <button class="btn-save" onclick="changeEmail()">
+                            <i class="fas fa-envelope"></i>
+                            Změnit email
+                        </button>
+
+                        <hr style="margin: 18px 0; border:0; border-top:1px solid #e5e7eb;">
+
+                        <div class="form-group" style="margin-bottom: 6px;">
+                            <label style="font-weight:700;">Změnit heslo</label>
+                        </div>
                         <div class="form-group">
                             <label for="currentPassword">Současné heslo</label>
                             <input type="password" id="currentPassword" class="form-input">
@@ -760,6 +788,77 @@
             }
         }
 
+        // Změna emailu - DEFINICE HNED
+        async function changeEmail() {
+            try {
+                const currentUser = window.firebaseAuth.currentUser;
+                if (!currentUser) {
+                    showMessage('Musíte být přihlášeni!', 'error');
+                    return;
+                }
+
+                const newEmail = (document.getElementById('newEmail')?.value || '').toString().trim();
+                const confirmEmail = (document.getElementById('confirmEmail')?.value || '').toString().trim();
+                const currentPassword = (document.getElementById('currentPasswordForEmail')?.value || '').toString();
+
+                if (!newEmail || !confirmEmail || !currentPassword) {
+                    showMessage('Vyplňte všechna pole pro změnu emailu!', 'error');
+                    return;
+                }
+                if (newEmail !== confirmEmail) {
+                    showMessage('Emaily se neshodují!', 'error');
+                    return;
+                }
+
+                console.log('✉️ Měním email...');
+
+                // Re-autentifikace s aktuálním heslem
+                const { reauthenticateWithCredential, EmailAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+                await reauthenticateWithCredential(currentUser, credential);
+
+                // Změna emailu v Auth
+                const { updateEmail, sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                await updateEmail(currentUser, newEmail);
+
+                // Volitelné: poslat ověřovací email (pokud máš ověřování zapnuté)
+                try { await sendEmailVerification(currentUser); } catch (e) { /* noop */ }
+
+                // Propsat změnu i do Firestore (root + profile)
+                try {
+                    const { setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const uid = currentUser.uid;
+                    await setDoc(doc(window.firebaseDb, 'users', uid), { email: newEmail }, { merge: true });
+                    await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), { email: newEmail, updatedAt: new Date() }, { merge: true });
+                } catch (e) { /* noop */ }
+
+                // Vyčistit formulář
+                const a = document.getElementById('newEmail'); if (a) a.value = '';
+                const b = document.getElementById('confirmEmail'); if (b) b.value = '';
+                const c = document.getElementById('currentPasswordForEmail'); if (c) c.value = '';
+
+                // Propsat do UI emailu v osobních informacích
+                const emailInput = document.getElementById('email');
+                if (emailInput) emailInput.value = newEmail;
+
+                showMessage('✅ Email byl úspěšně změněn!', 'success');
+                console.log('✅ Email úspěšně změněn');
+            } catch (error) {
+                console.error('❌ Chyba při změně emailu:', error);
+                let errorMessage = 'Nepodařilo se změnit email';
+                if (error?.code === 'auth/wrong-password') {
+                    errorMessage = 'Současné heslo je nesprávné';
+                } else if (error?.code === 'auth/invalid-email') {
+                    errorMessage = 'Neplatný email';
+                } else if (error?.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Tento email už je používán jiným účtem';
+                } else if (error?.code === 'auth/requires-recent-login') {
+                    errorMessage = 'Pro změnu emailu se musíte znovu přihlásit';
+                }
+                showMessage(errorMessage, 'error');
+            }
+        }
+
         // Změna hesla - DEFINICE HNED
         async function changePassword() {
             try {
@@ -1020,6 +1119,7 @@ Prosím kontaktujte podporu.
         window.savePersonalInfo = savePersonalInfo;
         window.saveBusinessInfo = saveBusinessInfo;
         window.savePreferences = savePreferences;
+        window.changeEmail = changeEmail;
         window.changePassword = changePassword;
         window.deleteAccount = deleteAccount;
         window.showMessage = showMessage;
