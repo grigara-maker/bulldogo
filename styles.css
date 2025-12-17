@@ -6755,6 +6755,73 @@ html {
     margin-top: 1rem;
 }
 
+/* My Ads – empty state CTA button (match screenshot style) */
+#myAdsGrid .no-services-actions {
+    flex-direction: column;
+    align-items: center;
+}
+
+#myAdsGrid .btn-start-free {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: min(92vw, 820px);
+    padding: 22px 28px;
+    border-radius: 999px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1;
+    color: #ffffff;
+    background: linear-gradient(90deg, #ffd200 0%, #ff8a00 100%);
+    box-shadow: 0 18px 40px rgba(255, 138, 0, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#myAdsGrid .btn-start-free i {
+    font-size: 22px;
+    color: #ffffff;
+}
+
+#myAdsGrid .btn-start-free::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(800px 120px at 20% 10%, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%);
+    pointer-events: none;
+}
+
+#myAdsGrid .btn-start-free:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 24px 55px rgba(255, 138, 0, 0.45);
+    filter: brightness(1.02);
+}
+
+#myAdsGrid .btn-start-free:active {
+    transform: translateY(0);
+    box-shadow: 0 14px 34px rgba(255, 138, 0, 0.35);
+}
+
+#myAdsGrid .btn-start-free:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 210, 0, 0.45), 0 24px 55px rgba(255, 138, 0, 0.45);
+}
+
+@media (max-width: 520px) {
+    #myAdsGrid .btn-start-free {
+        font-size: 22px;
+        padding: 18px 22px;
+    }
+    #myAdsGrid .btn-start-free i {
+        font-size: 18px;
+    }
+}
+
 .error-message {
     grid-column: 1 / -1;
     text-align: center;
