@@ -402,6 +402,28 @@ function initAuth() {
     }, 1000);
 }
 
+// Funkce pro zablokování/odblokování polí při firemní registraci
+function toggleCompanyFormFields(disabled) {
+    const companyNameEl = document.getElementById('companyName');
+    const authEmailEl = document.getElementById('authEmail');
+    const authPasswordEl = document.getElementById('authPassword');
+    const authPhoneEl = document.getElementById('authPhone');
+    const btnSendPhoneCode = document.getElementById('btnSendPhoneCode');
+    
+    if (companyNameEl) companyNameEl.disabled = disabled;
+    if (authEmailEl) authEmailEl.disabled = disabled;
+    if (authPasswordEl) authPasswordEl.disabled = disabled;
+    if (authPhoneEl) authPhoneEl.disabled = disabled;
+    if (btnSendPhoneCode) btnSendPhoneCode.disabled = disabled;
+    
+    // Visual feedback
+    const style = disabled ? 'cursor: not-allowed; opacity: 0.6;' : 'cursor: auto; opacity: 1;';
+    if (companyNameEl) companyNameEl.style.cssText = (companyNameEl.style.cssText.replace(/cursor:[^;]+;|opacity:[^;]+;/g, '')) + style;
+    if (authEmailEl) authEmailEl.style.cssText = (authEmailEl.style.cssText.replace(/cursor:[^;]+;|opacity:[^;]+;/g, '')) + style;
+    if (authPasswordEl) authPasswordEl.style.cssText = (authPasswordEl.style.cssText.replace(/cursor:[^;]+;|opacity:[^;]+;/g, '')) + style;
+    if (authPhoneEl) authPhoneEl.style.cssText = (authPhoneEl.style.cssText.replace(/cursor:[^;]+;|opacity:[^;]+;/g, '')) + style;
+}
+
 // Nastavení výběru typu registrace
 function setupRegistrationTypeSelection() {
     const typeButtons = document.querySelectorAll('.registration-type-btn');
@@ -433,6 +455,11 @@ function setupRegistrationTypeSelection() {
                 // required přepínač
                 toggleRequired(personForm, true);
                 toggleRequired(companyForm, false);
+                // Odblokovat všechna pole pro osobní registraci
+                toggleCompanyFormFields(false);
+                // Reset IČO verifikačního flagu
+                window.__icoVerified = false;
+                window.__icoVerifiedValue = null;
             } else if (type === 'company') {
                 console.log('🏢 Zobrazuji formulář pro firmu');
                 personForm.style.display = 'none';
@@ -444,6 +471,11 @@ function setupRegistrationTypeSelection() {
                 // required přepínač
                 toggleRequired(personForm, false);
                 toggleRequired(companyForm, true);
+                // Zablokovat všechna pole kromě IČO pole (dokud není IČO ověřeno)
+                toggleCompanyFormFields(true);
+                // Reset IČO verifikačního flagu
+                window.__icoVerified = false;
+                window.__icoVerifiedValue = null;
             }
             
             console.log('📊 Stav formulářů:', {
@@ -1759,11 +1791,18 @@ function setupEventListeners() {
                     showMessage('Vyplňte e‑mail, heslo a telefon.', 'error');
                     return;
                 }
-                // Ověřit IČO pro firemní registraci
+                // Ověřit IČO pro firemní registraci (musí být již ověřeno před odesláním)
                 if (userType === 'company') {
+                    if (!window.__icoVerified || window.__icoVerifiedValue !== ico) {
+                        showMessage('Nejdříve musíte ověřit IČO tlačítkem "Ověřit".', 'error');
+                        return;
+                    }
+                    // Dvojité ověření pro jistotu
                     const icoCheck = await validateICOWithARES(ico);
                     if (!icoCheck.ok) {
                         showMessage(icoCheck.reason || 'IČO se nepodařilo ověřit.', 'error');
+                        window.__icoVerified = false;
+                        toggleCompanyFormFields(true);
                         return;
                     }
                 }
@@ -2041,9 +2080,16 @@ function setupEventListeners() {
                 }
                 // Při dokončení registrace ještě jednou ověřit IČO (pro jistotu)
                 if (userType === 'company') {
-                    const icoCheck = await validateICOWithARES(userData.ico || '');
+                    const ico = userData.ico || '';
+                    if (!window.__icoVerified || window.__icoVerifiedValue !== ico) {
+                        showMessage('Nejdříve musíte ověřit IČO tlačítkem "Ověřit".', 'error');
+                        return;
+                    }
+                    const icoCheck = await validateICOWithARES(ico);
                     if (!icoCheck.ok) {
                         showMessage(icoCheck.reason || 'IČO se nepodařilo ověřit.', 'error');
+                        window.__icoVerified = false;
+                        toggleCompanyFormFields(true);
                         return;
                     }
                     if (!userData.companyName && icoCheck.name) {
@@ -2145,22 +2191,51 @@ function setupEventListeners() {
                 const companyNameEl = document.getElementById('companyName');
                 const companyAddressEl = document.getElementById('companyAddress');
                 const icoVal = (icoInput?.value || '').toString().trim();
-                if (!icoVal) { if (statusEl) { statusEl.style.color = '#dc3545'; statusEl.textContent = 'Zadejte IČ'; } return; }
+                if (!icoVal) { 
+                    if (statusEl) { 
+                        statusEl.style.color = '#dc3545'; 
+                        statusEl.textContent = 'Zadejte IČ'; 
+                    } 
+                    return; 
+                }
                 btnVerifyICO.disabled = true;
+                btnVerifyICO.textContent = 'Ověřuji...';
                 const res = await validateICOWithARES(icoVal);
                 if (res.ok) {
-                    if (statusEl) { statusEl.style.color = '#28a745'; statusEl.textContent = 'IČ ověřeno'; }
-                    // předvyplnit název/sídlo pokud jsou prázdné
-                    if (res.name && companyNameEl && !companyNameEl.value) companyNameEl.value = res.name;
-                    if (res.seat && companyAddressEl && !companyAddressEl.value && res.seat.text) companyAddressEl.value = res.seat.text;
+                    if (statusEl) { 
+                        statusEl.style.color = '#28a745'; 
+                        statusEl.textContent = 'IČ ověřeno ✓'; 
+                    }
+                    // Předvyplnit název/sídlo pokud jsou prázdné
+                    if (res.name && companyNameEl && !companyNameEl.value) {
+                        companyNameEl.value = res.name;
+                    }
+                    if (res.seat && companyAddressEl && !companyAddressEl.value && res.seat.text) {
+                        companyAddressEl.value = res.seat.text;
+                    }
+                    // Odblokovat všechna pole po úspěšném ověření
+                    toggleCompanyFormFields(false);
+                    // Nastavit flag, že IČO je ověřeno
+                    window.__icoVerified = true;
+                    window.__icoVerifiedValue = icoVal;
                 } else {
-                    if (statusEl) { statusEl.style.color = '#dc3545'; statusEl.textContent = res.reason || 'IČ nebylo ověřeno'; }
+                    if (statusEl) { 
+                        statusEl.style.color = '#dc3545'; 
+                        statusEl.textContent = res.reason || 'IČ nebylo ověřeno'; 
+                    }
+                    // Pole zůstávají zablokovaná
+                    window.__icoVerified = false;
                 }
             } catch (e) {
                 const statusEl = document.getElementById('icoStatus');
-                if (statusEl) { statusEl.style.color = '#dc3545'; statusEl.textContent = 'Chyba při ověřování IČ'; }
+                if (statusEl) { 
+                    statusEl.style.color = '#dc3545'; 
+                    statusEl.textContent = 'Chyba při ověřování IČ'; 
+                }
+                window.__icoVerified = false;
             } finally {
                 btnVerifyICO.disabled = false;
+                btnVerifyICO.textContent = 'Ověřit';
             }
         });
     }
