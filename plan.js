@@ -42,6 +42,8 @@ async function loadCurrentPlan_profile() {
 		const btnUndo = document.getElementById('btnUndoCancel');
 		const pDuration = document.getElementById('currentPlanDuration');
 		const pRemaining = document.getElementById('currentPlanRemaining');
+		const statPlanBadge = document.getElementById('currentPlanBadge');
+		const statPlanDays = document.getElementById('currentPlanDays');
 		if (!user || !window.firebaseDb || !pPlan) return;
 		const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 		const ref = doc(window.firebaseDb, 'users', user.uid, 'profile', 'profile');
@@ -55,13 +57,53 @@ async function loadCurrentPlan_profile() {
 			planDurationDays = data.planDurationDays || (planPeriodStart && planPeriodEnd ? formatDaysDiff(planPeriodStart, planPeriodEnd) : null);
 			planCancelAt = data.planCancelAt ? (data.planCancelAt.toDate ? data.planCancelAt.toDate() : new Date(data.planCancelAt)) : null;
 		}
+		// Pokud plán vypršel, považuj ho za neaktivní
+		if (planPeriodEnd && new Date() >= planPeriodEnd) {
+			plan = 'none';
+			planCancelAt = null;
+		}
 		const planLabel = plan === 'business' ? 'Firma' : plan === 'hobby' ? 'Hobby' : 'Žádný';
 		pPlan.textContent = planLabel;
 		pEnd.textContent = planPeriodEnd ? planPeriodEnd.toLocaleDateString('cs-CZ') : '-';
 		if (pDuration) pDuration.textContent = planDurationDays ? `${planDurationDays} dní` : '-';
 		if (pRemaining && planPeriodEnd) {
 			pRemaining.textContent = `${formatDaysDiff(new Date(), planPeriodEnd)} dní`;
+		} else if (pRemaining) {
+			pRemaining.textContent = '-';
 		}
+		// Stat karty nahoře
+		if (statPlanBadge) statPlanBadge.textContent = planLabel;
+		if (statPlanDays) {
+			statPlanDays.textContent = (plan !== 'none' && planPeriodEnd) ? String(formatDaysDiff(new Date(), planPeriodEnd)) : '-';
+		}
+
+		// Pokud není aktivní plán, nabídni přechod na výběr balíčku
+		try {
+			const manage = document.getElementById('manageSection');
+			if (manage) {
+				let empty = document.getElementById('noPlanNotice');
+				if (plan === 'none') {
+					if (!empty) {
+						empty = document.createElement('div');
+						empty.id = 'noPlanNotice';
+						empty.style.cssText = 'margin-top:16px; padding:14px 16px; border-radius:14px; background:#fff8eb; border:1px solid #ffe0b2; color:#111827;';
+						empty.innerHTML = `
+							<div style="font-weight:800; margin-bottom:6px;">Nemáte aktivní balíček</div>
+							<div style="color:#6b7280; font-size:14px; margin-bottom:10px;">Balíček si vyberete na stránce Balíčky.</div>
+							<a href="packages.html" class="btn btn-primary" style="display:inline-flex; gap:8px; align-items:center;">
+								<i class="fas fa-box"></i>
+								Přejít na balíčky
+							</a>
+						`;
+						manage.appendChild(empty);
+					} else {
+						empty.style.display = '';
+					}
+				} else if (empty) {
+					empty.style.display = 'none';
+				}
+			}
+		} catch (_) {}
 		if (planCancelAt) {
 			cancelInfo.style.display = '';
 			pCancel.textContent = planCancelAt.toLocaleDateString('cs-CZ');
