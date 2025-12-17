@@ -483,11 +483,21 @@ async function processPayment() {
             price: priceId,
             mode: 'subscription',
             success_url: successUrl,
-            cancel_url: cancelUrl
+            cancel_url: cancelUrl,
+            allow_promotion_codes: true // Povolit zadání promo kódu (kupónu) v checkoutu
         };
         // Nastavit 30denní trial pro Hobby i Firmu
         if (planId === 'hobby' || planId === 'business') {
             sessionData.trial_period_days = 30;
+        }
+        // Podpora pro URL parametr ?promo=KOD (předvyplní promo kód)
+        const urlParams = new URLSearchParams(window.location.search);
+        const promoCode = urlParams.get('promo') || urlParams.get('coupon');
+        if (promoCode) {
+            // Pokud chceš použít konkrétní kupón, použij discounts místo allow_promotion_codes
+            // sessionData.discounts = [{ coupon: promoCode }];
+            // Pro teď jen povolíme promo codes field - uživatel zadá kód ve Stripe checkoutu
+            console.log('💳 Promo kód detekován v URL:', promoCode, '(uživatel ho zadá ve Stripe checkoutu)');
         }
         // Vytvořit Checkout Session dokument
         const checkoutRef = await addDoc(

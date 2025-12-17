@@ -532,7 +532,8 @@ async function processPayment() {
                     mode: 'payment',
                     success_url: successUrl,
                     cancel_url: cancelUrl,
-                    metadata: { adId: selectedAd.id, duration: selectedPricing.duration }
+                    metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
+                    allow_promotion_codes: true // Povolit zadání promo kódu (kupónu) v checkoutu
                 }
             );
             // doplň checkoutSessionId do pending pro případné budoucí dohledání
