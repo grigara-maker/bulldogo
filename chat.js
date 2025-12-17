@@ -22,11 +22,20 @@ function igFormatTime(date) {
 	return d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 }
 function igParams() { return new URLSearchParams(window.location.search); }
+async function igWaitForFirebase(maxMs = 3000) {
+	const start = Date.now();
+	while (Date.now() - start < maxMs) {
+		if (window.firebaseAuth && window.firebaseDb) return true;
+		await new Promise(r => setTimeout(r, 50));
+	}
+	return !!(window.firebaseAuth && window.firebaseDb);
+}
 
 /** Inicializace po načtení DOM + auth watcher **/
 document.addEventListener('DOMContentLoaded', async () => {
 	// Firebase auth (pokud je k dispozici)
 	try {
+		await igWaitForFirebase(3000);
 		if (window.firebaseAuth) {
         const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
         onAuthStateChanged(window.firebaseAuth, (user) => {
