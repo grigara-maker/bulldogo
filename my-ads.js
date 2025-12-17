@@ -179,9 +179,9 @@ function displayAds(ads) {
                 <h3>Zatím nemáte žádné inzeráty</h3>
                 <p>Začněte tím, že přidáte svou první službu!</p>
                 <div class="no-services-actions">
-                    <a href="create-ad.html" class="btn-start-free" aria-label="Začít zdarma – přidat službu">
-                        <i class="fas fa-gift" aria-hidden="true"></i>
-                        <span>Začít zdarma</span>
+                    <a href="create-ad.html" class="btn-start-free" aria-label="Přidat inzerát">
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                        <span>Přidat inzerát</span>
                     </a>
                 </div>
             </div>
