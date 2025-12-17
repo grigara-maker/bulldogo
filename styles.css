@@ -6356,6 +6356,10 @@ html {
     align-items: center;
     max-width: 900px;
     margin: 0 auto;
+    /* zabránit překryvu kartami (např. TOP efekty / hover z-index) */
+    position: relative;
+    z-index: 20;
+    margin-bottom: 18px;
 }
 
 .search-box {
@@ -7450,7 +7454,8 @@ html {
     }
     
     .search-filter-bar {
-        flex-direction: column;
+        /* je to grid – na mobile chceme vše pod sebou */
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
     
