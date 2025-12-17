@@ -195,11 +195,11 @@
         <!-- Settings Content -->
         <div class="settings-content">
             <div class="settings-sections">
-                <!-- Personal Information -->
-                <div class="settings-section">
+                <!-- Profilová fotka (společné pro Hobby + Firmu) -->
+                <div class="settings-section" id="sectionAvatar">
                     <h3 class="settings-title">
-                        <i class="fas fa-user"></i>
-                        Osobní informace
+                        <i class="fas fa-camera"></i>
+                        Profilová fotka
                     </h3>
                     <div class="settings-form">
                         <div class="form-group" style="display:flex; flex-direction:column; align-items:center; gap:12px;">
@@ -223,6 +223,16 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="settings-section" id="sectionPersonal">
+                    <h3 class="settings-title">
+                        <i class="fas fa-user"></i>
+                        Osobní informace
+                    </h3>
+                    <div class="settings-form">
                         <div class="form-group">
                             <label for="firstName">Křestní jméno</label>
                             <input type="text" id="firstName" value="" class="form-input" placeholder="Zadejte vaše křestní jméno">
@@ -255,7 +265,7 @@
                 </div>
 
                 <!-- Business Information -->
-                <div class="settings-section">
+                <div class="settings-section" id="sectionBusiness">
                     <h3 class="settings-title">
                         <i class="fas fa-briefcase"></i>
                         Obchodní informace
@@ -398,6 +408,12 @@
         async function savePersonalInfo() {
             console.log('🚀 savePersonalInfo volána!');
             try {
+                // Guard: osobní informace ukládá jen Hobby (person)
+                const t = normalizeUserType(window.__profileUserType);
+                if (t === 'company') {
+                    showMessage('Tato sekce je dostupná jen pro Hobby účet.', 'error');
+                    return;
+                }
                     console.log('🔍 Kontroluji Firebase:', {
                         firebaseAuth: !!window.firebaseAuth,
                         firebaseDb: !!window.firebaseDb
@@ -465,6 +481,12 @@
         async function saveBusinessInfo() {
             console.log('🚀 saveBusinessInfo volána!');
             try {
+                // Guard: obchodní informace ukládá jen Firma (company)
+                const t = normalizeUserType(window.__profileUserType);
+                if (t !== 'company') {
+                    showMessage('Tato sekce je dostupná jen pro Firemní účet.', 'error');
+                    return;
+                }
                 console.log('🔍 Kontroluji Firebase:', {
                     firebaseAuth: !!window.firebaseAuth,
                     firebaseDb: !!window.firebaseDb
@@ -1012,6 +1034,12 @@ Prosím kontaktujte podporu.
         // Hlavní inicializační funkce
         async function initializeSettings() {
             try {
+                // Zabránit flickeru: osobní/obchodní sekce skryjeme, dokud neznáme typ účtu
+                const personal = document.getElementById('sectionPersonal');
+                const business = document.getElementById('sectionBusiness');
+                if (personal) personal.style.display = 'none';
+                if (business) business.style.display = 'none';
+
                 // Počkat na Firebase
                 await waitForFirebase();
                 
@@ -1113,9 +1141,15 @@ Prosím kontaktujte podporu.
 
                 console.log('🔄 Automaticky načítám data pro uživatele:', currentUser.uid);
 
-                const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { getDoc, doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 const profileRef = doc(window.firebaseDb, 'users', currentUser.uid, 'profile', 'profile');
                 const profileSnap = await getDoc(profileRef);
+                const rootRef = doc(window.firebaseDb, 'users', currentUser.uid);
+                let rootUserType = '';
+                try {
+                    const rootSnap = await getDoc(rootRef);
+                    rootUserType = normalizeUserType(rootSnap.exists() ? (rootSnap.data()?.userType || rootSnap.data()?.type) : '');
+                } catch (e) { /* noop */ }
                 
                 let userProfile = null;
                 if (profileSnap.exists()) {
@@ -1127,6 +1161,7 @@ Prosím kontaktujte podporu.
                     const nameParts = displayName.split(' ');
                     
                     userProfile = {
+                        userType: rootUserType || 'person',
                         firstName: nameParts[0] || '',
                         lastName: nameParts.slice(1).join(' ') || '',
                         name: displayName, // Zachovat složené jméno pro kompatibilitu
@@ -1147,9 +1182,16 @@ Prosím kontaktujte podporu.
                     };
                     
                     // Uložit základní profil
-                    const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                     await setDoc(profileRef, userProfile, { merge: true });
                     console.log('✅ Automaticky vytvořen základní profil:', userProfile);
+                }
+
+                // Uložit/propagovat userType do UI (Hobby vs Firma)
+                const resolvedType = normalizeUserType(userProfile?.userType || userProfile?.type) || rootUserType || 'person';
+                window.__profileUserType = resolvedType;
+                applyUserTypeToSettingsUI(resolvedType);
+                if (userProfile && normalizeUserType(userProfile.userType) !== resolvedType) {
+                    try { await setDoc(profileRef, { userType: resolvedType }, { merge: true }); } catch (e) { /* noop */ }
                 }
 
                 // Automaticky aktualizovat formulář s daty (vždy prefilled)
@@ -1220,6 +1262,11 @@ Prosím kontaktujte podporu.
         // Aktualizace formulářových polí s daty (vždy prefilled kromě hesel)
         function updateFormFields(userProfile) {
             console.log('🔄 Aktualizuji formulář s daty:', userProfile);
+
+            // Aplikovat viditelnost sekcí podle typu účtu (Hobby vs Firma)
+            const resolvedType = normalizeUserType(userProfile?.userType || userProfile?.type) || normalizeUserType(window.__profileUserType) || 'person';
+            window.__profileUserType = resolvedType;
+            applyUserTypeToSettingsUI(resolvedType);
             
             // Osobní informace - vždy prefilled
             const personalFields = {
@@ -1307,6 +1354,23 @@ Prosím kontaktujte podporu.
             });
             
             console.log('✅ Formulář aktualizován s prefilled daty (kromě hesel)');
+        }
+
+        // ===== UserType helpers (Hobby vs Firma) =====
+        function normalizeUserType(value) {
+            const t = (value || '').toString().trim().toLowerCase();
+            if (t === 'company' || t === 'firma' || t === 'business') return 'company';
+            if (t === 'person' || t === 'hobby' || t === 'personal') return 'person';
+            return '';
+        }
+
+        function applyUserTypeToSettingsUI(userType) {
+            const t = normalizeUserType(userType) || 'person';
+            const isCompany = t === 'company';
+            const personal = document.getElementById('sectionPersonal');
+            const business = document.getElementById('sectionBusiness');
+            if (personal) personal.style.display = isCompany ? 'none' : '';
+            if (business) business.style.display = isCompany ? '' : 'none';
         }
         
         // ===== Profilová fotka (UI + upload) =====
