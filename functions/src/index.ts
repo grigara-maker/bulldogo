@@ -861,8 +861,8 @@ function generateWelcomeEmailHTML(userName: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vítejte na Bulldogo.cz</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%); min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);">
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
@@ -990,15 +990,15 @@ function generateWelcomeEmailHTML(userName: string): string {
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #a0aec0;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #718096;">
-                <a href="https://bulldogo.cz" style="color: #ffa62b; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
-                <a href="mailto:support@bulldogo.cz" style="color: #ffa62b; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
-                <a href="tel:+420605121023" style="color: #ffa62b; text-decoration: none;">+420 605 121 023</a>
+              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+                <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #4a5568;">
+              <p style="margin: 0; font-size: 12px; color: #6b7280;">
                 © 2025 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
@@ -1012,6 +1012,355 @@ function generateWelcomeEmailHTML(userName: string): string {
 </html>
 `;
 }
+
+/**
+ * Mapování názvů polí na české popisky
+ */
+const fieldLabels: Record<string, string> = {
+  name: "Jméno",
+  email: "E-mail",
+  phone: "Telefon",
+  city: "Město",
+  bio: "O mně",
+  businessName: "Název firmy",
+  businessType: "Typ podnikání",
+  businessAddress: "Adresa firmy",
+  businessDescription: "Popis firmy",
+  companyName: "Název společnosti",
+  ico: "IČO",
+  dic: "DIČ",
+  address: "Adresa",
+  emailNotifications: "E-mailová upozornění",
+  smsNotifications: "SMS upozornění",
+  marketingEmails: "Marketingové e-maily",
+};
+
+/**
+ * Pole, která se mají ignorovat při porovnání změn
+ */
+const ignoredFields = [
+  "updatedAt",
+  "createdAt",
+  "rating",
+  "totalReviews",
+  "ratingBreakdown",
+  "recentReviews",
+  "totalAds",
+  "activeAds",
+  "totalViews",
+  "totalContacts",
+  "balance",
+  "plan",
+  "planName",
+  "planUpdatedAt",
+  "planPeriodStart",
+  "planPeriodEnd",
+  "planDurationDays",
+  "planCancelAt",
+  "planExpiredAt",
+  "planExpiredProcessedAt",
+  "firstName",
+  "lastName",
+  "birthDate",
+];
+
+/**
+ * Formátuje hodnotu pro zobrazení v emailu
+ */
+function formatValue(value: any): string {
+  if (value === null || value === undefined) return "—";
+  if (typeof value === "boolean") return value ? "Ano" : "Ne";
+  if (typeof value === "object") {
+    if (value.companyName || value.ico) {
+      // Je to company objekt
+      const parts = [];
+      if (value.companyName) parts.push(value.companyName);
+      if (value.ico) parts.push(`IČO: ${value.ico}`);
+      if (value.dic) parts.push(`DIČ: ${value.dic}`);
+      if (value.address) parts.push(value.address);
+      if (value.phone) parts.push(value.phone);
+      return parts.join(", ") || "—";
+    }
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+/**
+ * Porovná dva objekty a vrátí změněná pole
+ */
+function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any }> {
+  const changes: Array<{ field: string; label: string; oldValue: any; newValue: any }> = [];
+  
+  const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  
+  for (const key of allKeys) {
+    if (ignoredFields.includes(key)) continue;
+    
+    const oldVal = before[key];
+    const newVal = after[key];
+    
+    // Porovnání hodnot
+    const oldStr = JSON.stringify(oldVal);
+    const newStr = JSON.stringify(newVal);
+    
+    if (oldStr !== newStr) {
+      changes.push({
+        field: key,
+        label: fieldLabels[key] || key,
+        oldValue: oldVal,
+        newValue: newVal,
+      });
+    }
+  }
+  
+  return changes;
+}
+
+/**
+ * Generuje HTML šablonu emailu o změně údajů
+ */
+function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field: string; label: string; oldValue: any; newValue: any }>): string {
+  const changesHTML = changes.map((change) => `
+    <tr>
+      <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
+        <strong style="color: #1a1a2e;">${change.label}</strong>
+      </td>
+      <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #6b7280; text-decoration: line-through;">
+        ${formatValue(change.oldValue)}
+      </td>
+      <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #22c55e; font-weight: 600;">
+        ${formatValue(change.newValue)}
+      </td>
+    </tr>
+  `).join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Změna údajů - Bulldogo.cz</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <!-- Hlavní kontejner -->
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%;">
+          
+          <!-- Logo sekce -->
+          <tr>
+            <td align="center" style="padding-bottom: 30px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%); border-radius: 20px; padding: 15px 25px; box-shadow: 0 10px 40px rgba(255, 106, 0, 0.3);">
+                    <span style="font-size: 32px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">
+                      B<span style="background: linear-gradient(90deg, #ffffff 0%, #ffd700 100%); -webkit-background-clip: text; background-clip: text;">ULLDOGO</span>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Hlavní karta -->
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); border-radius: 24px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                
+                <!-- Oranžový header pruh -->
+                <tr>
+                  <td style="background: linear-gradient(90deg, #ff6a00 0%, #ffa62b 50%, #fcd34d 100%); height: 8px;"></td>
+                </tr>
+                
+                <!-- Ikona -->
+                <tr>
+                  <td align="center" style="padding: 40px 0 20px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(255, 166, 43, 0.3);">
+                          <span style="font-size: 50px;">🔐</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Pozdrav -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 20px 40px;">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
+                      Změna údajů v účtu
+                    </h1>
+                  </td>
+                </tr>
+                
+                <!-- Hlavní text -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 30px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
+                      Ahoj, <strong style="color: #ff6a00;">${userName}</strong>!
+                    </p>
+                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
+                      Ve vašem účtu na <strong>Bulldogo.cz</strong> byly právě provedeny následující změny:
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Tabulka změn -->
+                <tr>
+                  <td style="padding: 0 40px 30px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden;">
+                      <tr style="background: linear-gradient(90deg, #f8f9fa 0%, #f3f4f6 100%);">
+                        <th style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Položka</th>
+                        <th style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Původní</th>
+                        <th style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Nové</th>
+                      </tr>
+                      ${changesHTML}
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Varování -->
+                <tr>
+                  <td style="padding: 0 40px 30px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 1px solid #fecaca;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                              <td style="width: 40px; vertical-align: top;">
+                                <span style="font-size: 24px;">⚠️</span>
+                              </td>
+                              <td>
+                                <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #991b1b;">
+                                  <strong>Neprovedli jste tuto změnu?</strong><br>
+                                  Pokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na 
+                                  <a href="mailto:support@bulldogo.cz" style="color: #dc2626; font-weight: 600;">support@bulldogo.cz</a> 
+                                  nebo na tel. <a href="tel:+420605121023" style="color: #dc2626; font-weight: 600;">+420 605 121 023</a>.
+                                  Doporučujeme také změnit heslo k vašemu účtu.
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- CTA tlačítko -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 40px 40px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #ff6a00 0%, #ffa62b 100%); border-radius: 12px; box-shadow: 0 8px 25px rgba(255, 106, 0, 0.35);">
+                          <a href="https://bulldogo.cz/profile-settings.html" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; letter-spacing: 0.5px;">
+                            ZKONTROLOVAT NASTAVENÍ →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 40px 20px 20px 20px;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+                „Služby jednoduše. Pro každého."
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+                <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+                © 2025 BULLDOGO. Všechna práva vyhrazena.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
+/**
+ * Firebase Firestore Trigger - Odešle email při změně údajů v profilu
+ */
+export const sendProfileChangeEmail = functions
+  .region("europe-west1")
+  .firestore.document("users/{userId}/profile/profile")
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data() as AnyObj;
+    const afterData = change.after.data() as AnyObj;
+    const userId = context.params.userId;
+    
+    // Získej změněná pole
+    const changes = getChangedFields(beforeData, afterData);
+    
+    // Pokud nejsou žádné relevantní změny, neposílej email
+    if (changes.length === 0) {
+      functions.logger.debug("Žádné relevantní změny v profilu", { userId });
+      return null;
+    }
+    
+    // Získej email uživatele
+    const email = afterData.email;
+    if (!email) {
+      functions.logger.warn("Uživatel nemá email, přeskakuji odeslání emailu o změně", { userId });
+      return null;
+    }
+    
+    // Získej jméno uživatele
+    let userName = "uživateli";
+    if (afterData.firstName) {
+      userName = afterData.firstName;
+    } else if (afterData.name && afterData.name !== "Uživatel" && afterData.name !== "Firma") {
+      userName = afterData.name.split(" ")[0];
+    } else if (afterData.companyName) {
+      userName = afterData.companyName;
+    }
+    
+    const mailOptions = {
+      from: {
+        name: "BULLDOGO",
+        address: "info@bulldogo.cz",
+      },
+      to: email,
+      subject: "🔐 Změna údajů ve vašem účtu - Bulldogo.cz",
+      html: generateProfileChangeEmailHTML(userName, changes),
+      text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2025 BULLDOGO`,
+    };
+    
+    try {
+      await smtpTransporter.sendMail(mailOptions);
+      functions.logger.info("✅ Email o změně údajů úspěšně odeslán", { 
+        userId,
+        email,
+        changedFields: changes.map((c) => c.field),
+      });
+      return null;
+    } catch (error: any) {
+      functions.logger.error("❌ Chyba při odesílání emailu o změně údajů", { 
+        userId,
+        email,
+        error: error?.message,
+      });
+      return null;
+    }
+  });
 
 /**
  * Firebase Auth Trigger - Odešle uvítací email při vytvoření nového uživatele
