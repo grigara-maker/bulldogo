@@ -223,6 +223,17 @@ function createAdCard(ad) {
         'paused': 'Pozastaveno'
     };
     
+    // Kontrola, zda byl inzerát pozastaven kvůli vypršenému předplatnému
+    const isPlanExpired = ad.inactiveReason === 'plan_expired';
+    
+    // Speciální text pro pozastavený kvůli předplatnému
+    let statusText = statusTexts[ad.status] || ad.status;
+    let statusColor = statusColors[ad.status] || '#dc3545';
+    if (isPlanExpired) {
+        statusText = 'Pozastaveno - Vypršelo předplatné';
+        statusColor = '#ff6b35';
+    }
+    
     const topStyle = ad.isTop ? 'style="border: 3px solid #ff8a00 !important; box-shadow: 0 8px 28px rgba(255, 138, 0, 0.6), 0 0 0 2px rgba(255, 138, 0, 0.4) !important;"' : '';
     
     // Získání správné URL obrázku
@@ -241,6 +252,15 @@ function createAdCard(ad) {
         }
     }
     
+    // Tlačítko aktivace - speciální text pro vypršelé předplatné
+    const activateButton = isPlanExpired 
+        ? `<button class="btn-activate" onclick="toggleAdStatus('${ad.id}', 'active')" title="Pro aktivaci je potřeba obnovit předplatné" style="background:#ff6b35;">
+            <i class="fas fa-crown"></i>
+           </button>`
+        : `<button class="btn-activate" onclick="toggleAdStatus('${ad.id}', 'active')" title="Aktivovat">
+            <i class="fas fa-play"></i>
+           </button>`;
+    
     return `
         <article class="ad-card${ad.isTop ? ' is-top' : ''}" ${topStyle}>
             <div class="ad-thumb">
@@ -249,9 +269,14 @@ function createAdCard(ad) {
             <div class="ad-body">
                 <h3 class="ad-title">${ad.title}</h3>
                 <div class="ad-meta"><span>${ad.location}</span> • <span>${categoryNames[ad.category] || ad.category}</span></div>
-                <div class="ad-status" style="background-color: ${statusColors[ad.status]}; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; margin-top: 0.5rem; display: inline-block;">
-                    ${statusTexts[ad.status] || ad.status}
+                <div class="ad-status" style="background-color: ${statusColor}; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem; margin-top: 0.5rem; display: inline-block;">
+                    ${statusText}
                 </div>
+                ${isPlanExpired ? `
+                <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #ff6b35;">
+                    <i class="fas fa-info-circle"></i> <a href="packages.html" style="color:#ff6b35; text-decoration:underline;">Obnovit předplatné</a> pro aktivaci
+                </div>
+                ` : ''}
             </div>
             ${ad.isTop ? `
             <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
@@ -268,11 +293,7 @@ function createAdCard(ad) {
                 <button class="btn-pause" onclick="toggleAdStatus('${ad.id}', 'paused')" title="Pozastavit">
                     <i class="fas fa-pause"></i>
                 </button>
-                ` : `
-                <button class="btn-activate" onclick="toggleAdStatus('${ad.id}', 'active')" title="Aktivovat">
-                    <i class="fas fa-play"></i>
-                </button>
-                `}
+                ` : activateButton}
             </div>
         </article>
     `;
@@ -462,10 +483,50 @@ async function updateAd() {
 // Přepnutí stavu inzerátu
 async function toggleAdStatus(adId, targetStatus) {
     try {
-        const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { updateDoc, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         // targetStatus je buď 'paused' nebo 'active'
         const newStatus = targetStatus === 'paused' ? 'inactive' : 'active';
+        
+        // Pokud se aktivuje inzerát, zkontrolovat předplatné
+        if (newStatus === 'active') {
+            // Zkontrolovat aktivní předplatné
+            const profileRef = doc(window.firebaseDb, 'users', window.firebaseAuth.currentUser.uid, 'profile', 'profile');
+            const profileSnap = await getDoc(profileRef);
+            
+            if (profileSnap.exists()) {
+                const profile = profileSnap.data();
+                const plan = profile.plan;
+                
+                // Zkontrolovat, zda má aktivní předplatné
+                if (!plan || (plan !== 'hobby' && plan !== 'business')) {
+                    showMessage('Pro aktivaci inzerátu potřebujete aktivní předplatné (Hobby nebo Firma).', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'packages.html';
+                    }, 2000);
+                    return;
+                }
+                
+                // Zkontrolovat, zda předplatné nevypršelo
+                const planPeriodEnd = profile.planPeriodEnd;
+                if (planPeriodEnd) {
+                    const endDate = planPeriodEnd.toDate ? planPeriodEnd.toDate() : new Date(planPeriodEnd);
+                    if (endDate < new Date()) {
+                        showMessage('Vaše předplatné vypršelo. Pro aktivaci inzerátu si prosím obnovte balíček.', 'error');
+                        setTimeout(() => {
+                            window.location.href = 'packages.html';
+                        }, 2000);
+                        return;
+                    }
+                }
+            } else {
+                showMessage('Pro aktivaci inzerátu potřebujete aktivní předplatné (Hobby nebo Firma).', 'error');
+                setTimeout(() => {
+                    window.location.href = 'packages.html';
+                }, 2000);
+                return;
+            }
+        }
         
         await updateDoc(doc(window.firebaseDb, 'users', window.firebaseAuth.currentUser.uid, 'inzeraty', adId), {
             status: newStatus,

@@ -1499,19 +1499,95 @@ function showMessage(message, type = 'info', options = {}) {
     host.appendChild(banner);
 }
 
+// Helper funkce pro kontrolu aktivního předplatného
+async function checkActiveSubscription(uid) {
+    try {
+        const db = firebaseDb || window.firebaseDb;
+        if (!db) {
+            console.error('❌ checkActiveSubscription: firebaseDb není dostupný');
+            return { hasSubscription: false, plan: null, expired: false };
+        }
+        
+        const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const profileRef = doc(db, 'users', uid, 'profile', 'profile');
+        const profileSnap = await getDoc(profileRef);
+        
+        console.log('🔍 checkActiveSubscription pro uid:', uid, 'profil existuje:', profileSnap.exists());
+        
+        if (!profileSnap.exists()) {
+            console.log('❌ Profil neexistuje - žádné předplatné');
+            return { hasSubscription: false, plan: null, expired: false };
+        }
+        
+        const profile = profileSnap.data();
+        const plan = profile.plan; // 'hobby' nebo 'business'
+        
+        console.log('📋 Aktuální plán:', plan, 'planPeriodEnd:', profile.planPeriodEnd);
+        
+        if (!plan || (plan !== 'hobby' && plan !== 'business')) {
+            console.log('❌ Žádný aktivní plán (plan =', plan, ')');
+            return { hasSubscription: false, plan: null, expired: false };
+        }
+        
+        // Zkontrolovat, zda předplatné nevypršelo
+        const planPeriodEnd = profile.planPeriodEnd;
+        if (planPeriodEnd) {
+            const endDate = planPeriodEnd.toDate ? planPeriodEnd.toDate() : new Date(planPeriodEnd);
+            console.log('📅 Datum vypršení:', endDate, 'Nyní:', new Date());
+            if (endDate < new Date()) {
+                console.log('❌ Předplatné vypršelo');
+                return { hasSubscription: false, plan: plan, expired: true };
+            }
+        }
+        
+        console.log('✅ Předplatné aktivní');
+        return { hasSubscription: true, plan: plan, expired: false };
+    } catch (error) {
+        console.error('❌ Chyba při kontrole předplatného:', error);
+        return { hasSubscription: false, plan: null, expired: false };
+    }
+}
+
+// Globálně dostupná funkce pro kontrolu předplatného
+window.checkActiveSubscription = checkActiveSubscription;
+
 // Přidání služby
 async function addService(serviceData) {
     try {
         if (!authCurrentUser) {
             showMessage('Musíte být přihlášeni pro přidání služby.', 'error');
-            return;
+            return false;
+        }
+
+        const db = firebaseDb || window.firebaseDb;
+        if (!db) {
+            showMessage('Chyba: Databáze není dostupná.', 'error');
+            return false;
         }
 
         const { addDoc, collection, setDoc, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const { ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
 
+        // Kontrola aktivního předplatného - POVINNÁ
+        console.log('🔒 Kontroluji předplatné před přidáním inzerátu...');
+        const subscriptionCheck = await checkActiveSubscription(authCurrentUser.uid);
+        console.log('🔒 Výsledek kontroly:', subscriptionCheck);
+        
+        if (!subscriptionCheck.hasSubscription) {
+            if (subscriptionCheck.expired) {
+                showMessage('⚠️ Vaše předplatné vypršelo. Pro přidávání inzerátů si prosím obnovte balíček.', 'error');
+            } else {
+                showMessage('⚠️ Pro přidávání inzerátů potřebujete aktivní předplatné (Hobby nebo Firma).', 'error');
+            }
+            // Přesměrovat na stránku balíčků po 2 sekundách
+            setTimeout(() => {
+                window.location.href = 'packages.html';
+            }, 2000);
+            return false; // DŮLEŽITÉ: vrátit false pro zastavení
+        }
+
         // Zkontrolovat, zda uživatel existuje, pokud ne, vytvořit ho
-        const userRef = doc(firebaseDb, 'users', authCurrentUser.uid);
+        const userRef = doc(db, 'users', authCurrentUser.uid);
         const userSnap = await getDoc(userRef);
         
         if (!userSnap.exists()) {
@@ -1523,7 +1599,7 @@ async function addService(serviceData) {
             });
             
             // Vytvořit profil uživatele
-            await setDoc(doc(firebaseDb, 'users', authCurrentUser.uid, 'profile', 'profile'), {
+            await setDoc(doc(db, 'users', authCurrentUser.uid, 'profile', 'profile'), {
                 name: authCurrentUser.email.split('@')[0],
                 email: authCurrentUser.email,
                 balance: 1000,
@@ -1658,15 +1734,17 @@ async function addService(serviceData) {
         delete serviceToSave.previewImage;
         delete serviceToSave.additionalImages;
 
-        await addDoc(collection(firebaseDb, 'users', authCurrentUser.uid, 'inzeraty'), serviceToSave);
+        await addDoc(collection(db, 'users', authCurrentUser.uid, 'inzeraty'), serviceToSave);
 
         showMessage('Služba byla úspěšně přidána!', 'success');
         closeAddServiceModal();
         
         // Real-time listener automaticky aktualizuje seznam
+        return true; // Úspěch
     } catch (error) {
         console.error('Chyba při přidávání služby:', error);
         showMessage('Došlo k chybě při přidávání služby.', 'error');
+        return false; // Neúspěch
     }
 }
 
