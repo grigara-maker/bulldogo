@@ -190,12 +190,330 @@ export const validateICO = functions.region("europe-west1").https.onRequest(asyn
 });
 
 /**
+ * Konfigurace pro mazání neaktivních účtů
+ */
+const INACTIVITY_WARNING_MONTHS = 5; // Po 5 měsících odeslat varování
+const INACTIVITY_DELETE_MONTHS = 6;  // Po 6 měsících smazat účet
+const MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Formátuje datum do českého formátu
+ */
+function formatDateCzech(date: Date): string {
+  const day = date.getDate();
+  const months = [
+    "ledna", "února", "března", "dubna", "května", "června",
+    "července", "srpna", "září", "října", "listopadu", "prosince"
+  ];
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day}. ${month} ${year}`;
+}
+
+/**
+ * Generuje HTML šablonu varovného emailu o neaktivitě
+ */
+function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date): string {
+  const formattedDate = formatDateCzech(deletionDate);
+  
+  return `
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upozornění na smazání účtu - Bulldogo.cz</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <!-- Hlavní kontejner -->
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%;">
+          
+          <!-- Logo sekce -->
+          <tr>
+            <td align="center" style="padding-bottom: 30px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%); border-radius: 20px; padding: 15px 25px; box-shadow: 0 10px 40px rgba(255, 106, 0, 0.3);">
+                    <span style="font-size: 32px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">
+                      B<span style="background: linear-gradient(90deg, #ffffff 0%, #ffd700 100%); -webkit-background-clip: text; background-clip: text;">ULLDOGO</span>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Hlavní karta -->
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); border-radius: 24px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                
+                <!-- Červený header pruh (varování) -->
+                <tr>
+                  <td style="background: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #f87171 100%); height: 8px;"></td>
+                </tr>
+                
+                <!-- Ikona -->
+                <tr>
+                  <td align="center" style="padding: 40px 0 20px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2);">
+                          <span style="font-size: 50px;">⚠️</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Pozdrav -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 20px 40px;">
+                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #dc2626; line-height: 1.3;">
+                      Váš účet bude smazán
+                    </h1>
+                  </td>
+                </tr>
+                
+                <!-- Hlavní text -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 25px 40px;">
+                    <p style="margin: 0 0 15px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
+                      Ahoj, <strong style="color: #1a1a2e;">${userName}</strong>!
+                    </p>
+                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
+                      Všimli jsme si, že jste se na <strong>Bulldogo.cz</strong> dlouho nepřihlásili. 
+                      Váš účet bude z důvodu neaktivity <strong style="color: #dc2626;">automaticky smazán</strong>.
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Datum smazání -->
+                <tr>
+                  <td style="padding: 0 40px 25px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 2px solid #fecaca;">
+                      <tr>
+                        <td align="center" style="padding: 25px;">
+                          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #991b1b; text-transform: uppercase; letter-spacing: 1px;">
+                            Datum smazání účtu
+                          </p>
+                          <p style="margin: 0; font-size: 28px; font-weight: 800; color: #dc2626;">
+                            ${formattedDate}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Varování -->
+                <tr>
+                  <td style="padding: 0 40px 25px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #fffbeb; border-radius: 12px; border: 1px solid #fde68a;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #92400e;">
+                            <strong>⚠️ Tato akce je nevratná!</strong><br>
+                            Po smazání budou trvale odstraněny všechny vaše údaje včetně profilu, inzerátů, recenzí a zpráv.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Jak zabránit -->
+                <tr>
+                  <td style="padding: 0 40px 30px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 16px; border: 1px solid #a7f3d0;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ✅ Jak zabránit smazání?
+                          </p>
+                          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #047857;">
+                            <strong>Stačí se přihlásit</strong> do svého účtu před datem smazání a váš účet zůstane aktivní. 
+                            Žádné další kroky nejsou potřeba.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- CTA tlačítko -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 30px 40px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #ff6a00 0%, #ffa62b 100%); border-radius: 12px; box-shadow: 0 8px 25px rgba(255, 106, 0, 0.35);">
+                          <a href="https://bulldogo.cz/" target="_blank" style="display: inline-block; padding: 18px 50px; font-size: 17px; font-weight: 700; color: #ffffff; text-decoration: none; letter-spacing: 0.5px;">
+                            PŘIHLÁSIT SE →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Podpora -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                      Máte otázky? Kontaktujte naši podporu na 
+                      <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none; font-weight: 600;">support@bulldogo.cz</a>
+                      nebo zavolejte na <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none; font-weight: 600;">+420 605 121 023</a>.
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 40px 20px 20px 20px;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+                „Služby jednoduše. Pro každého."
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+                <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+                © 2025 BULLDOGO. Všechna práva vyhrazena.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
+/**
+ * Scheduled job: Odešle varovný email uživatelům neaktivním 5 měsíců
+ * Spouští se denně v 3:00 ráno (hodinu před mazáním)
+ */
+export const sendInactivityWarningEmails = functions
+  .region("europe-west1")
+  .pubsub.schedule("0 3 * * *")
+  .timeZone("Europe/Prague")
+  .onRun(async () => {
+    const auth = admin.auth();
+    const db = admin.firestore();
+    
+    // Cutoff pro 5 měsíců neaktivity
+    const warningCutoff = Date.now() - INACTIVITY_WARNING_MONTHS * 30 * MILLIS_IN_DAY;
+    // Cutoff pro 6 měsíců (aby se neposílalo těm, co už mají být smazáni)
+    const deleteCutoff = Date.now() - INACTIVITY_DELETE_MONTHS * 30 * MILLIS_IN_DAY;
+    
+    let nextPageToken: string | undefined = undefined;
+    let warnedCount = 0;
+    
+    do {
+      const page: admin.auth.ListUsersResult = await auth.listUsers(1000, nextPageToken);
+      
+      for (const user of page.users) {
+        const lastSignIn = user.metadata.lastSignInTime ? new Date(user.metadata.lastSignInTime).getTime() : 0;
+        const created = user.metadata.creationTime ? new Date(user.metadata.creationTime).getTime() : 0;
+        const lastActivity = lastSignIn || created;
+        
+        if (!lastActivity) continue;
+        
+        // Uživatel je neaktivní 5+ měsíců, ale méně než 6 měsíců
+        if (lastActivity < warningCutoff && lastActivity >= deleteCutoff) {
+          try {
+            // Zkontrolovat, zda jsme už varovný email neposlali
+            const profileDoc = await db.doc(`users/${user.uid}/profile/profile`).get();
+            const profileData = profileDoc.exists ? profileDoc.data() : null;
+            
+            // Pokud už byl email odeslán v posledních 25 dnech, přeskočit
+            const lastWarningAt = profileData?.inactivityWarningAt;
+            if (lastWarningAt) {
+              const warningDate = lastWarningAt.toDate ? lastWarningAt.toDate() : new Date(lastWarningAt);
+              const daysSinceWarning = (Date.now() - warningDate.getTime()) / MILLIS_IN_DAY;
+              if (daysSinceWarning < 25) {
+                continue; // Email už byl nedávno odeslán
+              }
+            }
+            
+            // Vypočítat datum smazání (30 dní od teď)
+            const deletionDate = new Date(Date.now() + 30 * MILLIS_IN_DAY);
+            
+            // Získat email a jméno
+            const email = user.email;
+            if (!email) continue;
+            
+            let userName = "uživateli";
+            if (profileData) {
+              if (profileData.firstName) {
+                userName = profileData.firstName;
+              } else if (profileData.name && profileData.name !== "Uživatel" && profileData.name !== "Firma") {
+                userName = profileData.name.split(" ")[0];
+              } else if (profileData.companyName) {
+                userName = profileData.companyName;
+              }
+            }
+            
+            // Odeslat varovný email
+            const mailOptions = {
+              from: {
+                name: "BULLDOGO",
+                address: "info@bulldogo.cz",
+              },
+              to: email,
+              subject: "⚠️ Váš účet na Bulldogo.cz bude smazán",
+              html: generateInactivityWarningEmailHTML(userName, deletionDate),
+              text: `Ahoj ${userName}!\n\nVšimli jsme si, že jste se na Bulldogo.cz dlouho nepřihlásili. Váš účet bude z důvodu neaktivity automaticky smazán dne ${formatDateCzech(deletionDate)}.\n\nTato akce je nevratná! Po smazání budou trvale odstraněny všechny vaše údaje.\n\nJak zabránit smazání? Stačí se přihlásit do svého účtu před datem smazání.\n\nPřihlásit se: https://bulldogo.cz\n\nMáte otázky? Kontaktujte podporu na support@bulldogo.cz nebo +420 605 121 023.\n\n© 2025 BULLDOGO`,
+            };
+            
+            await smtpTransporter.sendMail(mailOptions);
+            
+            // Uložit, že jsme email odeslali
+            await db.doc(`users/${user.uid}/profile/profile`).set({
+              inactivityWarningAt: admin.firestore.FieldValue.serverTimestamp(),
+              inactivityWarningEmail: email,
+            }, { merge: true });
+            
+            warnedCount++;
+            
+            functions.logger.info("📧 Varovný email o neaktivitě odeslán", {
+              uid: user.uid,
+              email: email,
+              deletionDate: deletionDate.toISOString(),
+            });
+            
+          } catch (err: any) {
+            functions.logger.error("Chyba při odesílání varovného emailu", {
+              uid: user.uid,
+              error: err?.message,
+            });
+          }
+        }
+      }
+      
+      nextPageToken = page.pageToken;
+    } while (nextPageToken);
+    
+    functions.logger.info("✅ sendInactivityWarningEmails finished", { warnedCount });
+    return null;
+  });
+
+/**
  * Scheduled cleanup of inactive accounts.
  * Smaže účty, které se nepřihlásily déle než 6 měsíců,
  * včetně základních dat ve Firestore (profil, inzeráty, recenze, zprávy).
  */
-const INACTIVITY_MONTHS = 6;
-const MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
 
 async function deleteUserData(uid: string): Promise<void> {
   const db = admin.firestore();
@@ -281,7 +599,7 @@ export const cleanupInactiveUsers = functions
   .timeZone("Europe/Prague")
   .onRun(async () => {
     const auth = admin.auth();
-    const cutoff = Date.now() - INACTIVITY_MONTHS * 30 * MILLIS_IN_DAY;
+    const cutoff = Date.now() - INACTIVITY_DELETE_MONTHS * 30 * MILLIS_IN_DAY;
     let nextPageToken: string | undefined = undefined;
     let deletedCount = 0;
     do {
@@ -312,7 +630,7 @@ export const cleanupInactiveUsers = functions
       }
       nextPageToken = page.pageToken;
     } while (nextPageToken);
-    functions.logger.info("✅ cleanupInactiveUsers finished", { deletedCount, inactivityMonths: INACTIVITY_MONTHS });
+    functions.logger.info("✅ cleanupInactiveUsers finished", { deletedCount, inactivityMonths: INACTIVITY_DELETE_MONTHS });
     return null;
   });
 
