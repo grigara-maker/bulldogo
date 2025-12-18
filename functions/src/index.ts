@@ -1363,6 +1363,308 @@ export const sendProfileChangeEmail = functions
   });
 
 /**
+ * Generuje HTML šablonu emailu o nové zprávě v chatu
+ */
+function generateNewMessageEmailHTML(
+  recipientName: string,
+  senderName: string,
+  listingTitle: string | null,
+  messageText: string
+): string {
+  const listingSection = listingTitle ? `
+    <tr>
+      <td style="padding: 0 40px 20px 40px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fff8eb 0%, #fff3e0 100%); border-radius: 12px; border: 1px solid #ffe0b2;">
+          <tr>
+            <td style="padding: 15px;">
+              <p style="margin: 0; font-size: 13px; color: #92400e; font-weight: 600;">
+                <span style="margin-right: 8px;">📋</span> K inzerátu:
+              </p>
+              <p style="margin: 8px 0 0 0; font-size: 16px; color: #1a1a2e; font-weight: 700;">
+                ${listingTitle}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  ` : "";
+
+  // Zkrátit zprávu pokud je moc dlouhá
+  const truncatedMessage = messageText.length > 500 
+    ? messageText.substring(0, 500) + "..." 
+    : messageText;
+
+  return `
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nová zpráva - Bulldogo.cz</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <!-- Hlavní kontejner -->
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%;">
+          
+          <!-- Logo sekce -->
+          <tr>
+            <td align="center" style="padding-bottom: 30px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%); border-radius: 20px; padding: 15px 25px; box-shadow: 0 10px 40px rgba(255, 106, 0, 0.3);">
+                    <span style="font-size: 32px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">
+                      B<span style="background: linear-gradient(90deg, #ffffff 0%, #ffd700 100%); -webkit-background-clip: text; background-clip: text;">ULLDOGO</span>
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Hlavní karta -->
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); border-radius: 24px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05); overflow: hidden;">
+                
+                <!-- Oranžový header pruh -->
+                <tr>
+                  <td style="background: linear-gradient(90deg, #ff6a00 0%, #ffa62b 50%, #fcd34d 100%); height: 8px;"></td>
+                </tr>
+                
+                <!-- Ikona -->
+                <tr>
+                  <td align="center" style="padding: 40px 0 20px 0;">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(255, 166, 43, 0.3);">
+                          <span style="font-size: 50px;">💬</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Pozdrav -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 20px 40px;">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
+                      Nová zpráva
+                    </h1>
+                  </td>
+                </tr>
+                
+                <!-- Hlavní text -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 25px 40px;">
+                    <p style="margin: 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
+                      Ahoj, <strong style="color: #ff6a00;">${recipientName}</strong>!
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 16px; line-height: 1.7; color: #718096;">
+                      Uživatel <strong style="color: #1a1a2e;">${senderName}</strong> ti poslal novou zprávu.
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Inzerát (pokud existuje) -->
+                ${listingSection}
+                
+                <!-- Zpráva -->
+                <tr>
+                  <td style="padding: 0 40px 30px 40px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f8f9fa; border-radius: 16px; border: 1px solid #e5e7eb;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">
+                            Zpráva:
+                          </p>
+                          <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #1a1a2e; white-space: pre-wrap;">
+                            ${truncatedMessage}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- CTA tlačítko -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 30px 40px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #ff6a00 0%, #ffa62b 100%); border-radius: 12px; box-shadow: 0 8px 25px rgba(255, 106, 0, 0.35);">
+                          <a href="https://bulldogo.cz/chat.html" target="_blank" style="display: inline-block; padding: 16px 40px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; letter-spacing: 0.5px;">
+                            ODPOVĚDĚT →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Info o vypnutí -->
+                <tr>
+                  <td align="center" style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">
+                      Tato oznámení můžete vypnout v 
+                      <a href="https://bulldogo.cz/profile-settings.html" style="color: #ff6a00; text-decoration: none;">nastavení účtu</a>.
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 40px 20px 20px 20px;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+                „Služby jednoduše. Pro každého."
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+                <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
+              </p>
+              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+                © 2025 BULLDOGO. Všechna práva vyhrazena.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+}
+
+/**
+ * Firebase Firestore Trigger - Odešle email při nové zprávě v chatu
+ */
+export const sendNewMessageEmail = functions
+  .region("europe-west1")
+  .firestore.document("chats/{chatId}/messages/{messageId}")
+  .onCreate(async (snap, context) => {
+    const db = admin.firestore();
+    const messageData = snap.data() as AnyObj;
+    const chatId = context.params.chatId;
+    
+    const senderUid = messageData.fromUid;
+    const messageText = messageData.text || "";
+    
+    // Pokud zpráva nemá text (jen obrázky), upravíme text
+    const displayText = messageText || (messageData.images?.length > 0 ? "📷 Obrázek" : "");
+    
+    if (!displayText) {
+      functions.logger.debug("Zpráva nemá obsah, přeskakuji email", { chatId });
+      return null;
+    }
+    
+    try {
+      // Načíst chat dokument pro získání účastníků a info o inzerátu
+      const chatDoc = await db.doc(`chats/${chatId}`).get();
+      if (!chatDoc.exists) {
+        functions.logger.warn("Chat dokument neexistuje", { chatId });
+        return null;
+      }
+      
+      const chatData = chatDoc.data() as AnyObj;
+      const participants = chatData.participants || [];
+      const listingTitle = chatData.listingTitle || null;
+      
+      // Najít příjemce (druhý účastník)
+      const recipientUid = participants.find((p: string) => p !== senderUid);
+      if (!recipientUid) {
+        functions.logger.warn("Nelze najít příjemce zprávy", { chatId, senderUid });
+        return null;
+      }
+      
+      // Načíst profil příjemce pro email a jméno
+      const recipientProfileDoc = await db.doc(`users/${recipientUid}/profile/profile`).get();
+      if (!recipientProfileDoc.exists) {
+        functions.logger.warn("Profil příjemce neexistuje", { recipientUid });
+        return null;
+      }
+      
+      const recipientProfile = recipientProfileDoc.data() as AnyObj;
+      const recipientEmail = recipientProfile.email;
+      
+      // Kontrola, zda má uživatel povolené notifikace o nových zprávách
+      if (recipientProfile.chatNotifications === false) {
+        functions.logger.debug("Příjemce má vypnuté notifikace o nových zprávách", { recipientUid });
+        return null;
+      }
+      
+      if (!recipientEmail) {
+        functions.logger.warn("Příjemce nemá email", { recipientUid });
+        return null;
+      }
+      
+      // Získat jméno příjemce
+      let recipientName = "uživateli";
+      if (recipientProfile.firstName) {
+        recipientName = recipientProfile.firstName;
+      } else if (recipientProfile.name && recipientProfile.name !== "Uživatel" && recipientProfile.name !== "Firma") {
+        recipientName = recipientProfile.name.split(" ")[0];
+      } else if (recipientProfile.companyName) {
+        recipientName = recipientProfile.companyName;
+      }
+      
+      // Načíst profil odesílatele pro jméno
+      let senderName = "Někdo";
+      try {
+        const senderProfileDoc = await db.doc(`users/${senderUid}/profile/profile`).get();
+        if (senderProfileDoc.exists) {
+          const senderProfile = senderProfileDoc.data() as AnyObj;
+          if (senderProfile.firstName && senderProfile.lastName) {
+            senderName = `${senderProfile.firstName} ${senderProfile.lastName}`;
+          } else if (senderProfile.name && senderProfile.name !== "Uživatel" && senderProfile.name !== "Firma") {
+            senderName = senderProfile.name;
+          } else if (senderProfile.companyName) {
+            senderName = senderProfile.companyName;
+          }
+        }
+      } catch (e) {
+        functions.logger.debug("Nelze načíst profil odesílatele", { senderUid });
+      }
+      
+      const mailOptions = {
+        from: {
+          name: "BULLDOGO",
+          address: "info@bulldogo.cz",
+        },
+        to: recipientEmail,
+        subject: `💬 Nová zpráva od ${senderName} - Bulldogo.cz`,
+        html: generateNewMessageEmailHTML(recipientName, senderName, listingTitle, displayText),
+        text: `Ahoj ${recipientName}!\n\nUživatel ${senderName} ti poslal novou zprávu${listingTitle ? ` k inzerátu "${listingTitle}"` : ""}.\n\nZpráva:\n${displayText}\n\nOdpověz na: https://bulldogo.cz/chat.html\n\n© 2025 BULLDOGO`,
+      };
+      
+      await smtpTransporter.sendMail(mailOptions);
+      functions.logger.info("✅ Email o nové zprávě odeslán", { 
+        recipientUid,
+        recipientEmail,
+        senderUid,
+        senderName,
+        chatId,
+      });
+      return null;
+    } catch (error: any) {
+      functions.logger.error("❌ Chyba při odesílání emailu o nové zprávě", { 
+        chatId,
+        error: error?.message,
+      });
+      return null;
+    }
+  });
+
+/**
  * Firebase Auth Trigger - Odešle uvítací email při vytvoření nového uživatele
  */
 export const sendWelcomeEmail = functions

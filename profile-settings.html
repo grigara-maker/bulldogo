@@ -315,6 +315,56 @@
                     </div>
                 </div>
 
+                <!-- Upozornění -->
+                <div class="settings-section" id="sectionNotifications">
+                    <h3 class="settings-title">
+                        <i class="fas fa-bell"></i>
+                        Upozornění
+                    </h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                                <div>
+                                    <label style="font-weight: 600; color: #1a1a2e; margin-bottom: 4px; display: block;">Nové zprávy v chatu</label>
+                                    <span style="font-size: 13px; color: #6b7280;">Dostanete e-mail, když vám někdo napíše novou zprávu</span>
+                                </div>
+                                <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 28px;">
+                                    <input type="checkbox" id="chatNotifications" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .3s; border-radius: 28px;"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                                <div>
+                                    <label style="font-weight: 600; color: #1a1a2e; margin-bottom: 4px; display: block;">E-mailová upozornění</label>
+                                    <span style="font-size: 13px; color: #6b7280;">Obecná e-mailová upozornění o aktivitě účtu</span>
+                                </div>
+                                <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 28px;">
+                                    <input type="checkbox" id="emailNotifications" checked style="opacity: 0; width: 0; height: 0;">
+                                    <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .3s; border-radius: 28px;"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0;">
+                                <div>
+                                    <label style="font-weight: 600; color: #1a1a2e; margin-bottom: 4px; display: block;">Marketingové e-maily</label>
+                                    <span style="font-size: 13px; color: #6b7280;">Novinky, tipy a speciální nabídky</span>
+                                </div>
+                                <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 28px;">
+                                    <input type="checkbox" id="marketingEmails" style="opacity: 0; width: 0; height: 0;">
+                                    <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .3s; border-radius: 28px;"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="button" onclick="saveNotifications()" class="btn-save" style="margin-top: 16px;">
+                            <i class="fas fa-save"></i>
+                            Uložit upozornění
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Account Settings -->
                 <div class="settings-section">
                     <h3 class="settings-title">
@@ -1442,10 +1492,10 @@ Prosím kontaktujte podporu.
                 }
             });
 
-            // Předvolby - vždy prefilled
+            // Předvolby upozornění - vždy prefilled
             const preferenceFields = {
+                'chatNotifications': userProfile?.chatNotifications !== false,
                 'emailNotifications': userProfile?.emailNotifications !== false,
-                'smsNotifications': userProfile?.smsNotifications === true,
                 'marketingEmails': userProfile?.marketingEmails === true
             };
 
@@ -1793,7 +1843,45 @@ Prosím kontaktujte podporu.
             }
         }
 
-        // CSS pro animace
+        // Uložení upozornění
+        async function saveNotifications() {
+            console.log('🚀 saveNotifications volána!');
+            try {
+                const currentUser = window.firebaseAuth.currentUser;
+                if (!currentUser) {
+                    showMessage('Musíte být přihlášeni!', 'error');
+                    return;
+                }
+
+                const chatNotificationsEl = document.getElementById('chatNotifications');
+                const emailNotificationsEl = document.getElementById('emailNotifications');
+                const marketingEmailsEl = document.getElementById('marketingEmails');
+                
+                const notificationsData = {
+                    chatNotifications: chatNotificationsEl ? chatNotificationsEl.checked : true,
+                    emailNotifications: emailNotificationsEl ? emailNotificationsEl.checked : true,
+                    marketingEmails: marketingEmailsEl ? marketingEmailsEl.checked : false,
+                    updatedAt: new Date()
+                };
+
+                console.log('💾 Ukládám upozornění:', notificationsData);
+
+                const { setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const profileRef = doc(window.firebaseDb, 'users', currentUser.uid, 'profile', 'profile');
+                
+                await setDoc(profileRef, notificationsData, { merge: true });
+
+                console.log('✅ Upozornění úspěšně uložena');
+                showMessage('✅ Nastavení upozornění bylo uloženo!', 'success');
+
+            } catch (error) {
+                console.error('❌ Chyba při ukládání upozornění:', error);
+                showMessage('Nepodařilo se uložit upozornění: ' + error.message, 'error');
+            }
+        }
+        window.saveNotifications = saveNotifications;
+
+        // CSS pro animace a toggle switch
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideIn {
@@ -1807,6 +1895,25 @@ Prosím kontaktujte podporu.
             .modified {
                 border-color: #007bff !important;
                 box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+            }
+            /* Toggle Switch */
+            .switch input:checked + .slider {
+                background: linear-gradient(135deg, #ff6a00 0%, #ffa62b 100%);
+            }
+            .switch .slider:before {
+                content: "";
+                position: absolute;
+                height: 22px;
+                width: 22px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .3s;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .switch input:checked + .slider:before {
+                transform: translateX(22px);
             }
         `;
         document.head.appendChild(style);
