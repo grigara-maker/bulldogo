@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendWelcomeEmail = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
+exports.sendWelcomeEmail = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const axios_1 = __importDefault(require("axios"));
@@ -54,13 +54,19 @@ function isPlanActive(profile, now) {
     if (!profile)
         return false;
     const plan = (profile.plan || "").toString();
-    if (!plan || plan === "none")
+    // Pokud plan není hobby nebo business, není aktivní
+    if (!plan || plan === "none" || (plan !== "hobby" && plan !== "business"))
         return false;
     const end = toDateMaybe(profile.planPeriodEnd);
     const cancelAt = toDateMaybe(profile.planCancelAt);
-    if (cancelAt && end && now >= end)
+    // Pokud planPeriodEnd neexistuje, považujeme plán za neaktivní (musí mít datum konce)
+    if (!end)
         return false;
-    if (end && now >= end)
+    // Pokud je konec v minulosti, plán vypršel
+    if (now >= end)
+        return false;
+    // Pokud je nastavené zrušení a konec období, plán vypršel
+    if (cancelAt && now >= end)
         return false;
     return true;
 }
@@ -1558,43 +1564,20 @@ exports.enforceExpiredPlanAds = functions
     let processed = 0;
     let inactivated = 0;
     let deleted = 0;
-    // NOVÝ PŘÍSTUP: Najít všechny aktivní inzeráty a zkontrolovat plán jejich majitele
-    // Toto je spolehlivější než hledat profily s vypršeným plánem
-    functions.logger.info("🔍 Searching for active ads to check owner plans...");
-    const activeAdsSnap = await db.collectionGroup("inzeraty").where("status", "==", "active").get();
-    functions.logger.info(`📋 Found ${activeAdsSnap.size} active ads to check`);
-    // Cache profilů - abychom nemuseli načítat stejný profil vícekrát
-    const profileCache = new Map();
-    // Seskupit inzeráty podle userId
-    const adsByUser = new Map();
-    for (const adDoc of activeAdsSnap.docs) {
-        // Extrahovat userId z cesty: users/{userId}/inzeraty/{adId}
-        const pathParts = adDoc.ref.path.split("/");
-        const userId = pathParts[1]; // users/[userId]/inzeraty/...
-        if (!userId)
-            continue;
-        if (!adsByUser.has(userId)) {
-            adsByUser.set(userId, []);
-        }
-        adsByUser.get(userId).push(adDoc);
-    }
-    functions.logger.info(`👥 Found ${adsByUser.size} unique users with active ads`);
-    // Projít každého uživatele s aktivními inzeráty
-    for (const [userId, userAds] of adsByUser) {
-        // Načíst profil (s cache)
+    // SPOLEHLIVÝ PŘÍSTUP: Projít všechny uživatele a zkontrolovat jejich plán
+    functions.logger.info("🔍 Checking all users for expired plans...");
+    const usersSnap = await db.collection("users").get();
+    functions.logger.info(`📋 Found ${usersSnap.size} users to check`);
+    for (const userDoc of usersSnap.docs) {
+        const userId = userDoc.id;
+        // Načíst profil
         let profile = null;
-        if (profileCache.has(userId)) {
-            profile = profileCache.get(userId);
+        try {
+            const profileDoc = await db.doc(`users/${userId}/profile/profile`).get();
+            profile = profileDoc.exists ? profileDoc.data() : null;
         }
-        else {
-            try {
-                const profileDoc = await db.doc(`users/${userId}/profile/profile`).get();
-                profile = profileDoc.exists ? profileDoc.data() : null;
-                profileCache.set(userId, profile);
-            }
-            catch (e) {
-                profileCache.set(userId, null);
-            }
+        catch (e) {
+            continue;
         }
         // Zkontrolovat, zda má aktivní plán
         const hasActivePlan = isPlanActive(profile, nowDate);
@@ -1602,11 +1585,16 @@ exports.enforceExpiredPlanAds = functions
             // Má aktivní plán - přeskočit
             continue;
         }
-        functions.logger.info(`🚫 User ${userId} has no active plan, deactivating ${userAds.length} ads`);
+        // Najít aktivní inzeráty tohoto uživatele
+        const adsSnap = await db.collection(`users/${userId}/inzeraty`).where("status", "==", "active").get();
+        if (adsSnap.empty) {
+            continue;
+        }
+        functions.logger.info(`🚫 User ${userId} has no active plan, deactivating ${adsSnap.size} ads`);
         // Nemá aktivní plán - deaktivovat všechny jeho aktivní inzeráty
         let batch = db.batch();
         let ops = 0;
-        for (const adDoc of userAds) {
+        for (const adDoc of adsSnap.docs) {
             batch.update(adDoc.ref, {
                 status: "inactive",
                 inactiveReason: "plan_expired",
@@ -1637,23 +1625,27 @@ exports.enforceExpiredPlanAds = functions
         }, { merge: true });
         processed++;
     }
-    // DRUHÁ ČÁST: Mazání starých inzerátů označených jako plan_expired
-    const expiredAdsSnap = await db.collectionGroup("inzeraty")
-        .where("status", "==", "inactive")
-        .where("inactiveReason", "==", "plan_expired")
-        .get();
-    for (const adDoc of expiredAdsSnap.docs) {
-        const ad = adDoc.data();
-        const inactiveAtDate = toDateMaybe(ad.inactiveAt);
-        const inactiveAt = inactiveAtDate ? admin.firestore.Timestamp.fromDate(inactiveAtDate) : null;
-        // Mazat jen ty starší než 30 dní
-        if (inactiveAt && inactiveAt.toMillis() <= deleteCutoff.toMillis()) {
-            try {
-                await deleteAdReviewsAndDoc(adDoc.ref);
-                deleted++;
-            }
-            catch (e) {
-                functions.logger.warn("Failed to delete expired ad", { adId: adDoc.id, error: e === null || e === void 0 ? void 0 : e.message });
+    // DRUHÁ ČÁST: Mazání starých inzerátů označených jako plan_expired (starší než 30 dní)
+    functions.logger.info("🗑️ Checking for old expired ads to delete...");
+    for (const userDoc of usersSnap.docs) {
+        const userId = userDoc.id;
+        const expiredAdsSnap = await db.collection(`users/${userId}/inzeraty`)
+            .where("status", "==", "inactive")
+            .where("inactiveReason", "==", "plan_expired")
+            .get();
+        for (const adDoc of expiredAdsSnap.docs) {
+            const ad = adDoc.data();
+            const inactiveAtDate = toDateMaybe(ad.inactiveAt);
+            const inactiveAt = inactiveAtDate ? admin.firestore.Timestamp.fromDate(inactiveAtDate) : null;
+            // Mazat jen ty starší než 30 dní
+            if (inactiveAt && inactiveAt.toMillis() <= deleteCutoff.toMillis()) {
+                try {
+                    await deleteAdReviewsAndDoc(adDoc.ref);
+                    deleted++;
+                }
+                catch (e) {
+                    functions.logger.warn("Failed to delete expired ad", { adId: adDoc.id, error: e === null || e === void 0 ? void 0 : e.message });
+                }
             }
         }
     }
@@ -1676,6 +1668,87 @@ exports.enforceExpiredPlanAds = functions
     }
     functions.logger.info("✅ enforceExpiredPlanAds finished", { processed, inactivated, deleted });
     return null;
+});
+/**
+ * Manuální HTTP endpoint pro okamžitou kontrolu a deaktivaci inzerátů bez aktivního plánu.
+ * Volat: GET /forceCheckExpiredPlans
+ */
+exports.forceCheckExpiredPlans = functions
+    .region("europe-west1")
+    .https.onRequest(async (req, res) => {
+    return corsHandler(req, res, async () => {
+        var _a;
+        try {
+            const db = admin.firestore();
+            const nowDate = new Date();
+            const nowTs = admin.firestore.Timestamp.fromDate(nowDate);
+            let checked = 0;
+            let deactivated = 0;
+            const details = [];
+            // Projít všechny uživatele
+            const usersSnap = await db.collection("users").get();
+            for (const userDoc of usersSnap.docs) {
+                const userId = userDoc.id;
+                checked++;
+                // Načíst profil
+                const profileDoc = await db.doc(`users/${userId}/profile/profile`).get();
+                const profile = profileDoc.exists ? profileDoc.data() : null;
+                const hasActivePlan = isPlanActive(profile, nowDate);
+                // Načíst aktivní inzeráty tohoto uživatele
+                const adsSnap = await db.collection(`users/${userId}/inzeraty`).where("status", "==", "active").get();
+                const userDetail = {
+                    userId,
+                    activeAdsCount: adsSnap.size,
+                    hasActivePlan,
+                    profileExists: profileDoc.exists,
+                    plan: (profile === null || profile === void 0 ? void 0 : profile.plan) || null,
+                    planPeriodEnd: (profile === null || profile === void 0 ? void 0 : profile.planPeriodEnd) ? (_a = toDateMaybe(profile.planPeriodEnd)) === null || _a === void 0 ? void 0 : _a.toISOString() : null,
+                };
+                if (!hasActivePlan && adsSnap.size > 0) {
+                    // Deaktivovat všechny aktivní inzeráty
+                    let batch = db.batch();
+                    let ops = 0;
+                    for (const adDoc of adsSnap.docs) {
+                        batch.update(adDoc.ref, {
+                            status: "inactive",
+                            inactiveReason: "plan_expired",
+                            inactiveAt: nowTs,
+                            updatedAt: nowTs,
+                        });
+                        ops++;
+                        deactivated++;
+                        if (ops >= 450) {
+                            await batch.commit();
+                            batch = db.batch();
+                            ops = 0;
+                        }
+                    }
+                    if (ops > 0) {
+                        await batch.commit();
+                    }
+                    userDetail.action = `DEACTIVATED ${adsSnap.size} ads`;
+                }
+                else if (hasActivePlan) {
+                    userDetail.action = "SKIPPED (has active plan)";
+                }
+                else {
+                    userDetail.action = "SKIPPED (no active ads)";
+                }
+                details.push(userDetail);
+            }
+            res.json({
+                success: true,
+                message: `Zkontrolováno ${checked} uživatelů, deaktivováno ${deactivated} inzerátů`,
+                usersChecked: checked,
+                adsDeactivated: deactivated,
+                details,
+            });
+        }
+        catch (error) {
+            functions.logger.error("Error in forceCheckExpiredPlans", error);
+            res.status(500).json({ success: false, error: error.message });
+        }
+    });
 });
 /**
  * Trigger: Když se změní profil uživatele a plan se změní na null/prázdný,
