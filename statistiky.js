@@ -274,56 +274,22 @@ function displayStats() {
     // TOP inzeráty podle zobrazení
     const topAdsByViews = [...allAds].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
     
-    // Doporučení
-    const recommendations = [];
-    if (usersWithoutAds > 0) {
-        recommendations.push({
-            type: 'warning',
-            icon: 'fa-users',
-            title: 'Uživatelé bez inzerátů',
-            text: `${usersWithoutAds} uživatelů nemá žádné inzeráty. Zvažte odeslání emailu s tipy, jak začít, nebo vytvořte onboarding proces.`
-        });
-    }
-    if (inactiveAds > activeAds * 0.3) {
-        recommendations.push({
-            type: 'info',
-            icon: 'fa-exclamation-triangle',
-            title: 'Mnoho neaktivních inzerátů',
-            text: `${inactiveAds} inzerátů je neaktivních (${Math.round(inactiveAds / totalAds * 100)}%). Zkontrolujte, proč uživatelé své inzeráty deaktivovali a zvažte zlepšení UX.`
-        });
-    }
-    if (avgViewsPerAd < 10 && totalAds > 0) {
-        recommendations.push({
-            type: 'success',
-            icon: 'fa-lightbulb',
-            title: 'Nízká návštěvnost',
-            text: `Průměrně ${avgViewsPerAd} zobrazení na inzerát. Zvažte zlepšení SEO, propagaci na sociálních sítích nebo optimalizaci vyhledávání.`
-        });
-    }
-    if (topAds === 0 && totalAds > 10) {
-        recommendations.push({
-            type: 'info',
-            icon: 'fa-fire',
-            title: 'Žádné TOP inzeráty',
-            text: 'Zvažte propagaci TOP funkcionality pro zvýšení příjmů. Můžete vytvořit speciální nabídku nebo slevu pro první TOP inzeráty.'
-        });
-    }
-    if (totalAds === 0) {
-        recommendations.push({
-            type: 'warning',
-            icon: 'fa-rocket',
-            title: 'Začněte s propagací',
-            text: 'V systému zatím nejsou žádné inzeráty. Začněte propagovat platformu a motivovat uživatele k vytváření prvních inzerátů.'
-        });
-    }
-    if (totalUsers === 0) {
-        recommendations.push({
-            type: 'warning',
-            icon: 'fa-user-plus',
-            title: 'Potřebujete více uživatelů',
-            text: 'V systému zatím nejsou žádní uživatelé. Začněte s marketingovou kampaní a přilákejte první uživatele.'
-        });
-    }
+    // Inteligentní doporučení podle aktuálního stavu
+    const recommendations = generateIntelligentRecommendations({
+        totalUsers,
+        totalAds,
+        activeAds,
+        inactiveAds,
+        topAds,
+        usersWithAds,
+        usersWithoutAds,
+        avgViewsPerAd: parseFloat(avgViewsPerAd),
+        totalViews,
+        totalContacts,
+        packageStats,
+        topAdsList,
+        avgAdsPerUser: parseFloat(avgAdsPerUser)
+    });
     
     container.innerHTML = `
         <div class="stats-grid">
@@ -425,7 +391,7 @@ function displayStats() {
     `;
     
     // Vytvořit grafy
-    createCharts(categoryStats, locationStats, monthlyStats, { activeAds, inactiveAds, topAds });
+    createCharts(categoryStats, locationStats, monthlyStats, { activeAds, inactiveAds, topAds }, dailyViewsStats, packageStats);
 }
 
 // Vytvoření grafů
