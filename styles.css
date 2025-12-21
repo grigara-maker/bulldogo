@@ -2031,7 +2031,7 @@ body {
 }
 
 .admin-section .nav-link {
-    color: rgba(255, 255, 255, 0.9);
+    color: #1f2937 !important;
     transition: all 0.3s ease;
     background: rgba(255, 215, 0, 0.08);
     border-left: 3px solid #ffd700;
@@ -2087,7 +2087,7 @@ body {
     transform: translateX(0) !important;
     width: auto !important;
     overflow: visible !important;
-    color: rgba(255, 255, 255, 0.9);
+    color: #1f2937 !important;
     font-weight: 500;
     font-size: 0.95rem;
 }
@@ -11758,6 +11758,140 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     text-align: center;
     padding: 3rem;
     color: #6b7280;
+}
+
+/* Dashboard Overview */
+.dashboard-overview {
+    margin-top: 2rem;
+}
+
+.dashboard-overview h2 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dashboard-subtitle {
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.overview-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.overview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.overview-card h3 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.overview-stats {
+    margin-bottom: 1.5rem;
+}
+
+.overview-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.overview-stat:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    color: #6b7280;
+}
+
+.stat-value {
+    color: #f77c00;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.overview-card .btn {
+    width: 100%;
+    margin-top: 1rem;
+}
+
+/* Charts Section */
+.charts-section {
+    margin-top: 3rem;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.charts-section h2 {
+    margin: 0 0 2rem 0;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.chart-container {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.chart-container h3 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.chart-container canvas {
+    max-height: 300px;
+}
+
+/* Page Header */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-header p {
+    color: #6b7280;
+    margin: 0;
 }
 
 .no-ads i,

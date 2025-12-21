@@ -200,9 +200,7 @@ async function loadDashboardData() {
         
         // Aktualizovat statistiky
         updateDashboardStats();
-        
-        // Zobrazit uživatele (default tab)
-        displayUsers(allUsers);
+        updateDashboardOverview();
         
         console.log('Dashboard data načtena');
         
@@ -222,15 +220,24 @@ async function loadAllUsers() {
         
         // Pro každý uživatel načti profil z users/{uid}/profile/profile a slouč
         for (const userDoc of usersSnapshot.docs) {
-            const userData = { id: userDoc.id, ...userDoc.data() };
+            const userData = { 
+                id: userDoc.id, 
+                uid: userDoc.id,  // Přidat uid pro kompatibilitu
+                ...userDoc.data() 
+            };
             const profileRef = doc(window.firebaseDb, 'users', userDoc.id, 'profile', 'profile');
             const profileSnap = await getDoc(profileRef);
             if (profileSnap.exists()) {
                 const profileData = profileSnap.data();
-                userData.name = profileData.name || userData.name;
-                userData.email = profileData.email || userData.email;
+                userData.name = profileData.name || userData.name || userDoc.data().email || 'Bez jména';
+                userData.email = profileData.email || userData.email || userDoc.data().email || 'Bez emailu';
                 userData.balance = profileData.balance || 0;
-                userData.profileCreatedAt = profileData.createdAt || null;
+                userData.profileCreatedAt = profileData.createdAt || userDoc.data().createdAt || null;
+            } else {
+                // Pokud profil neexistuje, použít data z root dokumentu
+                userData.name = userData.name || userData.email || 'Bez jména';
+                userData.email = userData.email || 'Bez emailu';
+                userData.balance = 0;
             }
             allUsers.push(userData);
         }
@@ -287,12 +294,40 @@ function updateDashboardStats() {
     const totalViews = allAds.reduce((sum, ad) => sum + (ad.views || 0), 0);
     const totalContacts = allAds.reduce((sum, ad) => sum + (ad.contacts || 0), 0);
     
-    document.getElementById('totalUsers').textContent = totalUsers;
-    document.getElementById('totalAds').textContent = totalAds;
-    document.getElementById('activeAds').textContent = activeAds;
-    document.getElementById('topAds').textContent = topAds;
-    document.getElementById('totalViews').textContent = totalViews.toLocaleString('cs-CZ');
-    document.getElementById('totalContacts').textContent = totalContacts.toLocaleString('cs-CZ');
+    if (document.getElementById('totalUsers')) {
+        document.getElementById('totalUsers').textContent = totalUsers;
+        document.getElementById('totalAds').textContent = totalAds;
+        document.getElementById('activeAds').textContent = activeAds;
+        document.getElementById('topAds').textContent = topAds;
+        document.getElementById('totalViews').textContent = totalViews.toLocaleString('cs-CZ');
+        document.getElementById('totalContacts').textContent = totalContacts.toLocaleString('cs-CZ');
+    }
+}
+
+// Aktualizace overview dashboardu
+function updateDashboardOverview() {
+    const totalUsers = allUsers.length;
+    const totalAds = allAds.length;
+    const activeAds = allAds.filter(ad => ad.status === 'active' || !ad.status).length;
+    const topAds = allAds.filter(ad => ad.isTop === true).length;
+    const totalViews = allAds.reduce((sum, ad) => sum + (ad.views || 0), 0);
+    const totalContacts = allAds.reduce((sum, ad) => sum + (ad.contacts || 0), 0);
+    const avgViews = totalAds > 0 ? Math.round(totalViews / totalAds) : 0;
+    
+    const usersWithAds = new Set(allAds.map(ad => ad.userId || ad.userId)).size;
+    const usersWithoutAds = totalUsers - usersWithAds;
+    
+    if (document.getElementById('overviewTotalUsers')) {
+        document.getElementById('overviewTotalUsers').textContent = totalUsers;
+        document.getElementById('overviewUsersWithAds').textContent = usersWithAds;
+        document.getElementById('overviewUsersWithoutAds').textContent = usersWithoutAds;
+        document.getElementById('overviewTotalAds').textContent = totalAds;
+        document.getElementById('overviewActiveAds').textContent = activeAds;
+        document.getElementById('overviewTopAds').textContent = topAds;
+        document.getElementById('overviewTotalViews').textContent = totalViews.toLocaleString('cs-CZ');
+        document.getElementById('overviewAvgViews').textContent = avgViews;
+        document.getElementById('overviewTotalContacts').textContent = totalContacts.toLocaleString('cs-CZ');
+    }
 }
 
 // Zobrazení tabů
@@ -673,15 +708,16 @@ function filterUsers() {
     const filterValue = document.getElementById('userFilter').value;
     
     let filteredUsers = allUsers.filter(user => {
-        const matchesSearch = user.name?.toLowerCase().includes(searchTerm) || 
-                             user.email.toLowerCase().includes(searchTerm);
+        const userId = user.uid || user.id;
+        const matchesSearch = (user.name?.toLowerCase() || '').includes(searchTerm) || 
+                             (user.email?.toLowerCase() || '').includes(searchTerm);
         
         let matchesFilter = true;
         if (filterValue === 'withAds') {
-            const userAds = allAds.filter(ad => ad.userId === user.uid);
+            const userAds = allAds.filter(ad => (ad.userId === userId) || (ad.userId === user.id));
             matchesFilter = userAds.length > 0;
         } else if (filterValue === 'withoutAds') {
-            const userAds = allAds.filter(ad => ad.userId === user.uid);
+            const userAds = allAds.filter(ad => (ad.userId === userId) || (ad.userId === user.id));
             matchesFilter = userAds.length === 0;
         }
         
