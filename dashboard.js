@@ -102,7 +102,11 @@ async function checkAdminLogin() {
         const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
         if (isLoggedIn) {
             showDashboard();
-            await loadDashboardData();
+            
+            // Počkat na zobrazení dashboardu a pak načíst data
+            setTimeout(async () => {
+                await loadDashboardData();
+            }, 100);
             
             // Zobrazit admin menu
             if (typeof window.checkAndShowAdminMenu === 'function') {
@@ -216,18 +220,23 @@ async function loadDashboardData() {
         
         // Načíst všechny uživatele
         await loadAllUsers();
+        console.log('✅ Načteno uživatelů:', allUsers.length);
         
         // Načíst všechny inzeráty
         await loadAllAds();
+        console.log('✅ Načteno inzerátů:', allAds.length);
         
         // Aktualizovat statistiky
+        console.log('Aktualizuji statistiky...');
         updateDashboardStats();
         updateDashboardOverview();
         
-        console.log('Dashboard data načtena');
+        console.log('✅ Dashboard data načtena a aktualizována');
+        console.log('   - Uživatelé:', allUsers.length);
+        console.log('   - Inzeráty:', allAds.length);
         
     } catch (error) {
-        console.error('Chyba při načítání dashboard dat:', error);
+        console.error('❌ Chyba při načítání dashboard dat:', error);
         showMessage('Nepodařilo se načíst data dashboardu.', 'error');
     }
 }
@@ -361,13 +370,62 @@ function updateDashboardStats() {
     const totalViews = allAds.reduce((sum, ad) => sum + (ad.views || 0), 0);
     const totalContacts = allAds.reduce((sum, ad) => sum + (ad.contacts || 0), 0);
     
-    if (document.getElementById('totalUsers')) {
-        document.getElementById('totalUsers').textContent = totalUsers;
-        document.getElementById('totalAds').textContent = totalAds;
-        document.getElementById('activeAds').textContent = activeAds;
-        document.getElementById('topAds').textContent = topAds;
-        document.getElementById('totalViews').textContent = totalViews.toLocaleString('cs-CZ');
-        document.getElementById('totalContacts').textContent = totalContacts.toLocaleString('cs-CZ');
+    console.log('📊 Aktualizuji statistiky:', {
+        totalUsers,
+        totalAds,
+        activeAds,
+        topAds,
+        totalViews,
+        totalContacts
+    });
+    
+    const totalUsersEl = document.getElementById('totalUsers');
+    const totalAdsEl = document.getElementById('totalAds');
+    const activeAdsEl = document.getElementById('activeAds');
+    const topAdsEl = document.getElementById('topAds');
+    const totalViewsEl = document.getElementById('totalViews');
+    const totalContactsEl = document.getElementById('totalContacts');
+    
+    if (totalUsersEl) {
+        totalUsersEl.textContent = totalUsers;
+        console.log('✅ totalUsers aktualizováno:', totalUsers);
+    } else {
+        console.warn('⚠️ Element totalUsers nenalezen');
+    }
+    
+    if (totalAdsEl) {
+        totalAdsEl.textContent = totalAds;
+        console.log('✅ totalAds aktualizováno:', totalAds);
+    } else {
+        console.warn('⚠️ Element totalAds nenalezen');
+    }
+    
+    if (activeAdsEl) {
+        activeAdsEl.textContent = activeAds;
+        console.log('✅ activeAds aktualizováno:', activeAds);
+    } else {
+        console.warn('⚠️ Element activeAds nenalezen');
+    }
+    
+    if (topAdsEl) {
+        topAdsEl.textContent = topAds;
+        console.log('✅ topAds aktualizováno:', topAds);
+    } else {
+        console.warn('⚠️ Element topAds nenalezen');
+    }
+    
+    if (totalViewsEl) {
+        totalViewsEl.textContent = totalViews.toLocaleString('cs-CZ');
+        console.log('✅ totalViews aktualizováno:', totalViews);
+    } else {
+        console.warn('⚠️ Element totalViews nenalezen');
+    }
+    
+    if (totalContactsEl) {
+        totalContactsEl.textContent = totalContacts.toLocaleString('cs-CZ');
+        console.log('✅ totalContacts aktualizováno:', totalContacts);
+    } else {
+        console.warn('⚠️ Element totalContacts nenalezen');
     }
 }
 
@@ -384,8 +442,21 @@ function updateDashboardOverview() {
     const usersWithAds = new Set(allAds.map(ad => ad.userId || ad.userId)).size;
     const usersWithoutAds = totalUsers - usersWithAds;
     
-    if (document.getElementById('overviewTotalUsers')) {
-        document.getElementById('overviewTotalUsers').textContent = totalUsers;
+    console.log('📊 Aktualizuji overview:', {
+        totalUsers,
+        usersWithAds,
+        usersWithoutAds,
+        totalAds,
+        activeAds,
+        topAds,
+        totalViews,
+        avgViews,
+        totalContacts
+    });
+    
+    const overviewTotalUsersEl = document.getElementById('overviewTotalUsers');
+    if (overviewTotalUsersEl) {
+        overviewTotalUsersEl.textContent = totalUsers;
         document.getElementById('overviewUsersWithAds').textContent = usersWithAds;
         document.getElementById('overviewUsersWithoutAds').textContent = usersWithoutAds;
         document.getElementById('overviewTotalAds').textContent = totalAds;
@@ -394,6 +465,9 @@ function updateDashboardOverview() {
         document.getElementById('overviewTotalViews').textContent = totalViews.toLocaleString('cs-CZ');
         document.getElementById('overviewAvgViews').textContent = avgViews;
         document.getElementById('overviewTotalContacts').textContent = totalContacts.toLocaleString('cs-CZ');
+        console.log('✅ Overview aktualizováno');
+    } else {
+        console.warn('⚠️ Overview elementy nenalezeny - možná není dashboard zobrazen');
     }
 }
 
