@@ -21,26 +21,43 @@
    ```
 7. Ulož změny
 
-## Metoda 2: Přes Firebase Function (Po deployi)
+## Metoda 2: Přes Firebase Function (Doporučeno - automaticky vytvoří profil)
 
-1. Deployni funkci:
-   ```bash
-   cd functions
-   npm run build
-   firebase deploy --only functions:setAdminStatus
-   ```
+Funkce `setAdminStatus` automaticky:
+- ✅ Zkontroluje, jestli uživatel existuje v Auth
+- ✅ Vytvoří root dokument `users/{uid}` pokud neexistuje
+- ✅ Vytvoří profil `users/{uid}/profile/profile` s admin statusem
+- ✅ Nastaví základní údaje (email, name, balance, atd.)
 
-2. Zavolej funkci přes HTTP:
-   ```bash
-   curl -X POST https://europe-west1-inzerio-inzerce.cloudfunctions.net/setAdminStatus \
-     -H "Content-Type: application/json" \
-     -d '{"uid": "c8eMk8gNI9RZzLWucfBWRu8gYx42"}'
-   ```
+### Krok 1: Deployni funkci
+```bash
+cd functions
+npm run build
+firebase deploy --only functions:setAdminStatus
+```
 
-   Nebo přes GET:
-   ```
-   https://europe-west1-inzerio-inzerce.cloudfunctions.net/setAdminStatus?uid=c8eMk8gNI9RZzLWucfBWRu8gYx42
-   ```
+### Krok 2: Zavolej funkci přes HTTP
+
+**POST metoda:**
+```bash
+curl -X POST https://europe-west1-inzerio-inzerce.cloudfunctions.net/setAdminStatus \
+  -H "Content-Type: application/json" \
+  -d '{"uid": "c8eMk8gNI9RZzLWucfBWRu8gYx42"}'
+```
+
+**GET metoda (v prohlížeči):**
+```
+https://europe-west1-inzerio-inzerce.cloudfunctions.net/setAdminStatus?uid=c8eMk8gNI9RZzLWucfBWRu8gYx42
+```
+
+**Odpověď při úspěchu:**
+```json
+{
+  "success": true,
+  "message": "Admin status successfully set",
+  "uid": "c8eMk8gNI9RZzLWucfBWRu8gYx42"
+}
+```
 
 ## Metoda 3: Přes Firebase CLI (Pokud máš přihlášený Firebase CLI)
 

@@ -2877,19 +2877,80 @@ export const setAdminStatus = functions.region("europe-west1").https.onRequest(a
       }
 
       const db = admin.firestore();
-      const profileRef = db.collection("users").doc(uid).collection("profile").doc("profile");
+      const auth = admin.auth();
+      
+      // Zkontrolovat, jestli uživatel existuje v Auth
+      let userRecord;
+      try {
+        userRecord = await auth.getUser(uid);
+      } catch (error: any) {
+        functions.logger.error("❌ Uživatel neexistuje v Auth", { uid, error: error?.message });
+        res.status(404).json({
+          error: "User not found in Authentication",
+          message: "Uživatel s tímto UID neexistuje v Firebase Authentication",
+        });
+        return;
+      }
 
-      // Nastavit admin status
-      await profileRef.set(
-        {
-          isAdmin: true,
-          role: "admin",
-          adminSetAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
+      const userRef = db.collection("users").doc(uid);
+      const profileRef = userRef.collection("profile").doc("profile");
 
-      functions.logger.info("✅ Admin status nastaven", { uid });
+      // Zkontrolovat, jestli už existuje profil
+      const profileSnap = await profileRef.get();
+      const userSnap = await userRef.get();
+
+      // Vytvořit root dokument uživatele, pokud neexistuje
+      if (!userSnap.exists) {
+        await userRef.set({
+          uid: uid,
+          email: userRecord.email || "",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          userType: "person", // nebo "company" podle potřeby
+        });
+        functions.logger.info("✅ Root dokument uživatele vytvořen", { uid });
+      }
+
+      // Vytvořit nebo aktualizovat profil s admin statusem
+      const profileData: any = {
+        email: userRecord.email || "",
+        name: userRecord.displayName || "Admin",
+        isAdmin: true,
+        role: "admin",
+        adminSetAt: admin.firestore.FieldValue.serverTimestamp(),
+        balance: 0,
+        rating: 0,
+        totalReviews: 0,
+        ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+        recentReviews: [],
+        totalAds: 0,
+        activeAds: 0,
+        totalViews: 0,
+        totalContacts: 0,
+        emailNotifications: true,
+        smsNotifications: false,
+        marketingEmails: false,
+      };
+
+      // Pokud profil už existuje, použij merge, jinak vytvoř nový
+      if (profileSnap.exists) {
+        // Aktualizovat existující profil
+        await profileRef.set(
+          {
+            isAdmin: true,
+            role: "admin",
+            adminSetAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+        functions.logger.info("✅ Admin status nastaven (profil existoval)", { uid });
+      } else {
+        // Vytvořit nový profil
+        profileData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+        await profileRef.set(profileData);
+        functions.logger.info("✅ Nový profil vytvořen s admin statusem", { uid });
+      }
+
+      functions.logger.info("✅ Admin status nastaven", { uid, email: userRecord.email });
 
       res.status(200).json({
         success: true,
