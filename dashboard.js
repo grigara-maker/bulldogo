@@ -120,6 +120,20 @@ function setupEventListeners() {
             await updateUserBalance();
         });
     }
+    
+    // Ad edit form
+    const adEditForm = document.getElementById('adEditForm');
+    if (adEditForm) {
+        adEditForm.addEventListener('submit', saveAdChanges);
+    }
+    
+    // Close modals on outside click
+    window.onclick = function(event) {
+        const adEditModal = document.getElementById('adEditModal');
+        if (event.target === adEditModal) {
+            closeAdEditModal();
+        }
+    }
 }
 
 // Zpracování admin přihlášení
@@ -187,7 +201,7 @@ async function loadDashboardData() {
         // Aktualizovat statistiky
         updateDashboardStats();
         
-        // Zobrazit uživatele
+        // Zobrazit uživatele (default tab)
         displayUsers(allUsers);
         
         console.log('Dashboard data načtena');
@@ -268,11 +282,329 @@ async function loadAllAds() {
 function updateDashboardStats() {
     const totalUsers = allUsers.length;
     const totalAds = allAds.length;
-    const activeAds = allAds.filter(ad => ad.status === 'active').length;
+    const activeAds = allAds.filter(ad => ad.status === 'active' || !ad.status).length;
+    const topAds = allAds.filter(ad => ad.isTop === true).length;
+    const totalViews = allAds.reduce((sum, ad) => sum + (ad.views || 0), 0);
+    const totalContacts = allAds.reduce((sum, ad) => sum + (ad.contacts || 0), 0);
     
     document.getElementById('totalUsers').textContent = totalUsers;
     document.getElementById('totalAds').textContent = totalAds;
     document.getElementById('activeAds').textContent = activeAds;
+    document.getElementById('topAds').textContent = topAds;
+    document.getElementById('totalViews').textContent = totalViews.toLocaleString('cs-CZ');
+    document.getElementById('totalContacts').textContent = totalContacts.toLocaleString('cs-CZ');
+}
+
+// Zobrazení tabů
+function showTab(tabName) {
+    // Skrýt všechny taby
+    document.querySelectorAll('.dashboard-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Zobrazit vybraný tab
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    event.target.closest('.tab-btn').classList.add('active');
+    
+    // Načíst data pro tab
+    if (tabName === 'ads') {
+        displayAllAds();
+    } else if (tabName === 'stats') {
+        displayStats();
+    }
+}
+
+// Zobrazení všech inzerátů
+function displayAllAds() {
+    const grid = document.getElementById('adsGrid');
+    
+    if (allAds.length === 0) {
+        grid.innerHTML = `
+            <div class="no-ads">
+                <i class="fas fa-list"></i>
+                <h3>Žádné inzeráty</h3>
+                <p>V systému nejsou žádné inzeráty.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = allAds.map(ad => createAdCard(ad)).join('');
+}
+
+// Vytvoření karty inzerátu
+function createAdCard(ad) {
+    const statusClass = ad.status === 'active' ? 'active' : 'inactive';
+    const statusText = ad.status === 'active' ? 'Aktivní' : ad.status === 'inactive' ? 'Neaktivní' : 'Čekající';
+    const topBadge = ad.isTop ? '<span class="top-badge"><i class="fas fa-fire"></i> TOP</span>' : '';
+    const createdAt = ad.createdAt?.toDate ? ad.createdAt.toDate().toLocaleDateString('cs-CZ') : 'Neznámé';
+    
+    return `
+        <div class="ad-card-admin">
+            <div class="ad-card-header">
+                <h3>${ad.title || 'Bez názvu'}</h3>
+                ${topBadge}
+            </div>
+            <div class="ad-card-body">
+                <p class="ad-description">${(ad.description || '').substring(0, 150)}${ad.description?.length > 150 ? '...' : ''}</p>
+                <div class="ad-meta">
+                    <span><i class="fas fa-map-marker-alt"></i> ${ad.location || 'Neuvedeno'}</span>
+                    <span><i class="fas fa-tag"></i> ${ad.category || 'Neuvedeno'}</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="ad-stats">
+                    <span><i class="fas fa-eye"></i> ${ad.views || 0} zobrazení</span>
+                    <span><i class="fas fa-comments"></i> ${ad.contacts || 0} kontaktů</span>
+                    <span><i class="fas fa-calendar"></i> ${createdAt}</span>
+                </div>
+            </div>
+            <div class="ad-card-actions">
+                <button class="btn btn-primary" onclick="editAd('${ad.id}')">
+                    <i class="fas fa-edit"></i> Upravit
+                </button>
+                <button class="btn btn-danger" onclick="deleteAd('${ad.id}')">
+                    <i class="fas fa-trash"></i> Smazat
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Filtrování inzerátů
+function filterAds() {
+    const searchTerm = document.getElementById('adsSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('adsStatusFilter').value;
+    
+    let filteredAds = allAds.filter(ad => {
+        const matchesSearch = (ad.title || '').toLowerCase().includes(searchTerm) ||
+                             (ad.description || '').toLowerCase().includes(searchTerm);
+        const matchesStatus = !statusFilter || ad.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+    
+    const grid = document.getElementById('adsGrid');
+    if (filteredAds.length === 0) {
+        grid.innerHTML = `
+            <div class="no-ads">
+                <i class="fas fa-list"></i>
+                <h3>Žádné inzeráty</h3>
+                <p>Nebyly nalezeny žádné inzeráty odpovídající filtru.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = filteredAds.map(ad => createAdCard(ad)).join('');
+}
+
+// Editace inzerátu
+async function editAd(adId) {
+    const ad = allAds.find(a => a.id === adId);
+    if (!ad) return;
+    
+    document.getElementById('editAdId').value = adId;
+    document.getElementById('editAdTitle').value = ad.title || '';
+    document.getElementById('editAdDescription').value = ad.description || '';
+    document.getElementById('editAdStatus').value = ad.status || 'active';
+    document.getElementById('editAdCategory').value = ad.category || '';
+    document.getElementById('editAdLocation').value = ad.location || '';
+    
+    document.getElementById('adEditModal').style.display = 'block';
+}
+
+// Zavření modalu pro editaci
+function closeAdEditModal() {
+    document.getElementById('adEditModal').style.display = 'none';
+}
+
+// Uložení změn inzerátu
+async function saveAdChanges(e) {
+    e.preventDefault();
+    const adId = document.getElementById('editAdId').value;
+    const formData = new FormData(e.target);
+    
+    try {
+        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Najít ad dokument (může být v users/{uid}/inzeraty/{adId})
+        let adRef = null;
+        for (const ad of allAds) {
+            if (ad.id === adId) {
+                // Zkusit najít přes userId
+                if (ad.userId) {
+                    adRef = doc(window.firebaseDb, 'users', ad.userId, 'inzeraty', adId);
+                } else {
+                    // Fallback na starou strukturu
+                    adRef = doc(window.firebaseDb, 'services', adId);
+                }
+                break;
+            }
+        }
+        
+        if (!adRef) {
+            throw new Error('Inzerát nenalezen');
+        }
+        
+        await updateDoc(adRef, {
+            title: formData.get('title'),
+            description: formData.get('description'),
+            status: formData.get('status'),
+            category: formData.get('category'),
+            location: formData.get('location'),
+            updatedAt: new Date()
+        });
+        
+        // Aktualizovat lokální data
+        const adIndex = allAds.findIndex(a => a.id === adId);
+        if (adIndex !== -1) {
+            allAds[adIndex] = { ...allAds[adIndex], ...Object.fromEntries(formData) };
+        }
+        
+        closeAdEditModal();
+        displayAllAds();
+        updateDashboardStats();
+        showMessage('Inzerát úspěšně upraven!', 'success');
+    } catch (error) {
+        console.error('Chyba při ukládání inzerátu:', error);
+        showMessage('Nepodařilo se uložit změny inzerátu.', 'error');
+    }
+}
+
+// Mazání inzerátu
+async function deleteAd(adId) {
+    if (!confirm('Opravdu chcete smazat tento inzerát? Tato akce je nevratná.')) {
+        return;
+    }
+    
+    try {
+        const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Najít ad dokument
+        let adRef = null;
+        for (const ad of allAds) {
+            if (ad.id === adId) {
+                if (ad.userId) {
+                    adRef = doc(window.firebaseDb, 'users', ad.userId, 'inzeraty', adId);
+                } else {
+                    adRef = doc(window.firebaseDb, 'services', adId);
+                }
+                break;
+            }
+        }
+        
+        if (!adRef) {
+            throw new Error('Inzerát nenalezen');
+        }
+        
+        await deleteDoc(adRef);
+        
+        // Odstranit z lokálních dat
+        allAds = allAds.filter(a => a.id !== adId);
+        
+        displayAllAds();
+        updateDashboardStats();
+        showMessage('Inzerát úspěšně smazán!', 'success');
+    } catch (error) {
+        console.error('Chyba při mazání inzerátu:', error);
+        showMessage('Nepodařilo se smazat inzerát.', 'error');
+    }
+}
+
+// Zobrazení statistik a doporučení
+function displayStats() {
+    const container = document.getElementById('statsContent');
+    
+    // Vypočítat statistiky
+    const totalUsers = allUsers.length;
+    const totalAds = allAds.length;
+    const activeAds = allAds.filter(ad => ad.status === 'active' || !ad.status).length;
+    const inactiveAds = allAds.filter(ad => ad.status === 'inactive').length;
+    const topAds = allAds.filter(ad => ad.isTop === true).length;
+    const usersWithAds = new Set(allAds.map(ad => ad.userId)).size;
+    const usersWithoutAds = totalUsers - usersWithAds;
+    const avgAdsPerUser = totalUsers > 0 ? (totalAds / totalUsers).toFixed(1) : 0;
+    const totalViews = allAds.reduce((sum, ad) => sum + (ad.views || 0), 0);
+    const avgViewsPerAd = totalAds > 0 ? (totalViews / totalAds).toFixed(1) : 0;
+    
+    // Doporučení
+    const recommendations = [];
+    if (usersWithoutAds > 0) {
+        recommendations.push({
+            type: 'warning',
+            icon: 'fa-users',
+            title: 'Uživatelé bez inzerátů',
+            text: `${usersWithoutAds} uživatelů nemá žádné inzeráty. Zvažte odeslání emailu s tipy, jak začít.`
+        });
+    }
+    if (inactiveAds > activeAds * 0.3) {
+        recommendations.push({
+            type: 'info',
+            icon: 'fa-exclamation-triangle',
+            title: 'Mnoho neaktivních inzerátů',
+            text: `${inactiveAds} inzerátů je neaktivních. Zkontrolujte, proč uživatelé své inzeráty deaktivovali.`
+        });
+    }
+    if (avgViewsPerAd < 10) {
+        recommendations.push({
+            type: 'success',
+            icon: 'fa-lightbulb',
+            title: 'Nízká návštěvnost',
+            text: `Průměrně ${avgViewsPerAd} zobrazení na inzerát. Zvažte zlepšení SEO a propagace.`
+        });
+    }
+    if (topAds === 0 && totalAds > 10) {
+        recommendations.push({
+            type: 'info',
+            icon: 'fa-fire',
+            title: 'Žádné TOP inzeráty',
+            text: 'Zvažte propagaci TOP funkcionality pro zvýšení příjmů.'
+        });
+    }
+    
+    container.innerHTML = `
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h3><i class="fas fa-chart-pie"></i> Přehled</h3>
+                <ul>
+                    <li>Celkem uživatelů: <strong>${totalUsers}</strong></li>
+                    <li>Uživatelé s inzeráty: <strong>${usersWithAds}</strong></li>
+                    <li>Uživatelé bez inzerátů: <strong>${usersWithoutAds}</strong></li>
+                    <li>Průměr inzerátů na uživatele: <strong>${avgAdsPerUser}</strong></li>
+                </ul>
+            </div>
+            <div class="stat-box">
+                <h3><i class="fas fa-list"></i> Inzeráty</h3>
+                <ul>
+                    <li>Celkem inzerátů: <strong>${totalAds}</strong></li>
+                    <li>Aktivní: <strong>${activeAds}</strong></li>
+                    <li>Neaktivní: <strong>${inactiveAds}</strong></li>
+                    <li>TOP inzeráty: <strong>${topAds}</strong></li>
+                </ul>
+            </div>
+            <div class="stat-box">
+                <h3><i class="fas fa-eye"></i> Návštěvnost</h3>
+                <ul>
+                    <li>Celkem zobrazení: <strong>${totalViews.toLocaleString('cs-CZ')}</strong></li>
+                    <li>Průměr na inzerát: <strong>${avgViewsPerAd}</strong></li>
+                </ul>
+            </div>
+        </div>
+        <div class="recommendations">
+            <h3><i class="fas fa-lightbulb"></i> Doporučení</h3>
+            ${recommendations.length > 0 ? recommendations.map(rec => `
+                <div class="recommendation ${rec.type}">
+                    <i class="fas ${rec.icon}"></i>
+                    <div>
+                        <strong>${rec.title}</strong>
+                        <p>${rec.text}</p>
+                    </div>
+                </div>
+            `).join('') : '<p>Všechno vypadá dobře! Žádná doporučení.</p>'}
+        </div>
+    `;
 }
 
 // Zobrazení uživatelů

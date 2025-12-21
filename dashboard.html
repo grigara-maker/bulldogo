@@ -188,6 +188,33 @@
                             <p>Aktivní inzeráty</p>
                         </div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="topAds">0</h3>
+                            <p>TOP inzeráty</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalViews">0</h3>
+                            <p>Celkem zobrazení</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalContacts">0</h3>
+                            <p>Celkem kontaktů</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -206,15 +233,69 @@
                 </div>
             </div>
 
-            <!-- Users List -->
-            <div class="users-container">
-                <div class="users-header">
-                    <h2><i class="fas fa-users"></i> Seznam uživatelů</h2>
+            <!-- Tabs Navigation -->
+            <div class="dashboard-tabs">
+                <button class="tab-btn active" onclick="showTab('users')">
+                    <i class="fas fa-users"></i> Uživatelé
+                </button>
+                <button class="tab-btn" onclick="showTab('ads')">
+                    <i class="fas fa-list"></i> Inzeráty
+                </button>
+                <button class="tab-btn" onclick="showTab('stats')">
+                    <i class="fas fa-chart-bar"></i> Statistiky
+                </button>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="dashboard-tab-content active">
+                <div class="users-container">
+                    <div class="users-header">
+                        <h2><i class="fas fa-users"></i> Seznam uživatelů</h2>
+                    </div>
+                    <div class="users-grid" id="usersGrid">
+                        <div class="loading-users">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Načítám uživatele...</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="users-grid" id="usersGrid">
-                    <div class="loading-users">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Načítám uživatele...</p>
+            </div>
+
+            <!-- Ads Tab -->
+            <div id="adsTab" class="dashboard-tab-content">
+                <div class="ads-container">
+                    <div class="ads-header">
+                        <h2><i class="fas fa-list"></i> Všechny inzeráty</h2>
+                        <div class="ads-filters">
+                            <input type="text" id="adsSearch" placeholder="Hledat inzeráty..." oninput="filterAds()">
+                            <select id="adsStatusFilter" onchange="filterAds()">
+                                <option value="">Všechny stavy</option>
+                                <option value="active">Aktivní</option>
+                                <option value="inactive">Neaktivní</option>
+                                <option value="pending">Čekající</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ads-grid" id="adsGrid">
+                        <div class="loading-ads">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Načítám inzeráty...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div id="statsTab" class="dashboard-tab-content">
+                <div class="stats-container">
+                    <div class="stats-header">
+                        <h2><i class="fas fa-chart-bar"></i> Statistiky a doporučení</h2>
+                    </div>
+                    <div class="stats-content" id="statsContent">
+                        <div class="loading-stats">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Načítám statistiky...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,6 +339,44 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Ad Edit Modal -->
+    <div id="adEditModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Upravit inzerát</h2>
+                <span class="close" onclick="closeAdEditModal()">&times;</span>
+            </div>
+            <form id="adEditForm" class="ad-edit-form">
+                <div class="form-group">
+                    <label for="editAdTitle">Název</label>
+                    <input type="text" id="editAdTitle" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAdDescription">Popis</label>
+                    <textarea id="editAdDescription" name="description" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editAdStatus">Stav</label>
+                    <select id="editAdStatus" name="status" required>
+                        <option value="active">Aktivní</option>
+                        <option value="inactive">Neaktivní</option>
+                        <option value="pending">Čekající</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editAdCategory">Kategorie</label>
+                    <input type="text" id="editAdCategory" name="category">
+                </div>
+                <div class="form-group">
+                    <label for="editAdLocation">Lokace</label>
+                    <input type="text" id="editAdLocation" name="location">
+                </div>
+                <input type="hidden" id="editAdId" name="adId">
+                <button type="submit" class="btn btn-primary">Uložit změny</button>
+            </form>
         </div>
     </div>
 
