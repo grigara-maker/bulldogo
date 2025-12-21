@@ -35,8 +35,54 @@ function initDashboard() {
     checkAdminLogin();
 }
 
+// Kontrola admin statusu z Firestore
+async function checkAdminStatusFromFirestore(uid) {
+    if (!uid) return false;
+    
+    try {
+        const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const profileRef = doc(window.firebaseDb, 'users', uid, 'profile', 'profile');
+        const profileSnap = await getDoc(profileRef);
+        
+        if (profileSnap.exists()) {
+            const profileData = profileSnap.data();
+            if (profileData.isAdmin === true || profileData.role === 'admin') {
+                return true;
+            }
+        }
+        
+        // Fallback: kontrola přes email
+        const auth = window.firebaseAuth;
+        if (auth && auth.currentUser) {
+            const adminEmails = ['admin@bulldogo.cz', 'support@bulldogo.cz'];
+            if (auth.currentUser.email && adminEmails.includes(auth.currentUser.email.toLowerCase())) {
+                return true;
+            }
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Chyba při kontrole admin statusu:', error);
+        return false;
+    }
+}
+
 // Zkontrolovat admin přihlášení
-function checkAdminLogin() {
+async function checkAdminLogin() {
+    // Zkontrolovat Firebase Auth
+    const auth = window.firebaseAuth;
+    if (auth && auth.currentUser) {
+        const isAdmin = await checkAdminStatusFromFirestore(auth.currentUser.uid);
+        if (isAdmin) {
+            console.log('✅ Uživatel je admin podle Firestore');
+            localStorage.setItem('adminLoggedIn', 'true');
+            showDashboard();
+            loadDashboardData();
+            return;
+        }
+    }
+    
+    // Fallback: kontrola localStorage (pro starý dashboard login)
     const isLoggedIn = localStorage.getItem('adminLoggedIn') === 'true';
     if (isLoggedIn) {
         showDashboard();
@@ -77,7 +123,7 @@ function setupEventListeners() {
 }
 
 // Zpracování admin přihlášení
-function handleAdminLogin(e) {
+async function handleAdminLogin(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
@@ -86,15 +132,30 @@ function handleAdminLogin(e) {
     
     console.log('Admin login attempt:', username);
     
+    // Zkontrolovat, jestli je uživatel přihlášen v Firebase Auth
+    const auth = window.firebaseAuth;
+    if (auth && auth.currentUser) {
+        const isAdmin = await checkAdminStatusFromFirestore(auth.currentUser.uid);
+        if (isAdmin) {
+            console.log('✅ Uživatel je admin podle Firestore');
+            localStorage.setItem('adminLoggedIn', 'true');
+            showDashboard();
+            loadDashboardData();
+            showMessage('Úspěšně přihlášen jako admin!', 'success');
+            return;
+        }
+    }
+    
+    // Fallback: starý způsob přihlášení (pro kompatibilitu)
     if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-        console.log('Admin login successful');
+        console.log('Admin login successful (legacy)');
         localStorage.setItem('adminLoggedIn', 'true');
         showDashboard();
         loadDashboardData();
         showMessage('Úspěšně přihlášen jako admin!', 'success');
     } else {
         console.log('Admin login failed');
-        showMessage('Neplatné přihlašovací údaje!', 'error');
+        showMessage('Neplatné přihlašovací údaje! Zkontroluj, že máš admin status v Firestore.', 'error');
     }
 }
 

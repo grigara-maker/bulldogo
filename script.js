@@ -134,6 +134,65 @@ window.initCharCounter = function(textareaId, counterId, maxLength = 600) {
     return updateCounter;
 }
 
+// Globální funkce pro kontrolu a zobrazení admin menu (dostupná všude)
+window.checkAndShowAdminMenu = async function() {
+    const adminSection = document.getElementById('adminSection');
+    if (!adminSection) return;
+    
+    try {
+        // Počkat na Firebase
+        if (!window.firebaseAuth || !window.firebaseDb) {
+            setTimeout(checkAndShowAdminMenu, 500);
+            return;
+        }
+        
+        const auth = window.firebaseAuth;
+        const user = auth.currentUser;
+        
+        if (!user) {
+            adminSection.style.display = 'none';
+            return;
+        }
+        
+        // Zkontrolovat admin status
+        const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const profileRef = doc(window.firebaseDb, 'users', user.uid, 'profile', 'profile');
+        const profileSnap = await getDoc(profileRef);
+        
+        let isAdmin = false;
+        
+        if (profileSnap.exists()) {
+            const profileData = profileSnap.data();
+            if (profileData.isAdmin === true || profileData.role === 'admin') {
+                isAdmin = true;
+            }
+        }
+        
+        // Fallback: kontrola přes email
+        if (!isAdmin) {
+            const adminEmails = ['admin@bulldogo.cz', 'support@bulldogo.cz'];
+            if (user.email && adminEmails.includes(user.email.toLowerCase())) {
+                isAdmin = true;
+            }
+        }
+        
+        // Fallback: localStorage (pro dashboard login)
+        if (!isAdmin && localStorage.getItem('adminLoggedIn') === 'true') {
+            isAdmin = true;
+        }
+        
+        if (isAdmin) {
+            adminSection.style.display = 'block';
+            console.log('✅ Admin menu zobrazeno');
+        } else {
+            adminSection.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Chyba při kontrole admin menu:', error);
+        adminSection.style.display = 'none';
+    }
+}
+
 // Load preferences on page load
 document.addEventListener('DOMContentLoaded', () => {
     // Force light mode
@@ -154,6 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize auth state management
     initializeAuthState();
+    
+    // Zkontrolovat admin menu po načtení stránky
+    setTimeout(checkAndShowAdminMenu, 1000);
     
     // Pokud je už plán v localStorage, vykreslit odznak hned (rychlý náběh)
     try {

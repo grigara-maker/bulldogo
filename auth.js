@@ -368,6 +368,11 @@ function initAuth() {
             authCurrentUser = user;
             updateUI(user);
             
+            // Zkontrolovat admin menu po změně auth stavu
+            if (typeof window.checkAndShowAdminMenu === 'function') {
+                setTimeout(() => window.checkAndShowAdminMenu(), 500);
+            }
+            
             // Zkontrolovat, zda existuje callback po přihlášení
             if (user && window.afterLoginCallback) {
                 console.log('🔄 Spouštím callback po přihlášení');

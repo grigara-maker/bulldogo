@@ -2021,6 +2021,8 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .admin-section .nav-section-title::before {
@@ -2031,6 +2033,16 @@ body {
 .admin-section .nav-link {
     color: rgba(255, 255, 255, 0.85);
     transition: all 0.3s ease;
+    background: rgba(255, 215, 0, 0.05);
+    border-left: 3px solid #ffd700;
+}
+
+.sidebar:not(:hover) .admin-section .nav-link {
+    justify-content: center;
+}
+
+.sidebar:hover .admin-section .nav-link {
+    justify-content: space-between;
 }
 
 .admin-section .nav-link:hover {
@@ -2041,13 +2053,42 @@ body {
 
 .admin-section .nav-link .nav-icon {
     color: #ffd700;
-    opacity: 0.9;
+    opacity: 1;
+    background: transparent;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: #ffd700;
+    background-clip: unset;
+}
+
+.sidebar:not(:hover) .admin-section .nav-link .nav-icon {
+    margin-left: 0;
+}
+
+.sidebar:hover .admin-section .nav-link .nav-icon {
+    margin-left: 0.8rem;
 }
 
 .admin-section .nav-link:hover .nav-icon {
     color: #ffd700;
     opacity: 1;
     transform: scale(1.1);
+}
+
+.admin-section .nav-text {
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    order: 1;
+    transform: translateX(-15px);
+    width: 0;
+    overflow: hidden;
+}
+
+.sidebar:hover .admin-section .nav-text {
+    opacity: 1;
+    transform: translateX(0);
+    width: auto;
+    transition-delay: 0s;
 }
 
 /* Auth Section */
