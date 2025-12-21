@@ -16,28 +16,50 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initStatsPage() {
     console.log('Inicializuji stránku statistik...');
     
-    // Zkontrolovat admin status
     const auth = window.firebaseAuth;
-    if (!auth || !auth.currentUser) {
+    if (!auth) {
+        console.error('Firebase Auth není dostupné');
         window.location.href = 'dashboard.html';
         return;
     }
     
-    const isAdmin = await checkAdminStatus(auth.currentUser.uid);
-    if (!isAdmin) {
-        window.location.href = 'dashboard.html';
-        return;
-    }
+    // Počkat na přihlášení uživatele pomocí onAuthStateChanged
+    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
     
-    // Načíst data
-    await loadAllUsers();
-    await loadAllAds();
-    displayStats();
-    
-    // Zobrazit admin menu
-    if (typeof window.checkAndShowAdminMenu === 'function') {
-        setTimeout(() => window.checkAndShowAdminMenu(), 500);
-    }
+    onAuthStateChanged(auth, async (user) => {
+        console.log('Auth state changed na statistiky.html:', user ? user.email : 'Odhlášen');
+        
+        if (!user) {
+            console.log('Uživatel není přihlášen, přesměrovávám na dashboard');
+            window.location.href = 'dashboard.html';
+            return;
+        }
+        
+        // Zkontrolovat admin status
+        const isAdmin = await checkAdminStatus(user.uid);
+        console.log('Admin status pro', user.email, ':', isAdmin);
+        
+        if (!isAdmin) {
+            console.log('Uživatel není admin, přesměrovávám na dashboard');
+            window.location.href = 'dashboard.html';
+            return;
+        }
+        
+        // Načíst data
+        try {
+            await loadAllUsers();
+            await loadAllAds();
+            displayStats();
+            
+            // Zobrazit admin menu
+            if (typeof window.checkAndShowAdminMenu === 'function') {
+                setTimeout(() => window.checkAndShowAdminMenu(), 500);
+            }
+        } catch (error) {
+            console.error('Chyba při načítání dat:', error);
+            showMessage('Nepodařilo se načíst data.', 'error');
+        }
+    });
 }
 
 // Kontrola admin statusu
