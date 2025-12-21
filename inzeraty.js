@@ -363,22 +363,29 @@ async function deleteAd(adId, userId) {
         
         // Najít ad dokument
         let adRef = null;
+        let adPath = '';
         if (userId) {
             adRef = doc(window.firebaseDb, 'users', userId, 'inzeraty', adId);
+            adPath = `users/${userId}/inzeraty/${adId}`;
         } else {
             adRef = doc(window.firebaseDb, 'services', adId);
+            adPath = `services/${adId}`;
         }
         
+        console.log('🗑️ Mažu inzerát z Firestore:', adPath);
+        
         await deleteDoc(adRef);
+        
+        console.log('✅ Inzerát úspěšně smazán z Firestore');
         
         // Odstranit z lokálních dat
         allAds = allAds.filter(a => a.id !== adId);
         
         displayAllAds();
-        showMessage('Inzerát úspěšně smazán!', 'success');
+        showMessage('Inzerát úspěšně smazán z Firestore!', 'success');
     } catch (error) {
-        console.error('Chyba při mazání inzerátu:', error);
-        showMessage('Nepodařilo se smazat inzerát.', 'error');
+        console.error('❌ Chyba při mazání inzerátu z Firestore:', error);
+        showMessage('Nepodařilo se smazat inzerát z Firestore.', 'error');
     }
 }
 

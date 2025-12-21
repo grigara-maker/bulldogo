@@ -306,30 +306,38 @@ async function deleteUser(userId) {
     try {
         const { deleteDoc, doc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
+        console.log('🗑️ Mažu uživatele z Firestore:', userId);
+        
         // Smazat všechny inzeráty uživatele
         const adsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty');
         const adsSnapshot = await getDocs(adsRef);
+        console.log(`   - Mažu ${adsSnapshot.size} inzerátů uživatele`);
         for (const adDoc of adsSnapshot.docs) {
             await deleteDoc(adDoc.ref);
+            console.log(`   ✓ Smazán inzerát: ${adDoc.id}`);
         }
         
         // Smazat profil
         const profileRef = doc(window.firebaseDb, 'users', userId, 'profile', 'profile');
         await deleteDoc(profileRef);
+        console.log('   ✓ Smazán profil uživatele');
         
         // Smazat root dokument
         const userRef = doc(window.firebaseDb, 'users', userId);
         await deleteDoc(userRef);
+        console.log('   ✓ Smazán root dokument uživatele');
+        
+        console.log('✅ Uživatel úspěšně smazán z Firestore');
         
         // Odstranit z lokálních dat
         allUsers = allUsers.filter(u => (u.uid || u.id) !== userId);
         allAds = allAds.filter(ad => ad.userId !== userId);
         
         displayUsers(allUsers);
-        showMessage('Uživatel úspěšně smazán!', 'success');
+        showMessage('Uživatel úspěšně smazán z Firestore!', 'success');
     } catch (error) {
-        console.error('Chyba při mazání uživatele:', error);
-        showMessage('Nepodařilo se smazat uživatele.', 'error');
+        console.error('❌ Chyba při mazání uživatele z Firestore:', error);
+        showMessage('Nepodařilo se smazat uživatele z Firestore.', 'error');
     }
 }
 
