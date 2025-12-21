@@ -87,7 +87,8 @@ async function checkAdminStatus(uid) {
             }
         }
         const adminEmails = ['admin@bulldogo.cz', 'support@bulldogo.cz'];
-        if (window.firebaseAuth?.currentUser?.email && adminEmails.includes(window.firebaseAuth.currentUser.email.toLowerCase())) {
+        const userEmail = window.firebaseAuth?.currentUser?.email;
+        if (userEmail && typeof userEmail === 'string' && adminEmails.includes(userEmail.toLowerCase())) {
             return true;
         }
         return false;
