@@ -2276,12 +2276,17 @@ body {
 
 /* Hide button labels when collapsed to keep icons centered */
 .sidebar:not(:hover) .btn-login span,
-.sidebar:not(:hover) .btn-register span,
-.sidebar:not(:hover) .btn-profile span {
+.sidebar:not(:hover) .btn-register span {
     opacity: 0;
     transform: translateX(-15px);
     width: 0;
     transition-delay: 0.3s;
+}
+/* Text "Profil" je vždy viditelný */
+.sidebar:not(:hover) .btn-profile span {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    width: auto !important;
 }
 
 /* Keep nav icons strictly centered in collapsed state */
@@ -2372,9 +2377,9 @@ body {
 
 .btn-profile span {
     order: 1; /* Text vlevo */
-    opacity: 1;
-    width: auto;
-    transform: translateX(0);
+    opacity: 1 !important; /* Text vždy viditelný */
+    width: auto !important;
+    transform: translateX(0) !important;
 }
 
 .btn-profile:hover {

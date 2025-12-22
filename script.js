@@ -678,7 +678,7 @@ function ensureSidebarAvatarNode() {
 				wrap.id = 'sidebarUserAvatar';
 				wrap.style.cssText = 'display:inline-flex; margin-left:8px; vertical-align:middle;';
 				const circle = document.createElement('span');
-				circle.style.cssText = 'width:28px;height:28px;border-radius:50%;overflow:hidden;background:#f3f4f6;border:1px solid #e5e7eb;display:inline-flex;align-items:center;justify-content:center;';
+				circle.style.cssText = 'width:32px;height:32px;border-radius:50%;overflow:hidden;background:#f3f4f6;border:1px solid #e5e7eb;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;';
 				const img = document.createElement('img');
 				img.id = 'sidebarUserAvatarImg';
 				img.alt = 'Profilová fotka';
@@ -737,42 +737,41 @@ function applySidebarAvatar(url) {
 	const btn = document.querySelector('.sidebar .user-profile-section .btn-profile');
 	const btnIcon = btn ? btn.querySelector('i') : null;
 	const sidebar = document.querySelector('.sidebar');
-	// "Kompaktní" režim bereme jako stav, kdy sidebar NENÍ hovernutý
-	const isCompact = !(sidebar && sidebar.matches(':hover'));
 	if (!btn || !img || !ph) return;
 	if (url) {
 		img.src = url;
-		if (isCompact) {
-			// zavřený sidebar – nastav avatar do pozadí tlačítka
-			if (wrap) wrap.style.display = 'none';
-			img.style.display = 'none';
-			ph.style.display = 'none';
-			btn.style.backgroundImage = `url('${url}')`;
-			btn.style.backgroundSize = 'cover';
-			btn.style.backgroundPosition = 'center';
-			btn.style.backgroundRepeat = 'no-repeat';
-			if (btnIcon) btnIcon.style.display = 'none';
-		} else {
-			// otevřený sidebar – zobraz mini avatar vedle odznaku
-			if (wrap) wrap.style.display = 'inline-flex';
-			img.style.display = 'block';
-			ph.style.display = 'none';
-			btn.style.backgroundImage = '';
-			if (btnIcon) {
-				btnIcon.style.display = 'none';
-				btnIcon.style.backgroundImage = '';
-				btnIcon.style.width = '';
-				btnIcon.style.height = '';
-				btnIcon.style.color = '';
+		// Vždy zobrazit profilovku v kruhu, ne přes celé tlačítko
+		if (wrap) {
+			const circle = wrap.querySelector('span');
+			if (circle) {
+				// Zajistit, aby kruh byl skutečně kruhový
+				circle.style.width = '32px';
+				circle.style.height = '32px';
+				circle.style.borderRadius = '50%';
+				circle.style.overflow = 'hidden';
 			}
+			wrap.style.display = 'inline-flex';
+		}
+		img.style.display = 'block';
+		ph.style.display = 'none';
+		// Odstranit backgroundImage z tlačítka
+		btn.style.backgroundImage = '';
+		btn.style.backgroundSize = '';
+		btn.style.backgroundPosition = '';
+		btn.style.backgroundRepeat = '';
+		if (btnIcon) {
+			btnIcon.style.display = 'none';
 		}
 	} else {
-		// bez profilovky – vždy zrušit pozadí a vrátit ikonku
+		// bez profilovky – zrušit pozadí a zobrazit ikonku
 		img.src = '';
 		img.style.display = 'none';
 		ph.style.display = 'block';
 		btn.style.backgroundImage = '';
-		if (wrap) wrap.style.display = 'none';
+		btn.style.backgroundSize = '';
+		btn.style.backgroundPosition = '';
+		btn.style.backgroundRepeat = '';
+		if (wrap) wrap.style.display = 'inline-flex';
 		if (btnIcon) btnIcon.style.display = '';
 	}
 }
