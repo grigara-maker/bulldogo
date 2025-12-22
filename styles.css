@@ -11399,21 +11399,48 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     /* Search mobile */
+    .search-form {
+        gap: 0.75rem; /* Zmenšená mezera mezi skupinou a tlačítkem */
+    }
+    
     .search-input-group {
-        flex-direction: column;
-        gap: 1rem;
+        flex-direction: row;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
     }
     
     .search-input {
-        width: 100%;
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 14px;
-        min-height: 44px;
+        flex: 1;
+        min-width: 0;
+        font-size: 14px; /* Zmenšené */
+        padding: 0.6rem 0.8rem; /* Zmenšené */
+        min-height: 40px; /* Zmenšené */
+        border-radius: 10px;
+    }
+    
+    select.search-input {
+        padding-right: 2rem; /* Místo pro šipku */
+        background-size: 14px;
+        background-position: right 0.6rem center;
     }
     
     .search-btn {
+        width: 40px; /* Zmenšené - čtvercové tlačítko */
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+        padding: 0;
+        border-radius: 10px;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .btn-create-ad {
+        padding: 0.6rem 1rem; /* Zmenšené */
+        font-size: 0.9rem; /* Zmenšené */
+        min-height: 40px;
+        border-radius: 10px;
         width: 100%;
-        min-height: 44px;
     }
     
     /* Promo section mobile */
