@@ -6193,7 +6193,10 @@ html {
 /* Odstup mezi lištou a obsahem formuláře */
 .auth-with-hero .auth-form { 
 	margin-top: 14px; 
-	text-align: center; /* Zarovnání formuláře na střed */
+	text-align: left; /* Zarovnání formuláře vlevo */
+	display: flex;
+	flex-direction: column;
+	gap: 12px; /* Mezera mezi inputy */
 }
 
 /* Pozice psa nad titulkem v liště */
@@ -6333,7 +6336,7 @@ html {
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
-    background-color: #f8f9fa;
+    background-color: #ffffff; /* Bílé pozadí jako na obrázku */
 }
 
 .auth-form input:focus,
@@ -6361,6 +6364,10 @@ html {
     font-size: 1rem;
     text-decoration: underline;
     transition: color 0.3s ease;
+    text-align: center; /* Zarovnání odkazu na střed */
+    width: 100%;
+    display: block;
+    margin-top: 8px;
 }
 
 .auth-switch-btn:hover {
@@ -6373,8 +6380,14 @@ html {
 	width: 100%;
 	border-radius: 12px;
 	background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-	color: #ffffff;
+	color: #ffffff !important; /* Bílý text jako na obrázku */
 	box-shadow: 0 8px 20px rgba(247,124,0,0.25);
+	border: none;
+	padding: 12px 20px;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
 }
 
 .auth-form .auth-submit-btn:hover,
