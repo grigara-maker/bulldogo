@@ -6413,13 +6413,24 @@ html {
 /* Auth – tlačítko Odeslat SMS kód ve firemních barvách */
 .auth-form #btnSendPhoneCode {
 	width: 100%;
-	border-radius: 12px;
+	border-radius: 8px; /* Stejné jako inputy */
 	background: transparent;
 	color: #c45a00;
 	font-weight: 800;
+	font-size: 0.85rem; /* Menší text */
+	line-height: 1.2; /* Kompaktnější výška */
 	border: 2px solid transparent;
 	border-image: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
 	border-image-slice: 1;
+	padding: 12px 15px; /* Stejné jako inputy pro stejnou výšku */
+	box-sizing: border-box;
+	height: auto;
+	min-height: auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	white-space: normal; /* Povolit zalamování textu */
 }
 .auth-form #btnSendPhoneCode:hover {
 	transform: translateY(-2px);
