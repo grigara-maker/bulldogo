@@ -11326,11 +11326,13 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         aspect-ratio: 1 / 2; /* Dvojnásobná výška - více místa pro obsah */
         display: flex;
         flex-direction: column;
+        gap: 0 !important; /* Žádný gap mezi prvky */
     }
     
     .ad-card .ad-thumb {
         height: 45%; /* Menší podíl obrázku, více místa pro text */
-        margin-bottom: 0;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
         flex-shrink: 0;
         background: white; /* Bílý background místo béžového */
         border-radius: 0; /* Odstranit zaoblené rohy */
@@ -11352,6 +11354,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         flex-direction: column;
         justify-content: space-between;
         position: relative;
+        margin-top: 0 !important;
     }
     
     /* Kategorie s tečkou nahoře - vytvořit novou strukturu */
@@ -11360,7 +11363,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         color: #6b7280;
         margin-bottom: 4px;
         margin-top: 0 !important; /* Žádný margin nahoře - fotka blíž */
-        padding-top: 4px; /* Malý padding nahoře místo marginu */
+        padding-top: 0 !important; /* Žádný padding nahoře */
         order: -1; /* Přesunout nahoru */
         display: flex;
         align-items: center;
