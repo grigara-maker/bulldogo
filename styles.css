@@ -801,9 +801,25 @@
     padding: 12px 14px 80px !important; 
     position: relative;
     min-height: 160px !important;
+    text-align: left; /* Zarovnání textů vlevo */
 }
-.ad-title { margin: 0 0 6px 0; font-size: 1rem; color: #111827; }
-.ad-meta { font-size: 0.85rem; color: #6b7280; }
+.ad-title { 
+    margin: 0 0 6px 0; 
+    font-size: 1rem; 
+    color: #111827; 
+    text-align: left; /* Zarovnání vlevo */
+}
+.ad-meta { 
+    font-size: 0.85rem; 
+    color: #6b7280; 
+    text-align: left; /* Zarovnání vlevo */
+}
+.ad-price {
+    text-align: left; /* Zarovnání vlevo */
+}
+.ad-location {
+    text-align: left; /* Zarovnání vlevo */
+}
 
 /* Top badge */
 .ad-badge-top {
@@ -10005,6 +10021,7 @@ input[type="tel"]:focus {
     color: #f77c00;
     font-size: 1.1rem;
     margin-top: 0.5rem;
+    text-align: left; /* Zarovnání vlevo */
 }
 
 /* Modern Icon Styles - No Animations */
@@ -11446,6 +11463,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         -webkit-box-orient: vertical;
         overflow: hidden;
         order: 0;
+        text-align: left !important; /* Zarovnání vlevo */
     }
     
     /* Cena */
@@ -11455,6 +11473,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         color: #f77c00;
         margin-bottom: 4px;
         order: 1;
+        text-align: left !important; /* Zarovnání vlevo */
     }
     
     /* Kraj - samostatný element dole */
@@ -11464,6 +11483,17 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         margin-top: auto;
         margin-bottom: 8px; /* Mezera před tlačítky */
         order: 2;
+        text-align: left !important; /* Zarovnání vlevo */
+    }
+    
+    /* Kategorie */
+    .ad-card .ad-meta {
+        text-align: left !important; /* Zarovnání vlevo */
+    }
+    
+    /* Tělo karty */
+    .ad-card .ad-body {
+        text-align: left !important; /* Zarovnání vlevo */
     }
     
     /* Tlačítka na mobilních zařízeních */
