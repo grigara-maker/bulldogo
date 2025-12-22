@@ -11014,6 +11014,11 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         position: relative;
         top: 0;
     }
+    
+    /* Zajistit, že mobilní menu tlačítko je skryto na tabletech */
+    .mobile-menu-btn {
+        display: none !important;
+    }
 }
 
 /* Mobile breakpoint (max 768px) */
@@ -11073,13 +11078,19 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         border-radius: 12px;
         width: 56px;
         height: 56px;
-        display: flex;
+        display: flex !important; /* Zajistit zobrazení na mobilních zařízeních */
         align-items: center;
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 4px 20px rgba(247, 124, 0, 0.4);
         transition: all 0.3s ease;
         touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent; /* Odstranit modrý highlight na iOS/Android */
+    }
+    
+    .mobile-menu-btn:hover {
+        box-shadow: 0 6px 25px rgba(247, 124, 0, 0.5);
+        transform: translateY(-1px);
     }
     
     .mobile-menu-btn:active {
@@ -11089,6 +11100,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .mobile-menu-btn i {
         font-size: 1.5rem;
+        pointer-events: none; /* Zabraňuje problémům s klikáním na ikonu */
     }
     
     /* Close sidebar when clicking overlay */
