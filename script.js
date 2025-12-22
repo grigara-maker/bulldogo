@@ -682,7 +682,7 @@ function ensureSidebarAvatarNode() {
 				const img = document.createElement('img');
 				img.id = 'sidebarUserAvatarImg';
 				img.alt = 'Profilová fotka';
-				img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:none;';
+				img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;';
 				img.loading = 'lazy';
 				img.decoding = 'async';
 				const icon = document.createElement('i');
@@ -752,7 +752,12 @@ function applySidebarAvatar(url) {
 			}
 			wrap.style.display = 'inline-flex';
 		}
+		// Zajistit, aby obrázek byl kruhový
 		img.style.display = 'block';
+		img.style.borderRadius = '50%';
+		img.style.width = '100%';
+		img.style.height = '100%';
+		img.style.objectFit = 'cover';
 		ph.style.display = 'none';
 		// Odstranit backgroundImage z tlačítka
 		btn.style.backgroundImage = '';

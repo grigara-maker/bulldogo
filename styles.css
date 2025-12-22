@@ -2382,6 +2382,36 @@ body {
     transform: translateX(0) !important;
 }
 
+/* Profilovka v kruhu */
+#sidebarUserAvatar {
+    display: inline-flex !important;
+    margin-left: 8px;
+    vertical-align: middle;
+    flex-shrink: 0;
+    order: 2; /* Profilovka napravo */
+}
+
+#sidebarUserAvatar > span {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#sidebarUserAvatarImg {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    display: block !important;
+}
+
 .btn-profile:hover {
     background: rgba(247, 124, 0, 0.1);
     border-color: #f77c00;
