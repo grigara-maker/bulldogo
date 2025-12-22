@@ -952,7 +952,7 @@
 @media (max-width: 1400px) { .ads-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 1200px) { .ads-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 820px) { .ads-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .ads-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
+@media (max-width: 520px) { .ads-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; } }
 
 /* Top Ads Page Styles */
 .top-ads-hero {
@@ -11289,8 +11289,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Grid improvements */
     .ads-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
     }
     
     .services-grid {
@@ -11635,8 +11635,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ads-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
     }
     
     .hero-title {
@@ -11785,6 +11785,14 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-top: 1.5rem;
+}
+
+/* Zajistit dva sloupce na mobilních zařízeních i pro admin */
+@media (max-width: 768px) {
+    .ads-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
 }
 
 .ad-card-admin {
