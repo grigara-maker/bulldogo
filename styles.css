@@ -11232,6 +11232,21 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         transform: translateX(0);
     }
     
+    /* Zobrazit logo text když je menu otevřené */
+    .sidebar.mobile-open .logo-text {
+        opacity: 1 !important;
+        transform: translateX(0) scale(1) !important;
+        width: auto !important;
+    }
+    
+    /* Zobrazit sidebar header správně když je menu otevřené */
+    .sidebar.mobile-open .sidebar-header {
+        padding: 1rem 1.5rem !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    
     .sidebar:hover {
         width: 280px;
     }
@@ -11296,6 +11311,11 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         position: fixed !important;
         width: 100% !important;
         height: 100% !important;
+    }
+    
+    /* Schovat tlačítko menu když je menu otevřené */
+    body.sidebar-open .mobile-menu-btn {
+        display: none !important;
     }
     
     /* Zajistit, aby sidebar byl nad overlay */

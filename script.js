@@ -43,6 +43,7 @@ function toggleSidebar() {
 function toggleMobileMenu() {
     const sidebar = document.querySelector('.sidebar');
     const body = document.body;
+    const menuBtn = document.querySelector('.mobile-menu-btn');
     const isOpen = sidebar.classList.contains('mobile-open');
     
     if (isOpen) {
@@ -51,9 +52,13 @@ function toggleMobileMenu() {
         // Remove overlay if exists
         const overlay = document.querySelector('.sidebar-overlay');
         if (overlay) overlay.remove();
+        // Zobrazit tlačítko menu
+        if (menuBtn) menuBtn.style.display = 'flex';
     } else {
         sidebar.classList.add('mobile-open');
         body.classList.add('sidebar-open');
+        // Schovat tlačítko menu
+        if (menuBtn) menuBtn.style.display = 'none';
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
