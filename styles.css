@@ -12872,14 +12872,18 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     /* Kompaktnější přihlašovací modal na mobilních zařízeních */
     .modal {
         padding: 10px !important; /* Menší padding pro více místa */
-        /* Zajistit, aby modal zabral celou výšku viewportu */
+        /* Zajistit, aby modal zabral celou výšku viewportu - pouze když je zobrazený */
+        overflow: hidden !important; /* Zakázat scroll celé stránky */
+    }
+    
+    /* Když je modal zobrazený na mobilu, použít flexbox pro vycentrování */
+    .modal[style*="display: flex"],
+    .modal[style*="display:flex"] {
         height: 100vh !important;
         height: 100dvh !important;
-        /* Flexbox pro vycentrování - vždy aktivní když je zobrazený */
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        overflow: hidden !important; /* Zakázat scroll celé stránky */
     }
     
     .modal-content {
