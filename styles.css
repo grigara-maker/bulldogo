@@ -11224,25 +11224,31 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Zajistit, že inline style display má přednost - skrýt sekce s display: none */
     .sidebar.mobile-open .auth-section[style*="display: none"],
-    .sidebar.mobile-open .auth-section[style*="display:none"] {
+    .sidebar.mobile-open .auth-section[style*="display:none"],
+    .sidebar.mobile-open #authSection[style*="display: none"],
+    .sidebar.mobile-open #authSection[style*="display:none"] {
         display: none !important;
     }
     
     .sidebar.mobile-open .user-profile-section[style*="display: none"],
-    .sidebar.mobile-open .user-profile-section[style*="display:none"] {
+    .sidebar.mobile-open .user-profile-section[style*="display:none"],
+    .sidebar.mobile-open #userProfileSection[style*="display: none"],
+    .sidebar.mobile-open #userProfileSection[style*="display:none"] {
         display: none !important;
     }
     
-    /* Zobrazit auth sekci správně když je menu otevřené a je viditelná */
-    .sidebar.mobile-open .auth-section:not([style*="display: none"]):not([style*="display:none"]) {
+    /* Zobrazit auth sekci správně když je menu otevřené a je viditelná (má display: block nebo nemá display: none) */
+    .sidebar.mobile-open .auth-section:not([style*="display: none"]):not([style*="display:none"]),
+    .sidebar.mobile-open #authSection:not([style*="display: none"]):not([style*="display:none"]) {
         display: flex !important;
         flex-direction: column !important;
         gap: 0.75rem !important;
         padding: 1rem 1.5rem !important;
     }
     
-    /* Zobrazit user profile sekci správně když je menu otevřené a je viditelná */
-    .sidebar.mobile-open .user-profile-section:not([style*="display: none"]):not([style*="display:none"]) {
+    /* Zobrazit user profile sekci správně když je menu otevřené a je viditelná (má display: block nebo nemá display: none) */
+    .sidebar.mobile-open .user-profile-section:not([style*="display: none"]):not([style*="display:none"]),
+    .sidebar.mobile-open #userProfileSection:not([style*="display: none"]):not([style*="display:none"]) {
         display: flex !important;
         flex-direction: column !important;
         gap: 0.75rem !important;
