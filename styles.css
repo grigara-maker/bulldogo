@@ -11307,7 +11307,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .ad-card {
         padding: 0;
         min-height: auto;
-        aspect-ratio: 1 / 1.4; /* Vyšší tvar - více místa pro obsah */
+        aspect-ratio: 1 / 1.6; /* Ještě vyšší tvar - více místa pro obsah */
         display: flex;
         flex-direction: column;
     }
@@ -11737,7 +11737,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card {
-        aspect-ratio: 1 / 1.4 !important; /* Vyšší tvar i na malých mobilních zařízeních */
+        aspect-ratio: 1 / 1.6 !important; /* Ještě vyšší tvar i na malých mobilních zařízeních */
     }
     
     .ad-card .ad-thumb {
