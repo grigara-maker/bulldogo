@@ -11462,8 +11462,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Posunout nápis a slogan níž od hořejšku */
     .hero-brand {
-        padding-top: 2rem;
-        margin-top: 1rem;
+        padding-top: 4rem;
+        margin-top: 2rem;
     }
     
     .hero-title {
