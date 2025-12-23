@@ -11151,44 +11151,123 @@ html body .ad-actions {
 
 /* Responzivní design pro ad detail */
 @media (max-width: 768px) {
-    .ad-detail-main {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+    /* Profile detail page mobile optimization */
+    .ad-detail-content {
+        padding: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
-    .ad-detail-content {
-        padding: 1rem;
+    .ad-detail-header {
+        margin-bottom: 1.5rem !important;
+        padding: 0 1rem !important;
+        position: relative !important;
+        z-index: 100 !important;
+    }
+    
+    .back-btn {
+        padding: 12px 20px !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 1rem !important;
+        position: relative !important;
+        z-index: 100 !important;
+    }
+    
+    /* Zajistit, že mobile-menu-btn a back-btn se neprolínají */
+    .mobile-menu-btn {
+        top: 8px !important;
+        left: 8px !important;
+        z-index: 200 !important;
+    }
+    
+    .ad-detail-header .back-btn {
+        margin-left: 60px !important; /* Odstoupit od mobile-menu-btn */
+    }
+    
+    .ad-detail-main {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 1rem !important;
+        box-sizing: border-box !important;
+        display: grid !important;
+    }
+    
+    .ad-detail-left {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-detail-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5rem 1rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-title-section,
+    .ad-meta-section,
+    .ad-description-section,
+    .ad-contact-section,
+    .ad-actions {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
     }
     
     .ad-main-image {
-        height: 250px;
+        height: 250px !important;
+        width: 100% !important;
     }
     
     .ad-thumbnail {
-        width: 80px;
-        height: 80px;
+        width: 80px !important;
+        height: 80px !important;
     }
     
     .ad-detail-title {
-        font-size: 1.5rem;
+        font-size: clamp(1.3rem, 5vw, 1.8rem) !important;
+        word-break: break-word !important;
     }
     
     .ad-actions {
-        flex-direction: column;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
     }
     
     .ad-actions .btn {
-        min-width: auto;
+        width: 100% !important;
+        min-width: auto !important;
     }
     
     .user-profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1rem !important;
+        width: 100% !important;
     }
     
     .user-stats {
-        justify-content: center;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .user-other-ads {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    .user-other-ads h4 {
+        font-size: clamp(1rem, 4vw, 1.2rem) !important;
+        margin-bottom: 1rem !important;
     }
     
     /* Removed other-ads-grid media query - now using ads-grid */
