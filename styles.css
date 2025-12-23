@@ -11456,8 +11456,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ads-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
     
     .promo-container {
@@ -11799,7 +11799,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Grid improvements */
     .ads-grid {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.75rem !important;
         padding: 0 0.5rem !important;
     }
@@ -12447,8 +12447,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ads-grid {
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
     }
     
     .hero-title {
@@ -12685,11 +12685,11 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     margin-top: 1.5rem;
 }
 
-/* Zajistit jeden sloupec na mobilních zařízeních i pro admin */
+/* Zajistit dva sloupce na mobilních zařízeních i pro admin */
 @media (max-width: 768px) {
     .ads-grid {
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
     }
 }
 
