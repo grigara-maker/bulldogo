@@ -11817,7 +11817,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .ad-card {
         padding: 0;
         min-height: auto;
-        aspect-ratio: 1 / 2; /* Dvojnásobná výška - více místa pro obsah */
+        aspect-ratio: auto !important; /* Automatická výška podle obsahu */
         display: flex;
         flex-direction: column;
         gap: 0 !important; /* Žádný gap mezi prvky */
@@ -11845,14 +11845,56 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card .ad-body {
-        padding: 0 12px 60px !important; /* Žádný padding nahoře - fotka přímo u kategorie */
+        padding: 12px 12px 60px !important; /* Padding nahoře i dole */
         min-height: auto !important;
         flex: 1;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-start;
         position: relative;
         margin-top: 0 !important;
+    }
+    
+    /* Zobrazit všechny informace v ad-meta-details */
+    .ad-card .ad-meta-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        margin-top: 0.5rem !important;
+        width: 100% !important;
+    }
+    
+    .ad-card .ad-meta-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem 0 !important;
+        margin-bottom: 0 !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        font-size: 0.75rem !important;
+        width: 100% !important;
+    }
+    
+    .ad-card .ad-meta-item i {
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        font-size: 0.75rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .ad-card .ad-meta-item span {
+        flex: 1 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+    }
+    
+    .ad-card .ad-price-value {
+        font-weight: 700 !important;
+        color: #f77c00 !important;
     }
     
     /* Kategorie s tečkou nahoře - vytvořit novou strukturu */
@@ -12420,7 +12462,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card {
-        aspect-ratio: 1 / 2 !important; /* Dvojnásobná výška i na malých mobilních zařízeních */
+        aspect-ratio: auto !important; /* Automatická výška podle obsahu */
     }
     
     .ad-card .ad-thumb {
@@ -12436,7 +12478,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card .ad-body {
-        padding: 8px 10px 60px !important; /* Více padding dole pro tlačítka */
+        padding: 12px 10px 60px !important; /* Více padding dole pro tlačítka */
+        min-height: auto !important;
     }
     
     .ad-card .ad-actions {
@@ -12445,11 +12488,49 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .ad-card .ad-title {
         font-size: 0.85rem;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3 !important; /* Zobrazit více řádků */
+        margin-bottom: 0.5rem !important;
     }
     
     .ad-card .ad-price {
         font-size: 0.9rem;
+    }
+    
+    /* Zobrazit všechny informace v ad-meta-details */
+    .ad-card .ad-meta-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+        margin-top: 0.5rem !important;
+        width: 100% !important;
+    }
+    
+    .ad-card .ad-meta-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.4rem !important;
+        padding: 0.4rem 0 !important;
+        margin-bottom: 0 !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        font-size: 0.7rem !important;
+        width: 100% !important;
+    }
+    
+    .ad-card .ad-meta-item i {
+        width: 14px !important;
+        height: 14px !important;
+        min-width: 14px !important;
+        min-height: 14px !important;
+        font-size: 0.7rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .ad-card .ad-meta-item span {
+        flex: 1 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
     }
     
     .form-group input,
