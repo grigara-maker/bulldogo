@@ -5565,7 +5565,7 @@ body.profile-plan-page .plan-info {
     }
 
     .hero-title {
-        font-size: 5rem !important;
+        font-size: 10rem !important;
         line-height: 1.1 !important;
         letter-spacing: 0.05em !important;
         font-weight: 900 !important;
@@ -5618,7 +5618,7 @@ body.profile-plan-page .plan-info {
     }
     
     .hero-title {
-        font-size: 4.5rem !important;
+        font-size: 9rem !important;
         line-height: 1.1 !important;
         letter-spacing: 0.05em !important;
         font-weight: 900 !important;
@@ -11783,7 +11783,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .hero-title {
-        font-size: clamp(4rem, 12vw, 6rem) !important;
+        font-size: clamp(8rem, 24vw, 12rem) !important;
         line-height: 1.1 !important;
         letter-spacing: 0.05em !important;
         font-weight: 900 !important;
