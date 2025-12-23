@@ -3269,6 +3269,8 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     object-fit: contain;
     position: relative;
     z-index: 2; /* above bubbles */
+    margin: 0 auto;
+    display: block;
 }
 
 .bulldog-photo {
@@ -5558,6 +5560,8 @@ body.profile-plan-page .plan-info {
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
+        justify-items: center !important;
+        align-items: center !important;
     }
 
     .hero-title {
@@ -5578,20 +5582,24 @@ body.profile-plan-page .plan-info {
     }
 
     .hero-visual {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        margin: 0 auto;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        text-align: center !important;
     }
     
     .bulldog-image {
-        width: 300px;
-        height: 300px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        width: 300px !important;
+        height: 300px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
     }
 
     .tool-bubble {
@@ -11732,18 +11740,30 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .hero-visual {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        margin: 0 auto;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        text-align: center !important;
     }
     
     .bulldog-image {
-        margin: 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        width: 300px !important;
+        height: 300px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+    }
+    
+    .bulldog-image .hero-logo {
+        margin: 0 auto !important;
+        display: block !important;
     }
     
     /* Posunout nápis a slogan níž od hořejšku */
