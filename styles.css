@@ -5847,13 +5847,132 @@ body.profile-plan-page .plan-info {
 }
 
 /* Hide mobile menu button on desktop */
+/* Desktop styles - reset mobile overrides for ads-grid */
 @media (min-width: 769px) {
+    /* Reset ads-grid pro desktop */
+    .ads-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 24px !important;
+        max-width: 1600px !important;
+    }
+    
+    /* Reset ad-card pro desktop */
+    .ad-card {
+        padding: 0 !important;
+        min-height: 320px !important;
+        aspect-ratio: auto !important;
+        display: block !important;
+        flex-direction: initial !important;
+        gap: 0 !important;
+    }
+    
+    .ad-card .ad-thumb {
+        width: 100% !important;
+        height: 200px !important;
+        aspect-ratio: auto !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .ad-card .ad-thumb img {
+        border-radius: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    
+    .ad-card .ad-body {
+        padding: 12px 14px 80px !important;
+        min-height: 160px !important;
+        flex: initial !important;
+        display: block !important;
+        flex-direction: initial !important;
+        justify-content: initial !important;
+        margin-top: 0 !important;
+    }
+    
+    .ad-card .ad-meta {
+        font-size: 0.85rem !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        order: initial !important;
+        display: block !important;
+    }
+    
+    .ad-card .ad-meta::before {
+        display: none !important;
+    }
+    
+    .ad-card .ad-meta span:first-child,
+    .ad-card .ad-meta span:first-child::after {
+        display: inline !important;
+    }
+    
+    .ad-card .ad-meta span:last-child {
+        display: inline !important;
+    }
+    
+    .ad-card .ad-title {
+        font-size: 1rem !important;
+        line-height: initial !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+        -webkit-line-clamp: initial !important;
+        -webkit-box-orient: initial !important;
+        overflow: visible !important;
+        order: initial !important;
+    }
+    
+    .ad-card .ad-price {
+        font-size: initial !important;
+        font-weight: initial !important;
+        color: initial !important;
+        margin-bottom: 0 !important;
+        order: initial !important;
+    }
+    
+    .ad-card .ad-location {
+        font-size: 0.85rem !important;
+        color: #6b7280 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        order: initial !important;
+    }
+    
+    .ad-card .ad-actions {
+        position: absolute !important;
+        bottom: 20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+    
     .mobile-menu-btn {
         display: none;
     }
     
     .sidebar-overlay {
         display: none !important;
+    }
+}
+
+/* Desktop responsive breakpoints */
+@media (min-width: 769px) and (max-width: 1400px) {
+    .ads-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+    .ads-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 820px) {
+    .ads-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }
 
