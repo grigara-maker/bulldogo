@@ -2532,31 +2532,58 @@ body {
 .btn-profile .badge-unknown { background: #e5e7eb; color: #374151; }
 .sidebar:not(:hover) .btn-profile .user-badge { display: none; }
 
-/* Profilovka viditelná i když je sidebar zavřený */
+/* Profilovka viditelná i když je sidebar zavřený - KOMPLETNÍ OPRAVA */
+.sidebar:not(:hover) .btn-profile {
+    justify-content: center !important; /* Vycentrovat profilovku */
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 0.5rem !important; /* Rovnoměrný padding pro vycentrování */
+    overflow: hidden !important; /* Skrýt přetečení */
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important; /* Pouze základní přechody, ne layout */
+    position: relative !important;
+}
+
 .sidebar:not(:hover) #sidebarUserAvatar {
-    display: inline-flex !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    display: flex !important; /* Změnit z inline-flex na flex pro lepší kontrolu */
+    margin: 0 !important; /* Odstranit všechny margin */
+    padding: 0 !important; /* Odstranit všechny padding */
     order: 1 !important;
     visibility: visible !important;
     opacity: 1 !important;
-    width: 40px !important;
-    height: 40px !important;
+    width: 36px !important; /* Zmenšit na 36px aby se vešla do tlačítka */
+    height: 36px !important;
     flex-shrink: 0 !important;
-    position: relative !important;
-    left: 0 !important; /* Uvnitř tlačítka, ne mimo */
-    transition: none !important; /* Zakázat animace při zavřeném navbaru */
+    position: static !important; /* Změnit z relative na static */
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    transition: none !important; /* Zakázat všechny animace */
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .sidebar:not(:hover) #sidebarUserAvatar > span {
-    display: inline-flex !important;
-    width: 40px !important;
-    height: 40px !important;
+    display: flex !important; /* Změnit z inline-flex na flex */
+    width: 36px !important; /* Zmenšit na 36px */
+    height: 36px !important;
+    margin: 0 !important;
+    padding: 0 !important;
     visibility: visible !important;
     opacity: 1 !important;
     border-radius: 50% !important;
     overflow: hidden !important; /* Skrýt přetečení */
     transition: none !important; /* Zakázat animace */
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
 }
 
 .sidebar:not(:hover) #sidebarUserAvatarImg {
@@ -2567,15 +2594,10 @@ body {
     height: 100% !important;
     border-radius: 50% !important;
     transition: none !important; /* Zakázat animace */
-}
-
-.sidebar:not(:hover) .btn-profile {
-    justify-content: center !important; /* Vycentrovat profilovku */
-    align-items: center !important;
-    gap: 0 !important;
-    padding: 0.8rem 0.5rem !important;
-    overflow: hidden !important; /* Skrýt přetečení */
-    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important; /* Pouze základní přechody, ne layout */
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    transform: none !important;
 }
 
 .sidebar:not(:hover) .btn-profile i {
