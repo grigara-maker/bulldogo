@@ -4520,10 +4520,18 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 .footer-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 2rem;
     margin-bottom: 2rem;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 0;
 }
 
 .footer-section h3 {

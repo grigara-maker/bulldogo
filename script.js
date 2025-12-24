@@ -657,7 +657,8 @@ function updateUserProfile(user) {
 }
 
 // Stock avatar URL - použije se když uživatel nemá nahranou profilovku
-const STOCK_AVATAR_URL = 'https://ui-avatars.com/api/?name=User&background=f77c00&color=fff&size=128&bold=true';
+// SVG ikona uživatele - bílý kruh s tmavě šedou siluetou (jako na obrázku)
+const STOCK_AVATAR_URL = 'data:image/svg+xml;base64,' + btoa('<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="64" cy="64" r="62" fill="white" stroke="#9CA3AF" stroke-width="2"/><circle cx="64" cy="45" r="18" fill="#6B7280"/><path d="M20 90C20 77.843 29.843 68 42 68H86C98.157 68 108 77.843 108 90V128H20V90Z" fill="#6B7280"/></svg>');
 
 // Avatar helpers (sidebar + hero profilů)
 async function loadAndApplyUserAvatar(uid) {
