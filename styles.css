@@ -2517,6 +2517,28 @@ body {
 .btn-profile .badge-unknown { background: #e5e7eb; color: #374151; }
 .sidebar:not(:hover) .btn-profile .user-badge { display: none; }
 
+/* Profilovka viditelná i když je sidebar zavřený */
+.sidebar:not(:hover) #sidebarUserAvatar {
+    display: inline-flex !important;
+    margin-left: 0 !important;
+    order: 1 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.sidebar:not(:hover) .btn-profile {
+    justify-content: center !important;
+    gap: 0 !important;
+}
+
+.sidebar:not(:hover) .btn-profile i {
+    display: none !important; /* Skrýt ikonu když je sidebar zavřený, zobrazit jen profilovku */
+}
+
+.sidebar:not(:hover) .btn-profile span {
+    display: none !important; /* Skrýt text když je sidebar zavřený */
+}
+
 .btn-logout {
     width: 100%;
     background: rgba(220, 53, 69, 0.1);
