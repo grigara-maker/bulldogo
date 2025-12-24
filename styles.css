@@ -486,10 +486,10 @@
     overflow: hidden;
 }
 
-/* Na PC: page-hero-card široký od kraje do kraje */
+/* Na PC: page-hero-card široký od kraje do kraje, ale zaoblený a s odsazením */
 @media (min-width: 769px) {
     .page-hero {
-        padding: 36px 0 22px;
+        padding: 36px 1.5rem 22px;
         width: 100%;
         max-width: 100%;
         margin-left: 0;
@@ -508,7 +508,7 @@
     .page-hero .page-hero-card {
         width: 100%;
         max-width: 100%;
-        border-radius: 0;
+        border-radius: 22px;
         margin-left: 0;
         margin-right: 0;
     }
