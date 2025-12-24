@@ -74,6 +74,26 @@ function toggleMobileMenu() {
         `;
         overlay.addEventListener('click', toggleMobileMenu);
         document.body.appendChild(overlay);
+        
+        // Zajistit načtení avatara při otevření mobilního menu
+        try {
+            const uid = window.firebaseAuth?.currentUser?.uid;
+            if (uid) {
+                // Znovu aplikovat avatar, pokud už existuje
+                if (window.__sidebarAvatarUrl) {
+                    applySidebarAvatar(window.__sidebarAvatarUrl);
+                } else {
+                    // Načíst avatar znovu
+                    loadAndApplyUserAvatar(uid);
+                }
+            } else {
+                // Pokud není přihlášený, zobrazit stock avatar
+                applySidebarAvatar(STOCK_AVATAR_URL);
+            }
+        } catch (_) {
+            // Fallback na stock avatar
+            applySidebarAvatar(STOCK_AVATAR_URL);
+        }
     }
 }
 
@@ -741,12 +761,58 @@ function applySidebarAvatar(url) {
 	const btn = document.querySelector('.sidebar .user-profile-section .btn-profile');
 	const btnIcon = btn ? btn.querySelector('i') : null;
 	const sidebar = document.querySelector('.sidebar');
-	if (!btn || !img || !ph) return;
+	
+	// Pokud nejsou elementy, zkusit je vytvořit znovu
+	if (!img || !ph) {
+		if (wrap) {
+			const existingImg = wrap.querySelector('img');
+			const existingPh = wrap.querySelector('i');
+			if (!existingImg || !existingPh) {
+				// Znovu vytvořit elementy
+				const circle = wrap.querySelector('span') || wrap.querySelector('div');
+				if (circle) {
+					if (!existingImg) {
+						const newImg = document.createElement('img');
+						newImg.id = 'sidebarUserAvatarImg';
+						newImg.alt = 'Profilová fotka';
+						newImg.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;';
+						newImg.loading = 'lazy';
+						newImg.decoding = 'async';
+						circle.appendChild(newImg);
+					}
+					if (!existingPh) {
+						const newPh = document.createElement('i');
+						newPh.id = 'sidebarUserAvatarPh';
+						newPh.className = 'fas fa-user';
+						newPh.style.cssText = 'color:#9ca3af;font-size:12px;';
+						circle.appendChild(newPh);
+					}
+				}
+			}
+		}
+	}
+	
+	const finalImg = document.getElementById('sidebarUserAvatarImg');
+	const finalPh = document.getElementById('sidebarUserAvatarPh');
+	if (!btn || !finalImg || !finalPh) return;
+	
 	// Vždy zobrazit avatar (buď nahraný nebo stock)
-	img.src = avatarUrl;
+	finalImg.src = avatarUrl;
+	// Zajistit, aby se obrázek načetl
+	finalImg.onload = function() {
+		finalImg.style.display = 'block';
+		finalPh.style.display = 'none';
+	};
+	finalImg.onerror = function() {
+		// Pokud se obrázek nenačte, použít stock avatar
+		finalImg.src = STOCK_AVATAR_URL;
+		finalImg.style.display = 'block';
+		finalPh.style.display = 'none';
+	};
+	
 	// Vždy zobrazit profilovku v kruhu, ne přes celé tlačítko
 	if (wrap) {
-		const circle = wrap.querySelector('span');
+		const circle = wrap.querySelector('span') || wrap.querySelector('div');
 		if (circle) {
 			// Zajistit, aby kruh byl skutečně kruhový
 			circle.style.width = '32px';
@@ -755,14 +821,16 @@ function applySidebarAvatar(url) {
 			circle.style.overflow = 'hidden';
 		}
 		wrap.style.display = 'inline-flex';
+		wrap.style.visibility = 'visible';
+		wrap.style.opacity = '1';
 	}
 	// Zajistit, aby obrázek byl kruhový
-	img.style.display = 'block';
-	img.style.borderRadius = '50%';
-	img.style.width = '100%';
-	img.style.height = '100%';
-	img.style.objectFit = 'cover';
-	ph.style.display = 'none';
+	finalImg.style.display = 'block';
+	finalImg.style.borderRadius = '50%';
+	finalImg.style.width = '100%';
+	finalImg.style.height = '100%';
+	finalImg.style.objectFit = 'cover';
+	finalPh.style.display = 'none';
 	// Odstranit backgroundImage z tlačítka
 	btn.style.backgroundImage = '';
 	btn.style.backgroundSize = '';

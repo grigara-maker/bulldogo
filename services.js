@@ -2,7 +2,7 @@
 let allServices = [];
 let filteredServices = [];
 let currentPage = 1;
-const itemsPerPage = 20; // 5 řádků × 4 sloupce
+const itemsPerPage = 40; // 40 inzerátů na stránku
 let servicesFirebaseAuth = null;
 let servicesFirebaseDb = null;
 
@@ -622,7 +622,26 @@ function displayServices(list) {
     const limit = limitAttr ? parseInt(limitAttr, 10) : null;
     const showActions = showActionsAttr ? showActionsAttr === 'true' : true;
     
-    const servicesToRender = Array.isArray(list) ? list : filteredServices;
+    let servicesToRender = Array.isArray(list) ? list : filteredServices;
+    
+    // Pro homepage: seřadit služby - TOP nejnovější první, pak klasické nejnovější
+    if (limit) {
+        // Vytvořit kopii pro řazení
+        servicesToRender = [...servicesToRender];
+        
+        // Seřadit: TOP nejnovější první, pak klasické nejnovější
+        servicesToRender.sort((a, b) => {
+            const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+            const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+            
+            // TOP mají přednost
+            if (a.isTop && !b.isTop) return -1;
+            if (!a.isTop && b.isTop) return 1;
+            
+            // V rámci stejné skupiny (TOP/klasické) řadit podle data - nejnovější první
+            return bDate - aDate;
+        });
+    }
     
     // Pokud je nastaven limit (např. na homepage), vždy použij prvních N služeb
     // Limit se aplikuje, i když je předán parametr list (např. z sortServices)
@@ -971,11 +990,17 @@ function filterServices() {
         return matchesSearch && matchesCategory && matchesRegion && isVisible;
     });
 
-    // TOP inzeráty vždy první
+    // TOP inzeráty vždy první, v rámci skupin řadit podle data (nejnovější první)
     filteredAds.sort((a, b) => {
+        const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+        const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+        
+        // TOP mají přednost
         if (a.isTop && !b.isTop) return -1;
         if (!a.isTop && b.isTop) return 1;
-        return 0;
+        
+        // V rámci stejné skupiny (TOP/klasické) řadit podle data - nejnovější první
+        return bDate - aDate;
     });
 
     filteredServices = filteredAds;
