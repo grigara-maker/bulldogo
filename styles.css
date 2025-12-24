@@ -2544,7 +2544,7 @@ body {
     height: 40px !important;
     flex-shrink: 0 !important;
     position: relative !important;
-    left: -4px !important; /* Mírně přesahuje vlevo pro polokruhový efekt */
+    left: 0 !important; /* Uvnitř tlačítka, ne mimo */
     transition: none !important; /* Zakázat animace při zavřeném navbaru */
 }
 
@@ -2555,7 +2555,7 @@ body {
     visibility: visible !important;
     opacity: 1 !important;
     border-radius: 50% !important;
-    overflow: visible !important; /* Aby bylo vidět i když přesahuje */
+    overflow: hidden !important; /* Skrýt přetečení */
     transition: none !important; /* Zakázat animace */
 }
 
@@ -2574,7 +2574,7 @@ body {
     align-items: center !important;
     gap: 0 !important;
     padding: 0.8rem 0.5rem !important;
-    overflow: visible !important; /* Aby profilovka mohla přesahovat */
+    overflow: hidden !important; /* Skrýt přetečení */
     transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important; /* Pouze základní přechody, ne layout */
 }
 
