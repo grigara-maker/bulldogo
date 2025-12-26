@@ -20,6 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // Inicializace stránky
 function initMyAds() {
     console.log('Inicializuji My Ads stránku');
+    
+    // Nastavit callback pro aktualizaci po přihlášení
+    window.afterLoginCallback = function() {
+        console.log('🔄 Callback po přihlášení na stránce My Ads');
+        const user = window.firebaseAuth?.currentUser;
+        if (user) {
+            updateUI(user);
+            loadUserAds();
+        }
+    };
+    
     // Import Firebase funkcí dynamicky
     import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js').then(({ onAuthStateChanged }) => {
         console.log('Firebase Auth importován');

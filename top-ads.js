@@ -158,17 +158,28 @@ function waitForFirebase() {
 function setupAuthListener() {
     console.log('🔐 Setting up auth state listener...');
     
-    // Use onAuthStateChanged to properly detect auth state
-    window.firebaseAuth.onAuthStateChanged((user) => {
-        console.log('👤 Auth state changed:', user ? `Přihlášen: ${user.email}` : 'Odhlášen');
-        
+    // Nastavit callback pro aktualizaci po přihlášení
+    window.afterLoginCallback = function() {
+        console.log('🔄 Callback po přihlášení na stránce Top Ads');
+        const user = window.firebaseAuth?.currentUser;
         if (user) {
-            console.log('✅ User is authenticated, loading ads...');
             loadUserAds();
-        } else {
-            console.log('❌ User not authenticated, showing login message...');
-            showLoginRequired();
         }
+    };
+    
+    // Use onAuthStateChanged to properly detect auth state
+    import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js').then(({ onAuthStateChanged }) => {
+        onAuthStateChanged(window.firebaseAuth, (user) => {
+            console.log('👤 Auth state changed:', user ? `Přihlášen: ${user.email}` : 'Odhlášen');
+            
+            if (user) {
+                console.log('✅ User is authenticated, loading ads...');
+                loadUserAds();
+            } else {
+                console.log('❌ User not authenticated, showing login message...');
+                showLoginRequired();
+            }
+        });
     });
 }
 
