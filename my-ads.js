@@ -60,11 +60,35 @@ function initMyAds() {
                             <h3>Pro zobrazení vašich inzerátů se musíte přihlásit</h3>
                             <p>Přihlaste se pro správu vašich inzerátů.</p>
                             <div class="no-services-actions">
-                                <button class="btn btn-primary btn-bulldogo" onclick="showAuthModal('login')">Přihlásit se</button>
-                                <button class="btn btn-secondary" onclick="window.location.href='index.html'">Zpět na hlavní stránku</button>
+                                <button class="btn btn-primary btn-bulldogo" id="btnLoginMyAds">Přihlásit se</button>
+                                <button class="btn btn-secondary" id="btnBackMyAds">Zpět na hlavní stránku</button>
                             </div>
                         </div>
                     `;
+                    
+                    // Přidat event listenery na tlačítka
+                    const btnLogin = document.getElementById('btnLoginMyAds');
+                    const btnBack = document.getElementById('btnBackMyAds');
+                    
+                    if (btnLogin) {
+                        btnLogin.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (typeof window.showAuthModal === 'function') {
+                                window.showAuthModal('login');
+                            } else {
+                                console.error('showAuthModal není dostupná');
+                            }
+                        });
+                    }
+                    
+                    if (btnBack) {
+                        btnBack.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = 'index.html';
+                        });
+                    }
                 }
                 
                 // Dříve zde bylo automatické přesměrování. Necháme uživatele rozhodnout tlačítkem.
