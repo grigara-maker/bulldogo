@@ -264,6 +264,32 @@ function displayAdDetail() {
             };
             emailEl.style.cursor = 'pointer';
             phoneEl.style.cursor = 'pointer';
+            
+            // Zabránit kopírování zablurovaného kontaktu
+            emailEl.addEventListener('copy', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            emailEl.addEventListener('cut', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            phoneEl.addEventListener('copy', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            phoneEl.addEventListener('cut', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            emailEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            phoneEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
         }
         
         // Zobrazit jméno v profilu níže na stránce

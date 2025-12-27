@@ -468,6 +468,20 @@ function updateProfileInfo() {
                 }
             };
             profileDisplayEmailEl.style.cursor = 'pointer';
+            
+            // Zabránit kopírování zablurovaného kontaktu
+            profileDisplayEmailEl.addEventListener('copy', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            profileDisplayEmailEl.addEventListener('cut', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            profileDisplayEmailEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
         } else {
             profileDisplayEmailEl.classList.remove('blurred-contact');
             profileDisplayEmailEl.onclick = null;
@@ -485,6 +499,20 @@ function updateProfileInfo() {
                 }
             };
             profileDisplayPhoneEl.style.cursor = 'pointer';
+            
+            // Zabránit kopírování zablurovaného kontaktu
+            profileDisplayPhoneEl.addEventListener('copy', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            profileDisplayPhoneEl.addEventListener('cut', (e) => {
+                e.preventDefault();
+                return false;
+            });
+            profileDisplayPhoneEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
         } else {
             profileDisplayPhoneEl.classList.remove('blurred-contact');
             profileDisplayPhoneEl.onclick = null;
