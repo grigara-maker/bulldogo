@@ -11302,7 +11302,7 @@ html body .ad-actions {
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 10px 32px;
     border-radius: 10px;
     cursor: pointer;
     font-size: 0.95rem;
@@ -11323,7 +11323,7 @@ html body .ad-actions {
 
 /* Specifické styly pro tlačítko Zpět na stránce inzerátu */
 .ad-detail-content .back-btn {
-    padding: 10px 20px !important;
+    padding: 10px 32px !important;
     font-size: 0.95rem !important;
     font-weight: 600 !important;
     border-radius: 10px !important;
