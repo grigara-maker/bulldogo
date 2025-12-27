@@ -1758,19 +1758,22 @@
         overflow: hidden !important;
     }
     
-    /* Ad preview */
+    /* Ad preview - flexbox layout pro správné umístění tlačítek */
     body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-preview,
     .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-preview,
     .ad-create-layout .ad-create-aside .ad-create-card .ad-preview,
     .ad-create-aside .ad-create-card .ad-preview,
     .ad-create-aside .ad-preview {
+        display: flex !important;
+        flex-direction: column !important;
         min-height: auto !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        gap: 12px !important;
     }
     
-    /* Ad actions - standardní kontejner jako ostatní prvky */
+    /* Ad actions - standardní kontejner jako ostatní prvky, správně umístěný v kartě */
     body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
     .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
     .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
@@ -1779,7 +1782,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        margin-top: 16px;
+        margin-top: auto;
         padding-top: 12px;
         border-top: 1px solid #eee;
         width: 100%;
