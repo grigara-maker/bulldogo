@@ -1368,7 +1368,10 @@ function contactService(serviceId) {
     // Kontrola přihlášení
     const currentUser = window.firebaseAuth?.currentUser;
     if (!currentUser) {
-        showAuthRequiredModal();
+        // Rovnou otevřít modal pro přihlášení
+        if (typeof showAuthModal === 'function') {
+            showAuthModal('login');
+        }
         return;
     }
     

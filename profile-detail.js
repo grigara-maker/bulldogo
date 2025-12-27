@@ -862,8 +862,10 @@ window.startChat = async function() {
     const authUser = window.firebaseAuth?.currentUser;
     console.log('👤 Current user:', authUser);
     if (!authUser) {
-        // Zobrazit modal pro přihlášení/registraci
-        showAuthRequiredModal();
+        // Rovnou otevřít modal pro přihlášení
+        if (typeof showAuthModal === 'function') {
+            showAuthModal('login');
+        }
         return;
     }
     
