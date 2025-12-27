@@ -12616,6 +12616,53 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         opacity: 1 !important;
     }
     
+    /* Zakázat všechny animace pro profilovku na mobilu - vyšší specificita */
+    .sidebar.mobile-open .btn-profile #sidebarUserAvatar,
+    .sidebar.mobile-open:not(:hover) .btn-profile #sidebarUserAvatar {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+        margin-left: 8px !important;
+        order: 2 !important; /* Profilovka napravo */
+        width: auto !important;
+        height: auto !important;
+        display: inline-flex !important;
+    }
+    
+    .sidebar.mobile-open .btn-profile #sidebarUserAvatar > span,
+    .sidebar.mobile-open:not(:hover) .btn-profile #sidebarUserAvatar > span {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .sidebar.mobile-open .btn-profile #sidebarUserAvatarImg,
+    .sidebar.mobile-open:not(:hover) .btn-profile #sidebarUserAvatarImg {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+    
+    /* Zobrazit ikonu a text profilu na mobilu - vždy jako při hoveru */
+    .sidebar.mobile-open .btn-profile i,
+    .sidebar.mobile-open:not(:hover) .btn-profile i {
+        display: flex !important;
+        opacity: 1 !important;
+        transition: none !important;
+    }
+    
+    .sidebar.mobile-open .btn-profile span,
+    .sidebar.mobile-open:not(:hover) .btn-profile span {
+        display: inline !important;
+        opacity: 1 !important;
+        width: auto !important;
+        transform: none !important;
+        transition: none !important;
+        overflow: visible !important;
+    }
+    
     .sidebar:hover {
         width: 280px;
     }
