@@ -7823,26 +7823,27 @@ html {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    width: min(92vw, 820px);
-    padding: 22px 28px;
-    border-radius: 999px;
+    gap: 8px;
+    width: auto;
+    min-width: auto;
+    padding: 12px 24px;
+    border-radius: 12px;
     text-decoration: none;
     border: none;
     cursor: pointer;
-    font-weight: 800;
-    font-size: 30px;
-    line-height: 1;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
     color: #ffffff;
-    background: linear-gradient(90deg, #ffd200 0%, #ff8a00 100%);
-    box-shadow: 0 18px 40px rgba(255, 138, 0, 0.35);
+    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+    box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3);
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     position: relative;
     overflow: hidden;
 }
 
 #myAdsGrid .btn-start-free i {
-    font-size: 22px;
+    font-size: 1rem;
     color: #ffffff;
 }
 
@@ -7850,33 +7851,44 @@ html {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(800px 120px at 20% 10%, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%);
+    background: radial-gradient(400px 60px at 20% 10%, rgba(255,255,255,0.25), rgba(255,255,255,0) 55%);
     pointer-events: none;
 }
 
 #myAdsGrid .btn-start-free:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 24px 55px rgba(255, 138, 0, 0.45);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4);
     filter: brightness(1.02);
 }
 
 #myAdsGrid .btn-start-free:active {
     transform: translateY(0);
-    box-shadow: 0 14px 34px rgba(255, 138, 0, 0.35);
+    box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3);
 }
 
 #myAdsGrid .btn-start-free:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(255, 210, 0, 0.45), 0 24px 55px rgba(255, 138, 0, 0.45);
+    box-shadow: 0 0 0 4px rgba(255, 210, 0, 0.45), 0 6px 20px rgba(247, 124, 0, 0.4);
 }
 
-@media (max-width: 520px) {
+@media (max-width: 768px) {
     #myAdsGrid .btn-start-free {
-        font-size: 22px;
-        padding: 18px 22px;
+        font-size: 0.95rem;
+        padding: 12px 20px;
+        gap: 6px;
     }
     #myAdsGrid .btn-start-free i {
-        font-size: 18px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #myAdsGrid .btn-start-free {
+        font-size: 0.9rem;
+        padding: 10px 18px;
+    }
+    #myAdsGrid .btn-start-free i {
+        font-size: 0.85rem;
     }
 }
 
