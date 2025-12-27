@@ -1698,13 +1698,19 @@
     .pricing-grid {
         grid-template-columns: 1fr;
         gap: 20px;
-        max-width: 400px !important;
+        max-width: 320px !important;
         width: 100%;
         margin-left: auto;
         margin-right: auto;
     }
     
     .top-ads-pricing .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    /* Aplikovat stejné zúžení i na stránku balíčků */
+    section.top-ads-pricing .container {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
