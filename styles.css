@@ -13158,56 +13158,107 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         max-width: 100%;
     }
     
-    /* Search mobile */
+    /* Hero search - centrování a seskupení na mobilu */
+    .hero-search {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin-top: 2rem !important;
+        padding: 0 1rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Search mobile - vše vycentrované a seskupené */
     .search-form {
-        gap: 0.75rem; /* Zmenšená mezera mezi skupinou a tlačítkem */
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.75rem !important;
+        box-sizing: border-box !important;
     }
     
     .search-input-group {
-        flex-direction: row;
-        gap: 0.5rem;
-        flex-wrap: nowrap;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
     }
     
     .search-input {
-        flex: 1;
-        min-width: 0;
-        font-size: 14px; /* Zmenšené */
-        padding: 0.6rem 0.8rem; /* Zmenšené */
-        min-height: 40px; /* Zmenšené */
-        border-radius: 10px;
-        color: #000000; /* Černá barva textu */
+        flex: 1 !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        font-size: 14px !important;
+        padding: 0.6rem 0.8rem !important;
+        min-height: 40px !important;
+        border-radius: 10px !important;
+        color: #000000 !important;
+        box-sizing: border-box !important;
+        width: auto !important;
     }
     
     select.search-input {
-        padding-right: 2rem; /* Místo pro šipku */
-        background-size: 14px;
-        background-position: right 0.6rem center;
-        color: #000000 !important; /* Černá barva textu na mobilu */
+        padding-right: 2rem !important;
+        background-size: 14px !important;
+        background-position: right 0.6rem center !important;
+        color: #000000 !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     select.search-input option {
-        color: #000000; /* Černá barva pro option elementy */
-        background-color: #ffffff;
+        color: #000000 !important;
+        background-color: #ffffff !important;
     }
     
     .search-btn {
-        width: 40px; /* Zmenšené - čtvercové tlačítko */
-        min-width: 40px;
-        height: 40px;
-        min-height: 40px;
-        padding: 0;
-        border-radius: 10px;
-        font-size: 1rem;
-        flex-shrink: 0;
+        width: 40px !important;
+        min-width: 40px !important;
+        max-width: 40px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        font-size: 1rem !important;
+        flex-shrink: 0 !important;
+        box-sizing: border-box !important;
     }
     
     .btn-create-ad {
-        padding: 0.6rem 1rem; /* Zmenšené */
-        font-size: 0.9rem; /* Zmenšené */
-        min-height: 40px;
-        border-radius: 10px;
-        width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0.6rem 1rem !important;
+        font-size: 0.9rem !important;
+        min-height: 40px !important;
+        border-radius: 10px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Hero content - centrování */
+    .hero-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
     }
     
     /* Promo section mobile */
