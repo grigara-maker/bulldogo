@@ -13126,7 +13126,12 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         padding: 2rem 0 !important;
         margin: 0 !important;
         box-sizing: border-box !important;
+        overflow: hidden !important;
         overflow-x: hidden !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
     }
     
     .hero-container {
@@ -13239,7 +13244,11 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         padding: 0 !important;
         margin: 0 !important;
         gap: 0 !important;
+        overflow: visible !important;
         overflow-x: hidden !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        max-height: none !important;
     }
     
     /* Hero search - centrování a seskupení na mobilu */
