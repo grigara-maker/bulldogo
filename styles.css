@@ -1699,16 +1699,10 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    /* Tlačítka při vytváření inzerátu - normálně na konci stránky - VYŠŠÍ SPECIFICITA */
-    body .main-content .container .ad-create-layout,
-    body .main-content .container .ad-create-aside,
-    body .main-content .container .ad-create-card {
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Container uvnitř .main-content pro create-ad stránku */
-    body .main-content .container:has(.ad-create-layout) {
+    /* CREATE-AD STRÁNKA - kompletní řešení pro mobil */
+    /* Container pro create-ad stránku - nulový padding */
+    body .main-content .container:has(.ad-create-layout),
+    .main-content .container:has(.ad-create-layout) {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -1718,12 +1712,14 @@
         margin-right: 0 !important;
     }
     
-    /* Ad create layout - přepis inline CSS z HTML */
+    /* Ad create layout - přepis inline CSS z HTML s vyšší specifitou */
+    body .main-content .container .ad-create-layout,
+    .main-content .container .ad-create-layout,
     .ad-create-layout {
         display: grid !important;
         grid-template-columns: 1fr !important;
         width: 100% !important;
-        max-width: calc(100% - 0px) !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
@@ -1732,6 +1728,10 @@
         gap: 0 !important;
     }
     
+    /* Aside - přepis inline CSS z HTML */
+    body .main-content .container .ad-create-layout .ad-create-aside,
+    .main-content .container .ad-create-layout .ad-create-aside,
+    .ad-create-layout .ad-create-aside,
     .ad-create-aside {
         position: relative !important;
         top: auto !important;
@@ -1742,16 +1742,24 @@
         box-sizing: border-box !important;
     }
     
-    /* Přepis inline CSS z HTML - ad-create-card */
+    /* Ad create card - přepis inline CSS z HTML */
+    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card,
+    .main-content .container .ad-create-layout .ad-create-aside .ad-create-card,
+    .ad-create-layout .ad-create-aside .ad-create-card,
     .ad-create-aside .ad-create-card,
     .ad-create-card {
         width: 100% !important;
         max-width: 100% !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 18px !important;
         box-sizing: border-box !important;
     }
     
+    /* Ad preview */
+    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-preview,
+    .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-preview,
+    .ad-create-layout .ad-create-aside .ad-create-card .ad-preview,
+    .ad-create-aside .ad-create-card .ad-preview,
     .ad-create-aside .ad-preview {
         min-height: auto !important;
         width: 100% !important;
@@ -1759,12 +1767,17 @@
         box-sizing: border-box !important;
     }
     
-    /* Přepis inline CSS z HTML - ad-actions */
+    /* Ad actions - přepis inline CSS z HTML - KRITICKÉ */
+    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
+    .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
+    .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
+    .ad-create-aside .ad-create-card .ad-actions,
     .ad-create-aside .ad-actions {
         position: static !important;
         margin-top: 20px !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-bottom: 0 !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
         padding-top: 12px !important;
@@ -1775,10 +1788,16 @@
         flex-direction: column !important;
         align-items: stretch !important;
         box-sizing: border-box !important;
+        gap: 10px !important;
     }
     
-    /* Přepis inline CSS z HTML - btn-wide */
-    .ad-create-aside .ad-actions .btn-wide {
+    /* Tlačítka btn-wide - přepis inline CSS z HTML - KRITICKÉ */
+    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
+    .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
+    .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
+    .ad-create-aside .ad-create-card .ad-actions .btn-wide,
+    .ad-create-aside .ad-actions .btn-wide,
+    .ad-actions .btn-wide {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -1788,6 +1807,9 @@
         padding-left: 16px !important;
         padding-right: 16px !important;
         flex-shrink: 1 !important;
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     
     .pricing-grid {
@@ -14167,24 +14189,12 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         box-sizing: border-box !important;
     }
     
-    /* CREATE-AD STRÁNKA - zajistit, že tlačítka nepřesahují - VYŠŠÍ SPECIFICITA */
-    body .main-content .container:has(.ad-create-layout) {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+    /* CREATE-AD STRÁNKA - finální přepis pro konzistenci */
+    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
+    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions a.btn-wide {
         width: 100% !important;
         max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
-    body .main-content .container .ad-create-layout,
-    body .main-content .container .ad-create-layout .ad-create-aside,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide {
-        max-width: 100% !important;
-        width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
     }
     
