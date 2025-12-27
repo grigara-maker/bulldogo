@@ -1699,6 +1699,11 @@
         grid-template-columns: 1fr;
     }
     
+    .pricing-card {
+        padding: 30px 20px !important;
+        border-radius: 20px;
+    }
+    
     .payment-summary {
         grid-template-columns: 1fr;
     }
