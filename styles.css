@@ -1698,11 +1698,21 @@
     .pricing-grid {
         grid-template-columns: 1fr;
         gap: 20px;
+        max-width: 400px !important;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .top-ads-pricing .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
     
     .pricing-card {
         padding: 24px 16px !important;
         border-radius: 16px;
+        max-width: 100%;
     }
     
     .pricing-card .pricing-header {
