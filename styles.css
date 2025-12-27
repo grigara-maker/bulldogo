@@ -1697,7 +1697,7 @@
 @media (max-width: 768px) {
     .pricing-grid {
         grid-template-columns: 1fr !important;
-        gap: 16px !important;
+        gap: 30px !important;
         max-width: 280px !important;
         width: 100% !important;
         margin-left: auto !important;
@@ -1708,73 +1708,6 @@
     section.top-ads-pricing .container {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
-    }
-    
-    .pricing-card {
-        padding: 18px 14px !important;
-        border-radius: 14px !important;
-        max-width: 100% !important;
-    }
-    
-    .pricing-card .pricing-header {
-        margin-bottom: 12px !important;
-        min-height: auto !important;
-    }
-    
-    .pricing-card .pricing-header h2 {
-        font-size: 20px !important;
-        margin-bottom: 4px !important;
-    }
-    
-    .pricing-card .pricing-header p {
-        font-size: 13px !important;
-        margin-bottom: 6px !important;
-    }
-    
-    .pricing-card .pricing-header > div {
-        padding: 5px 10px !important;
-        margin-bottom: 10px !important;
-    }
-    
-    .pricing-card .pricing-header > div p {
-        font-size: 11px !important;
-    }
-    
-    .pricing-price {
-        margin-bottom: 12px !important;
-    }
-    
-    .pricing-price .price {
-        font-size: 1.75rem !important;
-    }
-    
-    .pricing-price .currency {
-        font-size: 0.9rem !important;
-    }
-    
-    .pricing-price .period {
-        font-size: 0.8rem !important;
-    }
-    
-    .pricing-features ul {
-        margin-bottom: 12px !important;
-        row-gap: 6px !important;
-    }
-    
-    .pricing-features li {
-        font-size: 0.85rem !important;
-        gap: 6px !important;
-    }
-    
-    .pricing-features i {
-        font-size: 0.85rem !important;
-        flex: 0 0 16px !important;
-    }
-    
-    .btn-pricing {
-        padding: 10px 20px !important;
-        font-size: 0.9rem !important;
-        border-radius: 10px !important;
     }
     
     .payment-summary {
