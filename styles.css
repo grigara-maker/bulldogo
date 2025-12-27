@@ -3546,6 +3546,20 @@ body.dark-mode .footer {
     }
 }
 
+@media (max-width: 768px) {
+    @keyframes heroShine {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+}
+
 @keyframes heroShineMobile {
     0% {
         background-position: 0% 50%;
@@ -13185,7 +13199,6 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         font-weight: 800 !important;
         margin-bottom: 1rem !important;
         text-shadow: none !important;
-        filter: none !important;
         white-space: nowrap !important;
         padding: 0 1rem;
         box-sizing: border-box;
@@ -13196,7 +13209,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         background-clip: text !important;
         background-size: 200% 200% !important;
         background-position: 0% 50% !important;
-        animation: heroShineMobile 4s ease-in-out infinite !important;
+        animation: heroShine 4s ease-in-out infinite !important;
         will-change: background-position !important;
         display: inline-block !important;
         transform-origin: center center !important;
