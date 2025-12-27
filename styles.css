@@ -3546,6 +3546,18 @@ body.dark-mode .footer {
     }
 }
 
+@keyframes heroShineMobile {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
 .hero-search {
     margin-top: 2rem;
 }
@@ -13172,7 +13184,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         font-weight: 800 !important;
         margin-bottom: 1.5rem !important;
         text-shadow: none !important;
-        filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.25)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18)) !important;
+        filter: none !important;
         white-space: nowrap !important;
         padding: 0 1rem;
         box-sizing: border-box;
@@ -13182,7 +13194,10 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
         background-size: 200% 200% !important;
-        animation: heroShine 4s ease-in-out infinite !important;
+        animation: heroShineMobile 4s ease-in-out infinite !important;
+        display: inline-block !important;
+        transform-origin: center center !important;
+        text-transform: uppercase !important;
     }
     
     .hero-slogan {
