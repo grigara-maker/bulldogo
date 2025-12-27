@@ -11859,7 +11859,9 @@ html body .ad-actions {
         gap: 1.5rem !important;
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0 1rem !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         box-sizing: border-box !important;
         display: grid !important;
     }
@@ -11868,14 +11870,20 @@ html body .ad-actions {
         width: 100% !important;
         max-width: 100% !important;
         padding: 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         box-sizing: border-box !important;
+        overflow: hidden !important;
     }
     
     .ad-detail-right {
         width: 100% !important;
         max-width: 100% !important;
         padding: 1.5rem 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         box-sizing: border-box !important;
+        overflow: hidden !important;
     }
     
     .ad-title-section,
@@ -11886,7 +11894,37 @@ html body .ad-actions {
         width: 100% !important;
         max-width: 100% !important;
         padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         box-sizing: border-box !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+    }
+    
+    .ad-title-section {
+        padding-bottom: 1.5rem !important;
+    }
+    
+    .ad-meta-section {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .ad-description-section {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .ad-contact-section {
+        margin-bottom: 1.5rem !important;
+        padding: 1rem !important;
+    }
+    
+    .ad-chat-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
     }
     
     .ad-main-image {
@@ -11902,6 +11940,44 @@ html body .ad-actions {
     .ad-detail-title {
         font-size: clamp(1.3rem, 5vw, 1.8rem) !important;
         word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-detail-price {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-description {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-meta-item,
+    .contact-item {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-meta-item span,
+    .contact-item span {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .ad-actions {
@@ -11927,11 +12003,31 @@ html body .ad-actions {
         flex-wrap: wrap !important;
     }
     
+    .ad-user-profile {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5rem 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    
     .user-other-ads {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 1rem !important;
+        padding: 1rem 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    
+    .ads-grid {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
     }
     
     .user-other-ads h4 {
