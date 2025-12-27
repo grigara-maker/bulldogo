@@ -254,8 +254,11 @@
         // Náhled obrázku v pravé kartě
         const previewImageInput = document.getElementById('previewImage');
         const noPreviewCheckbox = document.getElementById('noPreviewImage');
+        // Výchozí logo pro náhledový obrázek - změňte cestu zde
+        const DEFAULT_PREVIEW_LOGO = '/fotky/vychozi-inzerat.png';
+        
         if (imgPreview && !imgPreview.getAttribute('src')) {
-            imgPreview.setAttribute('src', '/fotky/bulldogo-logo.png');
+            imgPreview.setAttribute('src', DEFAULT_PREVIEW_LOGO);
         }
         if (previewImageInput && imgPreview) {
             previewImageInput.addEventListener('change', function(e) {
@@ -273,10 +276,10 @@
                 previewImageInput.disabled = checked;
                 if (checked) {
                     try { previewImageInput.value = ''; } catch(_) {}
-                    imgPreview.src = '/fotky/bulldogo-logo.png';
+                    imgPreview.src = DEFAULT_PREVIEW_LOGO;
                 } else {
                     if (!previewImageInput.files?.[0]) {
-                        imgPreview.src = '/fotky/bulldogo-logo.png';
+                        imgPreview.src = DEFAULT_PREVIEW_LOGO;
                     }
                 }
                 validateRequired();
@@ -296,12 +299,8 @@
             r.addEventListener('change', onPriceTypeChange);
             r.addEventListener('click', onPriceTypeChange);
         });
-        // Výchozí stav: pokud není nic vybráno, zvolit Fixní
-        if (!document.querySelector('input[name=\"priceType\"]:checked')) {
-            const fallback = document.getElementById('priceTypeFixed');
-            if (fallback) { fallback.checked = true; }
-        }
-        onPriceTypeChange();
+        // Výchozí stav: žádné pole není vybráno, pole jsou skrytá
+        if (priceInputs) priceInputs.style.display = 'none';
         function onPriceTypeChange() {
             const sel = document.querySelector('input[name=\"priceType\"]:checked');
             if (!sel) { if (priceInputs) priceInputs.style.display = 'none'; return; }
@@ -314,15 +313,11 @@
                     unitSel.style.display = 'block';
                     p.style.display = 'block';
                     p.required = true;
-                    // focus na pole ceny při volbě fixní
-                    setTimeout(() => p?.focus(), 0);
                     updatePlaceholders();
                 } else if (sel.value === 'range') {
                     unitSel.style.display = 'block';
                     pf.style.display = 'block'; pt.style.display = 'block';
                     pf.required = true; pt.required = true;
-                    // focus na první pole rozsahu
-                    setTimeout(() => pf?.focus(), 0);
                     updatePlaceholders();
                 } else {
                     // negotiable
@@ -382,7 +377,9 @@
                     data.previewImage = previewImage.files[0];
                 } else {
                     // použít výchozí logo, neuploadovat do Storage
-                    data.defaultPreviewUrl = '/fotky/bulldogo-logo.png';
+                    // Výchozí logo pro náhledový obrázek - změňte cestu zde
+                    const DEFAULT_PREVIEW_LOGO = '/fotky/bulldogo-logo.png';
+                    data.defaultPreviewUrl = DEFAULT_PREVIEW_LOGO;
                 }
                 if (additionalImages?.files?.length) {
                     if (additionalImages.files.length > 10) {

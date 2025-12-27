@@ -2655,7 +2655,15 @@ function setupEventListeners() {
 }
 
 // Funkce pro náhled obrázků při nahrávání
+// Flag pro zajištění, že se event listenery přidají jen jednou
+let imagePreviewsSetup = false;
+
 function setupImagePreviews() {
+    // Pokud už byly event listenery přidány, nepřidávat znovu
+    if (imagePreviewsSetup) {
+        return;
+    }
+    
     const previewImageInput = document.getElementById('previewImage');
     const additionalImagesInput = document.getElementById('additionalImages');
     const previewImagePreview = document.getElementById('previewImagePreview');
@@ -2683,9 +2691,22 @@ function setupImagePreviews() {
                 return;
             }
             
-            additionalImagesPreview.innerHTML = '';
+            // VYMAZAT existující náhledy před přidáním nových - důležité pro zabránění duplicit
+            // Použít replaceChildren pro lepší výkon a jistotu, že se vše vymaže
+            while (additionalImagesPreview.firstChild) {
+                additionalImagesPreview.removeChild(additionalImagesPreview.firstChild);
+            }
+            
+            // Zajistit, že se každý soubor zpracuje jen jednou
+            const processedFiles = new Set();
             
             files.forEach((file, index) => {
+                // Zkontrolovat, jestli už tento soubor nebyl zpracován
+                if (processedFiles.has(file.name + file.size)) {
+                    return;
+                }
+                processedFiles.add(file.name + file.size);
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imageItem = document.createElement('div');
@@ -2702,6 +2723,9 @@ function setupImagePreviews() {
             });
         });
     }
+    
+    // Označit, že byly event listenery přidány
+    imagePreviewsSetup = true;
 }
 
 // Funkce pro odstranění obrázku z náhledu
