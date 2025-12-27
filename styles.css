@@ -12462,6 +12462,23 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         transform: none !important;
     }
     
+    /* Aplikovat hover styly na logo - vždy jako při hoveru */
+    .sidebar.mobile-open .logo {
+        justify-content: flex-start !important; /* Logo zarovnané vlevo */
+        align-items: center !important;
+        gap: 0.1rem !important;
+    }
+    
+    .sidebar.mobile-open .logo-icon {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    
+    /* Header buttons - zobrazit když je menu otevřené */
+    .sidebar.mobile-open .header-buttons {
+        display: flex !important;
+    }
+    
     /* Zobrazit navigaci automaticky když je menu otevřené */
     .sidebar.mobile-open .nav-section-title {
         opacity: 1 !important;
@@ -12493,9 +12510,28 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .sidebar.mobile-open .nav-link {
-        padding: 0.75rem 1.5rem !important;
+        padding: 0.8rem 1.5rem !important;
         justify-content: space-between !important; /* Text vlevo, ikona vpravo */
         align-items: center !important;
+        margin: 0.2rem 1rem !important;
+    }
+    
+    /* Nav icon - vždy jako při hoveru */
+    .sidebar.mobile-open .nav-icon {
+        margin-left: 0.8rem !important; /* Ikona vpravo */
+        order: 2 !important; /* Ikona vpravo */
+        color: #6c757d !important; /* Pevná barva ikony */
+        justify-content: flex-start !important;
+    }
+    
+    /* Nav text - vždy jako při hoveru */
+    .sidebar.mobile-open .nav-text {
+        opacity: 1 !important;
+        transform: none !important;
+        width: auto !important;
+        text-align: left !important;
+        order: 1 !important; /* Text vlevo */
+        color: #2c3e50 !important;
     }
     
     /* Zajistit, že inline style display má přednost - skrýt sekce s display: none */
@@ -12536,7 +12572,18 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .sidebar.mobile-open .btn-profile,
     .sidebar.mobile-open .btn-logout {
         width: 100% !important;
-        justify-content: space-between !important;
+        justify-content: space-between !important; /* Text vlevo, ikona vpravo */
+        padding: 0.8rem 1rem !important;
+    }
+    
+    /* Auth section - vždy jako při hoveru */
+    .sidebar.mobile-open .auth-section {
+        padding: 1rem 1.5rem !important;
+    }
+    
+    /* User profile section - vždy jako při hoveru */
+    .sidebar.mobile-open .user-profile-section {
+        padding: 1rem 1.5rem !important;
     }
     
     /* Zobrazit texty tlačítek když je menu otevřené */
