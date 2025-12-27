@@ -406,14 +406,12 @@ function updateProfileInfo() {
     const profileNameEl = document.getElementById('profileName');
         const profileAvatarEl = document.getElementById('profileAvatar');
         const profileAvatarPh = document.getElementById('profileAvatarPlaceholder');
-    const profileEmailEl = document.getElementById('profileEmail');
     const profileLocationEl = document.getElementById('profileLocation');
     const profileBioEl = document.getElementById('profileBio');
     
     console.log('🖼️ Profile elements found:', {
         profileName: !!profileNameEl,
             profileAvatar: !!profileAvatarEl,
-        profileEmail: !!profileEmailEl,
         profileLocation: !!profileLocationEl,
         profileBio: !!profileBioEl
     });
@@ -429,7 +427,6 @@ function updateProfileInfo() {
                 profileAvatarPh.style.display = 'none';
             }
         } catch (e) { /* noop */ }
-    if (profileEmailEl) profileEmailEl.textContent = userProfile.email || currentProfileUser.email || '';
     if (profileLocationEl) profileLocationEl.textContent = userProfile.city || userProfile.location || currentProfileUser.location || 'Lokace neuvedena';
     if (profileBioEl) {
         const bioText = userProfile.bio || userProfile.description || 'Uživatel nezadal žádný popis.';
