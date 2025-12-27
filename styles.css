@@ -12671,22 +12671,43 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         transform: none !important;
         margin: 0 !important;
         padding: 0 !important;
-        position: static !important;
+        position: relative !important;
+        box-sizing: border-box !important;
     }
     
+    /* Obrázek - absolutní pozicování pro vyplnění celého kruhu */
     .sidebar.mobile-open #sidebarUserAvatarImg,
     .sidebar.mobile-open:not(:hover) #sidebarUserAvatarImg {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
         border-radius: 50% !important;
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
         transition: none !important;
         animation: none !important;
         transform: none !important;
         margin: 0 !important;
         padding: 0 !important;
-        position: static !important;
+        z-index: 2 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Skrýt placeholder ikonu na mobilu - musí být pod obrázkem */
+    .sidebar.mobile-open #sidebarUserAvatarPh,
+    .sidebar.mobile-open:not(:hover) #sidebarUserAvatarPh {
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        z-index: 1 !important;
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
     }
     
     /* Zobrazit ikonu a text profilu na mobilu - vždy jako při hoveru */
