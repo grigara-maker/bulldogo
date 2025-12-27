@@ -1706,6 +1706,19 @@
     padding: 0;
 }
 
+/* Na desktopu - v aside pod náhledem */
+@media (min-width: 1025px) {
+    .ad-create-aside .ad-create-actions-section {
+        margin-top: 24px;
+        width: 100%;
+    }
+    
+    .ad-create-aside .ad-create-actions-section .ad-create-card {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
 .ad-create-actions-section .ad-create-card {
     width: 100%;
     max-width: 100%;
