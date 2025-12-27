@@ -3546,19 +3546,6 @@ body.dark-mode .footer {
     }
 }
 
-@media (max-width: 768px) {
-    @keyframes heroShine {
-        0% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0% 50%;
-        }
-    }
-}
 
 @keyframes heroShineMobile {
     0% {
@@ -13208,12 +13195,13 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
         background-size: 200% 200% !important;
-        background-position: 0% 50% !important;
-        animation: heroShine 4s ease-in-out infinite !important;
+        animation: heroShineMobile 4s ease-in-out infinite !important;
         will-change: background-position !important;
         display: inline-block !important;
         transform-origin: center center !important;
         text-transform: uppercase !important;
+        position: relative !important;
+        z-index: 1 !important;
     }
     
     .hero-slogan {
