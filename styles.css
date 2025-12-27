@@ -1699,15 +1699,22 @@
         grid-template-columns: 1fr !important;
         gap: 30px !important;
         max-width: 280px !important;
-        width: 100% !important;
+        width: 280px !important;
         margin-left: auto !important;
         margin-right: auto !important;
+    }
+    
+    .top-ads-pricing .pricing-grid,
+    section.top-ads-pricing .pricing-grid {
+        max-width: 280px !important;
+        width: 280px !important;
     }
     
     .top-ads-pricing .container,
     section.top-ads-pricing .container {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
+        max-width: 100% !important;
     }
     
     .payment-summary {
