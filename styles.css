@@ -13194,7 +13194,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         -webkit-text-fill-color: transparent !important;
         background-clip: text !important;
         background-size: 200% 200% !important;
+        background-position: 0% 50% !important;
         animation: heroShineMobile 4s ease-in-out infinite !important;
+        will-change: background-position !important;
         display: inline-block !important;
         transform-origin: center center !important;
         text-transform: uppercase !important;
@@ -13203,6 +13205,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .hero-slogan {
         font-size: clamp(1rem, 4vw, 1.3rem);
         text-align: center !important;
+        margin-bottom: 0.5rem !important;
     }
     
     .hero-buttons {
@@ -13240,7 +13243,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        margin-top: 2rem !important;
+        margin-top: 0.75rem !important;
         padding: 0 1rem !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
