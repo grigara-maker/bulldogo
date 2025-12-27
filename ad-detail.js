@@ -345,21 +345,51 @@ function displayAdImages(images) {
                 <span>Obrázek se nepodařilo načíst</span>
             </div>`;
         
-        // Set thumbnails
+        // Set thumbnails - zobrazit další obrázky (bez prvního, který je už zobrazen jako hlavní)
         if (images.length > 1) {
-            thumbnails.innerHTML = images.slice(1).map((img, index) => `
-                <div class="ad-thumbnail" onclick="changeMainImage('${img}')">
+            thumbnails.innerHTML = images.slice(1).map((img, index) => {
+                // Escapovat URL pro bezpečné použití v data atributu
+                const escapedUrl = img.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                return `
+                <div class="ad-thumbnail" data-image-url="${escapedUrl}" data-image-index="${index + 1}" style="cursor: pointer;">
 					<img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="no-image-placeholder" style="display: none;">
                         <i class="fas fa-image"></i>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
+            
+            // Použít event delegation pro spolehlivější funkčnost
+            if (thumbnails) {
+                // Odstranit existující event listener, pokud existuje
+                thumbnails.removeEventListener('click', handleThumbnailClick);
+                
+                // Přidat nový event listener pomocí event delegation
+                thumbnails.addEventListener('click', handleThumbnailClick);
+            }
         } else {
             thumbnails.innerHTML = '';
         }
     } else {
         displayNoImages();
+    }
+}
+
+// Event handler pro klikání na thumbnaily
+function handleThumbnailClick(e) {
+    const thumbnail = e.target.closest('.ad-thumbnail');
+    if (!thumbnail) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const imageUrl = thumbnail.getAttribute('data-image-url');
+    if (imageUrl) {
+        console.log('🖼️ Clicked thumbnail, changing to:', imageUrl);
+        // Dekódovat HTML entity zpět na normální URL
+        const decodedUrl = imageUrl.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+        window.changeMainImage(decodedUrl);
     }
 }
 
@@ -378,25 +408,39 @@ function displayNoImages() {
     thumbnails.innerHTML = '';
 }
 
-// Change main image
-function changeMainImage(imageSrc) {
+// Change main image - globální funkce pro onclick
+window.changeMainImage = function(imageSrc) {
+    console.log('🖼️ Changing main image to:', imageSrc);
     const mainImage = document.getElementById('adMainImage');
-	mainImage.innerHTML = `<img src="${imageSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    if (!mainImage) {
+        console.error('❌ Main image element not found');
+        return;
+    }
+    
+    // Escapovat imageSrc pro bezpečné použití v HTML
+    const escapedSrc = imageSrc.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    
+	mainImage.innerHTML = `<img src="${escapedSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <div class="no-image-placeholder" style="display: none;">
             <i class="fas fa-image"></i>
             <span>Obrázek se nepodařilo načíst</span>
         </div>`;
     
-    // Update active thumbnail
+    // Update active thumbnail - porovnat pomocí data atributu
     const thumbnails = document.querySelectorAll('.ad-thumbnail');
     thumbnails.forEach(thumb => {
         thumb.classList.remove('active');
-        const img = thumb.querySelector('img');
-        if (img && img.src === imageSrc) {
-            thumb.classList.add('active');
+        const thumbUrl = thumb.getAttribute('data-image-url');
+        if (thumbUrl) {
+            // Dekódovat HTML entity pro porovnání
+            const decodedThumbUrl = thumbUrl.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+            // Porovnat s imageSrc (oba mohou být různě escapované)
+            if (decodedThumbUrl === imageSrc || thumbUrl === imageSrc) {
+                thumb.classList.add('active');
+            }
         }
     });
-}
+};
 
 // Load user's other ads
 async function loadUserOtherAds(userId) {
