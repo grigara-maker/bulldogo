@@ -12432,15 +12432,18 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .sidebar.mobile-open {
-        transform: translateX(0);
+        transform: translateX(0) !important;
+        transition: none !important; /* Zakázat všechny animace na mobilu */
+        width: 280px !important;
     }
     
     /* Zobrazit logo text když je menu otevřené */
     .sidebar.mobile-open .logo-text {
         opacity: 1 !important;
-        transform: translateX(0) scale(1) !important;
+        transform: none !important; /* Odstranit všechny transformace */
         width: auto !important;
         transition: none !important; /* Zakázat animace na mobilu */
+        overflow: visible !important;
     }
     
     /* Zobrazit sidebar header správně když je menu otevřené */
@@ -12449,6 +12452,14 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         flex-direction: row !important;
         justify-content: space-between !important;
         align-items: center !important;
+        transition: none !important; /* Zakázat animace na mobilu */
+    }
+    
+    /* Zakázat animace pro logo a logo-icon na mobilu */
+    .sidebar.mobile-open .logo,
+    .sidebar.mobile-open .logo-icon {
+        transition: none !important;
+        transform: none !important;
     }
     
     /* Zobrazit navigaci automaticky když je menu otevřené */
@@ -12459,7 +12470,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .sidebar.mobile-open .nav-text {
         opacity: 1 !important;
-        transform: translateX(0) !important;
+        transform: none !important; /* Odstranit všechny transformace */
         width: auto !important;
         text-align: left !important;
         order: 1 !important;
@@ -12478,6 +12489,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         width: 24px !important;
         flex-shrink: 0 !important;
         transition: none !important; /* Zakázat animace na mobilu */
+        transform: none !important; /* Odstranit všechny transformace */
     }
     
     .sidebar.mobile-open .nav-link {
@@ -12534,9 +12546,24 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .sidebar.mobile-open .btn-logout span {
         opacity: 1 !important;
         width: auto !important;
-        transform: translateX(0) !important;
+        transform: none !important; /* Odstranit všechny transformace */
         transition: none !important; /* Zakázat animace na mobilu */
         overflow: visible !important;
+    }
+    
+    /* Zakázat všechny animace a přechody pro sidebar na mobilu */
+    .sidebar.mobile-open * {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    /* Povolit pouze základní přechody pro hover efekty, ale ne pro layout */
+    .sidebar.mobile-open .nav-link:hover,
+    .sidebar.mobile-open .btn-login:hover,
+    .sidebar.mobile-open .btn-register:hover,
+    .sidebar.mobile-open .btn-profile:hover,
+    .sidebar.mobile-open .btn-logout:hover {
+        transition: background-color 0.2s ease !important;
     }
     
     .sidebar.mobile-open .btn-login i,
