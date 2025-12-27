@@ -14627,118 +14627,123 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
 }
 
-/* Mailchimp newsletter popup - zmenšení na všech zařízeních */
-#mce-modal,
-.mce-modal,
-.mce-popup,
-[id^="mce-modal"],
-[class*="mce-modal"],
-[class*="mailchimp"],
-.mc-modal,
-.mc-popup {
+/* Mailchimp newsletter popup - zmenšení na všech zařízeních - univerzální selektory */
+/* Cílení na všechny možné Mailchimp elementy */
+div[id*="mce"],
+div[class*="mce"],
+div[id*="mailchimp"],
+div[class*="mailchimp"],
+div[id*="mc-"],
+div[class*="mc-"],
+iframe[id*="mce"],
+iframe[class*="mce"],
+body > div[style*="position: fixed"],
+body > div[style*="position:fixed"],
+body > div[style*="z-index"][style*="position"],
+div[style*="background"][style*="position: fixed"],
+div[style*="background"][style*="position:fixed"] {
     max-width: 380px !important;
     width: 90% !important;
 }
 
-#mce-modal .mce-container,
-.mce-modal .mce-container,
-.mce-popup .mce-container,
-[id^="mce-modal"] .mce-container,
-[class*="mce-modal"] .mce-container,
-.mc-modal .mce-container,
-.mc-popup .mce-container {
+/* Cílení na všechny vnořené divy v popupu */
+div[id*="mce"] div,
+div[class*="mce"] div,
+div[id*="mailchimp"] div,
+div[class*="mailchimp"] div {
     max-width: 100% !important;
-    width: 100% !important;
-    padding: 1.2rem !important;
-}
-
-#mce-modal .mce-container-body,
-.mce-modal .mce-container-body,
-.mce-popup .mce-container-body,
-[id^="mce-modal"] .mce-container-body,
-[class*="mce-modal"] .mce-container-body {
-    padding: 0.8rem !important;
-}
-
-#mce-modal h2,
-.mce-modal h2,
-.mce-popup h2,
-[id^="mce-modal"] h2,
-[class*="mce-modal"] h2 {
-    font-size: 1.1rem !important;
-    margin-bottom: 0.8rem !important;
-    line-height: 1.3 !important;
-}
-
-#mce-modal p,
-.mce-modal p,
-.mce-popup p,
-[id^="mce-modal"] p,
-[class*="mce-modal"] p {
-    font-size: 0.85rem !important;
-    margin-bottom: 0.6rem !important;
-    line-height: 1.4 !important;
-}
-
-#mce-modal input[type="email"],
-.mce-modal input[type="email"],
-.mce-popup input[type="email"],
-[id^="mce-modal"] input[type="email"],
-[class*="mce-modal"] input[type="email"] {
-    font-size: 0.85rem !important;
-    padding: 0.5rem 0.7rem !important;
-    width: 100% !important;
     box-sizing: border-box !important;
 }
 
-#mce-modal button,
-.mce-modal button,
-.mce-popup button,
-[id^="mce-modal"] button,
-[class*="mce-modal"] button {
-    font-size: 0.85rem !important;
-    padding: 0.5rem 1rem !important;
+/* Všechny možné kontejnery Mailchimp popupu */
+div[id*="mce"] > div,
+div[class*="mce"] > div,
+div[id*="mailchimp"] > div,
+div[class*="mailchimp"] > div,
+div[id*="mc-"] > div,
+div[class*="mc-"] > div {
+    max-width: 100% !important;
     width: 100% !important;
-    margin-top: 0.5rem !important;
+    padding: 1rem !important;
+    box-sizing: border-box !important;
 }
 
-/* Mobilní optimalizace pro Mailchimp popup */
+/* Všechny elementy uvnitř Mailchimp popupu */
+div[id*="mce"] h2,
+div[class*="mce"] h2,
+div[id*="mailchimp"] h2,
+div[class*="mailchimp"] h2,
+div[id*="mc-"] h2,
+div[class*="mc-"] h2 {
+    font-size: 1rem !important;
+    margin-bottom: 0.6rem !important;
+    line-height: 1.3 !important;
+}
+
+div[id*="mce"] p,
+div[class*="mce"] p,
+div[id*="mailchimp"] p,
+div[class*="mailchimp"] p,
+div[id*="mc-"] p,
+div[class*="mc-"] p {
+    font-size: 0.8rem !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.4 !important;
+}
+
+div[id*="mce"] input,
+div[class*="mce"] input,
+div[id*="mailchimp"] input,
+div[class*="mailchimp"] input,
+div[id*="mc-"] input,
+div[class*="mc-"] input {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0.7rem !important;
+    box-sizing: border-box !important;
+}
+
+div[id*="mce"] button,
+div[class*="mce"] button,
+div[id*="mailchimp"] button,
+div[class*="mailchimp"] button,
+div[id*="mc-"] button,
+div[class*="mc-"] button {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Mobilní optimalizace */
 @media (max-width: 768px) {
-    #mce-modal,
-    .mce-modal,
-    .mce-popup,
-    [id^="mce-modal"],
-    [class*="mce-modal"],
-    [class*="mailchimp"],
-    .mc-modal,
-    .mc-popup {
-        max-width: 320px !important;
+    div[id*="mce"],
+    div[class*="mce"],
+    div[id*="mailchimp"],
+    div[class*="mailchimp"],
+    div[id*="mc-"],
+    div[class*="mc-"] {
+        max-width: 300px !important;
         width: 85% !important;
     }
     
-    #mce-modal .mce-container,
-    .mce-modal .mce-container,
-    .mce-popup .mce-container,
-    [id^="mce-modal"] .mce-container,
-    [class*="mce-modal"] .mce-container {
-        padding: 1rem !important;
+    div[id*="mce"] > div,
+    div[class*="mce"] > div,
+    div[id*="mailchimp"] > div,
+    div[class*="mailchimp"] > div {
+        padding: 0.8rem !important;
     }
     
-    #mce-modal h2,
-    .mce-modal h2,
-    .mce-popup h2,
-    [id^="mce-modal"] h2,
-    [class*="mce-modal"] h2 {
-        font-size: 1rem !important;
-        margin-bottom: 0.6rem !important;
-    }
-    
-    #mce-modal p,
-    .mce-modal p,
-    .mce-popup p,
-    [id^="mce-modal"] p,
-    [class*="mce-modal"] p {
-        font-size: 0.8rem !important;
+    div[id*="mce"] h2,
+    div[class*="mce"] h2,
+    div[id*="mailchimp"] h2,
+    div[class*="mailchimp"] h2 {
+        font-size: 0.95rem !important;
         margin-bottom: 0.5rem !important;
+    }
+    
+    div[id*="mce"] p,
+    div[class*="mce"] p,
+    div[id*="mailchimp"] p,
+    div[class*="mailchimp"] p {
+        font-size: 0.75rem !important;
+        margin-bottom: 0.4rem !important;
     }
 }

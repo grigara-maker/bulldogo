@@ -7,6 +7,40 @@
         s.async = true;
         s.src = 'https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js';
         (document.head || document.documentElement).appendChild(s);
+        
+        // Zmenšit Mailchimp popup po načtení
+        setTimeout(function() {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // Element node
+                            // Najít všechny možné Mailchimp popupy
+                            const popups = node.querySelectorAll ? node.querySelectorAll('div[id*="mce"], div[class*="mce"], div[id*="mailchimp"], div[class*="mailchimp"], div[id*="mc-"], div[class*="mc-"]') : [];
+                            popups.forEach(function(popup) {
+                                if (popup.style) {
+                                    popup.style.maxWidth = '380px';
+                                    popup.style.width = '90%';
+                                }
+                            });
+                            
+                            // Pokud je samotný node popup
+                            if (node.tagName === 'DIV' && (node.id && (node.id.includes('mce') || node.id.includes('mailchimp') || node.id.includes('mc-')) || 
+                                (node.className && (node.className.includes('mce') || node.className.includes('mailchimp') || node.className.includes('mc-'))))) {
+                                if (node.style) {
+                                    node.style.maxWidth = '380px';
+                                    node.style.width = '90%';
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }, 1000);
     } catch (_) {}
 })();
 
