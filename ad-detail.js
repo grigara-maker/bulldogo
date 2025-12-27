@@ -459,25 +459,54 @@ window.changeMainImage = function(imageSrc) {
             <span>Obrázek se nepodařilo načíst</span>
         </div>`;
     
-    // Aktualizovat thumbnails - zobrazit nové pořadí (bez prvního, který je hlavní)
+    // Aktualizovat thumbnails - přeskupit existující elementy bez znovunačítání obrázků
     if (thumbnailsContainer && newImageList.length > 1) {
-        thumbnailsContainer.innerHTML = newImageList.slice(1).map((img, index) => {
+        // Najít všechny existující thumbnail elementy
+        const existingThumbnails = Array.from(thumbnailsContainer.querySelectorAll('.ad-thumbnail'));
+        
+        // Vytvořit mapu URL -> element pro rychlé vyhledávání
+        const thumbnailMap = new Map();
+        existingThumbnails.forEach(thumb => {
+            const url = thumb.getAttribute('data-image-url');
+            if (url) {
+                const decodedUrl = url.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                thumbnailMap.set(decodedUrl, thumb);
+            }
+        });
+        
+        // Vymazat container
+        thumbnailsContainer.innerHTML = '';
+        
+        // Přidat thumbnails v novém pořadí (bez prvního, který je hlavní)
+        newImageList.slice(1).forEach((img, index) => {
             const escapedUrl = img.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            return `
-                <div class="ad-thumbnail" data-image-url="${escapedUrl}" data-image-index="${index + 1}" style="cursor: pointer;">
+            
+            // Najít existující element nebo vytvořit nový
+            let thumbnailElement = thumbnailMap.get(img);
+            
+            if (thumbnailElement) {
+                // Použít existující element - jen aktualizovat data atribut
+                thumbnailElement.setAttribute('data-image-index', index + 1);
+                // Obrázek už je načtený, takže ho jen přesuneme
+            } else {
+                // Vytvořit nový element pouze pokud neexistuje
+                thumbnailElement = document.createElement('div');
+                thumbnailElement.className = 'ad-thumbnail';
+                thumbnailElement.setAttribute('data-image-url', escapedUrl);
+                thumbnailElement.setAttribute('data-image-index', index + 1);
+                thumbnailElement.style.cursor = 'pointer';
+                thumbnailElement.innerHTML = `
                     <img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="no-image-placeholder" style="display: none;">
                         <i class="fas fa-image"></i>
                     </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }
+            
+            thumbnailsContainer.appendChild(thumbnailElement);
+        });
         
-        // Znovu přidat event listenery
-        if (thumbnailsContainer) {
-            thumbnailsContainer.removeEventListener('click', handleThumbnailClick);
-            thumbnailsContainer.addEventListener('click', handleThumbnailClick);
-        }
+        // Event listenery už jsou nastavené pomocí event delegation, takže není potřeba je znovu přidávat
     }
 };
 
