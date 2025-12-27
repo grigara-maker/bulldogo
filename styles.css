@@ -1697,11 +1697,26 @@
 @media (max-width: 768px) {
     .pricing-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
     
     .pricing-card {
-        padding: 30px 20px !important;
-        border-radius: 20px;
+        padding: 24px 16px !important;
+        border-radius: 16px;
+    }
+    
+    .pricing-card .pricing-header {
+        margin-bottom: 20px;
+        min-height: auto;
+    }
+    
+    .pricing-price .price {
+        font-size: 2.5rem;
+    }
+    
+    .pricing-features ul {
+        margin-bottom: 20px;
+        row-gap: 10px;
     }
     
     .payment-summary {
