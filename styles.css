@@ -12630,24 +12630,20 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         opacity: 1 !important;
     }
     
-    /* Zakázat všechny animace pro profilovku na mobilu - vyšší specificita */
-    /* Profilovka vždy jako při hoveru - přepisuje :not(:hover) styly */
-    .sidebar.mobile-open .btn-profile #sidebarUserAvatar,
-    .sidebar.mobile-open:not(:hover) .btn-profile #sidebarUserAvatar {
+    /* Profilovka na mobilu - přesně jako na PC při hoveru */
+    /* Přepisuje všechny :not(:hover) styly a aplikuje základní styly z #sidebarUserAvatar */
+    .sidebar.mobile-open #sidebarUserAvatar,
+    .sidebar.mobile-open:not(:hover) #sidebarUserAvatar {
+        display: inline-flex !important;
+        margin-left: 8px !important;
+        vertical-align: middle !important;
+        flex-shrink: 0 !important;
+        order: 2 !important; /* Profilovka napravo */
+        width: auto !important;
+        height: auto !important;
         transition: none !important;
         animation: none !important;
         transform: none !important;
-        margin-left: 8px !important;
-        order: 2 !important; /* Profilovka napravo */
-        width: 32px !important;
-        height: 32px !important;
-        min-width: 32px !important;
-        min-height: 32px !important;
-        max-width: 32px !important;
-        max-height: 32px !important;
-        display: inline-flex !important;
-        vertical-align: middle !important;
-        flex-shrink: 0 !important;
         position: static !important;
         left: auto !important;
         right: auto !important;
@@ -12656,61 +12652,41 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         align-items: center !important;
         justify-content: center !important;
         overflow: visible !important;
-        box-sizing: border-box !important;
     }
     
-    .sidebar.mobile-open .btn-profile #sidebarUserAvatar > span,
-    .sidebar.mobile-open:not(:hover) .btn-profile #sidebarUserAvatar > span {
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
+    .sidebar.mobile-open #sidebarUserAvatar > span,
+    .sidebar.mobile-open:not(:hover) #sidebarUserAvatar > span {
         width: 32px !important;
         height: 32px !important;
-        min-width: 32px !important;
-        min-height: 32px !important;
-        max-width: 32px !important;
-        max-height: 32px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-        position: static !important;
         border-radius: 50% !important;
         overflow: hidden !important;
         background: #f3f4f6 !important;
         border: 1px solid #e5e7eb !important;
-        box-sizing: border-box !important;
-    }
-    
-    .sidebar.mobile-open .btn-profile #sidebarUserAvatarImg,
-    .sidebar.mobile-open:not(:hover) .btn-profile #sidebarUserAvatarImg {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
         transition: none !important;
         animation: none !important;
         transform: none !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-width: 100% !important;
-        min-height: 100% !important;
-        object-fit: cover !important;
-        border-radius: 50% !important;
-        display: block !important;
         margin: 0 !important;
         padding: 0 !important;
         position: static !important;
-        box-sizing: border-box !important;
     }
     
-    /* Zajistit, aby celý kontejner profilovky měl správné rozměry */
-    .sidebar.mobile-open .btn-profile #sidebarUserAvatar {
-        width: 32px !important;
-        height: 32px !important;
-        min-width: 32px !important;
-        min-height: 32px !important;
-        max-width: 32px !important;
-        max-height: 32px !important;
-        overflow: visible !important;
+    .sidebar.mobile-open #sidebarUserAvatarImg,
+    .sidebar.mobile-open:not(:hover) #sidebarUserAvatarImg {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+        display: block !important;
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: static !important;
     }
     
     /* Zobrazit ikonu a text profilu na mobilu - vždy jako při hoveru */
