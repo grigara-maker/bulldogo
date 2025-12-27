@@ -1697,6 +1697,70 @@
     flex-wrap: wrap;
 }
 
+/* Nová sekce pro tlačítka - vlastní okno jako ostatní sekce (desktop i mobil) */
+.ad-create-actions-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-top: 24px;
+    padding: 0;
+}
+
+.ad-create-actions-section .ad-create-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.ad-create-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ad-create-actions .btn {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.ad-create-actions .btn-primary {
+    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+    color: #111827;
+}
+
+.ad-create-actions .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(247, 124, 0, 0.3);
+}
+
+.ad-create-actions .btn-outline {
+    background: #fff;
+    color: #374151;
+    border: 2px solid #e5e7eb;
+}
+
+.ad-create-actions .btn-outline:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     /* CREATE-AD STRÁNKA - kompletní řešení pro mobil */
@@ -1771,80 +1835,6 @@
         max-width: 100% !important;
         box-sizing: border-box !important;
         gap: 12px !important;
-    }
-    
-    /* Ad actions - standardní kontejner jako ostatní prvky, správně umístěný v kartě */
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
-    .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
-    .ad-create-layout .ad-create-aside .ad-create-card .ad-actions,
-    .ad-create-aside .ad-create-card .ad-actions,
-    .ad-create-aside .ad-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: auto;
-        padding-top: 12px;
-        border-top: 1px solid #eee;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    
-    /* Tlačítka - standardní jako všechna ostatní tlačítka na stránce */
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
-    .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
-    .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-wide,
-    .ad-create-aside .ad-create-card .ad-actions .btn-wide,
-    .ad-create-aside .ad-actions .btn-wide,
-    .ad-actions .btn-wide,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions button.btn-wide,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions a.btn-wide,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions #publishSideBtn {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 12px 16px;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 10px;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-    
-    /* Tlačítko primary - standardní styl */
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-primary,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions button.btn-primary,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions #publishSideBtn {
-        background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-        color: #111827;
-    }
-    
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-primary:hover,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions button.btn-primary:hover,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions #publishSideBtn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(247, 124, 0, 0.3);
-    }
-    
-    /* Tlačítko outline - standardní styl */
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-outline,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions a.btn-outline {
-        background: #fff;
-        color: #374151;
-        border: 2px solid #e5e7eb;
-    }
-    
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions .btn-outline:hover,
-    body .main-content .container .ad-create-layout .ad-create-aside .ad-create-card .ad-actions a.btn-outline:hover {
-        border-color: #d1d5db;
-        background: #f9fafb;
     }
     
     .pricing-grid {
