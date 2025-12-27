@@ -13202,6 +13202,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         text-transform: uppercase !important;
         position: relative !important;
         z-index: 1 !important;
+        box-shadow: none !important;
+        filter: none !important;
+        text-shadow: none !important;
     }
     
     .hero-slogan {
