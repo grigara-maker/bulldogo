@@ -172,9 +172,11 @@
 .promo-card > * { position: relative; z-index: 1; }
 .promo-container {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 1fr;
     align-items: center;
+    justify-items: center;
     gap: 24px;
+    text-align: center;
 }
 .promo-illustration {
     width: 100%;
@@ -186,6 +188,8 @@
 .promo-text {
     line-height: 1.15;
     color: #111827; /* základní textová barva webu */
+    text-align: center;
+    width: 100%;
 }
 .promo-title {
     font-size: clamp(26px, 2.8vw, 44px);
@@ -216,6 +220,8 @@
     gap: 12px;
     margin-top: 8px;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 /* CTA fade efekt jako pilulka (bez bubliny) */
