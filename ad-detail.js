@@ -1,6 +1,7 @@
 // Ad Detail Page JavaScript
 let currentAd = null;
 let adOwner = null;
+let currentImageList = []; // Uložit seznam obrázků pro správné přeskupování
 
 // Category names mapping
 const categoryNames = {
@@ -320,6 +321,8 @@ function displayAdDetail() {
         console.log('🖼️ Extracted image URLs:', imageUrls);
         
         if (imageUrls.length > 0) {
+            // Uložit seznam obrázků pro pozdější použití
+            currentImageList = imageUrls;
             displayAdImages(imageUrls);
         } else {
             console.log('❌ No valid image URLs found');
@@ -412,10 +415,40 @@ function displayNoImages() {
 window.changeMainImage = function(imageSrc) {
     console.log('🖼️ Changing main image to:', imageSrc);
     const mainImage = document.getElementById('adMainImage');
+    const thumbnailsContainer = document.getElementById('adThumbnails');
+    
     if (!mainImage) {
         console.error('❌ Main image element not found');
         return;
     }
+    
+    if (!currentImageList || currentImageList.length === 0) {
+        console.error('❌ No image list available');
+        return;
+    }
+    
+    // Najít aktuální hlavní obrázek (první v seznamu)
+    const currentMainImage = currentImageList[0];
+    
+    // Pokud klikneme na stejný obrázek, nic nedělat
+    if (currentMainImage === imageSrc) {
+        return;
+    }
+    
+    // Najít index kliknutého obrázku v seznamu
+    const clickedIndex = currentImageList.findIndex(img => img === imageSrc);
+    if (clickedIndex === -1) {
+        console.error('❌ Image not found in list');
+        return;
+    }
+    
+    // Přesunout kliknutý obrázek na první místo a původní hlavní na jeho místo
+    const newImageList = [...currentImageList];
+    newImageList[0] = imageSrc;
+    newImageList[clickedIndex] = currentMainImage;
+    
+    // Aktualizovat globální seznam
+    currentImageList = newImageList;
     
     // Escapovat imageSrc pro bezpečné použití v HTML
     const escapedSrc = imageSrc.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -426,20 +459,26 @@ window.changeMainImage = function(imageSrc) {
             <span>Obrázek se nepodařilo načíst</span>
         </div>`;
     
-    // Update active thumbnail - porovnat pomocí data atributu
-    const thumbnails = document.querySelectorAll('.ad-thumbnail');
-    thumbnails.forEach(thumb => {
-        thumb.classList.remove('active');
-        const thumbUrl = thumb.getAttribute('data-image-url');
-        if (thumbUrl) {
-            // Dekódovat HTML entity pro porovnání
-            const decodedThumbUrl = thumbUrl.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-            // Porovnat s imageSrc (oba mohou být různě escapované)
-            if (decodedThumbUrl === imageSrc || thumbUrl === imageSrc) {
-                thumb.classList.add('active');
-            }
+    // Aktualizovat thumbnails - zobrazit nové pořadí (bez prvního, který je hlavní)
+    if (thumbnailsContainer && newImageList.length > 1) {
+        thumbnailsContainer.innerHTML = newImageList.slice(1).map((img, index) => {
+            const escapedUrl = img.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            return `
+                <div class="ad-thumbnail" data-image-url="${escapedUrl}" data-image-index="${index + 1}" style="cursor: pointer;">
+                    <img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="no-image-placeholder" style="display: none;">
+                        <i class="fas fa-image"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Znovu přidat event listenery
+        if (thumbnailsContainer) {
+            thumbnailsContainer.removeEventListener('click', handleThumbnailClick);
+            thumbnailsContainer.addEventListener('click', handleThumbnailClick);
         }
-    });
+    }
 };
 
 // Load user's other ads
