@@ -13251,7 +13251,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         justify-content: center !important;
         align-items: center !important;
         margin-top: 1rem !important;
+        margin-bottom: 4rem !important;
         padding: 0 1rem !important;
+        padding-bottom: 4rem !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
     }
@@ -13345,6 +13347,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         overflow: hidden !important;
         word-wrap: break-word !important;
         white-space: normal !important;
+        margin-bottom: 0 !important;
     }
     
     /* Hero brand - omezení šířky */
