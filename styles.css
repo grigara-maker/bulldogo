@@ -13868,46 +13868,50 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Tabs mobile */
     .tab-navigation {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        padding: 0.25rem 0;
-        margin-bottom: 1rem;
-        width: 100%;
-        box-sizing: border-box;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.4rem !important;
+        padding: 0.5rem 1rem !important;
+        margin-bottom: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .tab-btn {
-        padding: 0.5rem 0.5rem;
-        font-size: 0.75rem;
-        white-space: normal;
-        width: 100%;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 0.4rem 0.3rem !important;
+        font-size: 0.7rem !important;
+        white-space: normal !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
         opacity: 0.95;
         transition: opacity 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-        order: 0;
-        line-height: 1.2;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        box-sizing: border-box;
+        order: 0 !important;
+        line-height: 1.15 !important;
+        min-height: 36px !important;
+        max-height: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        box-sizing: border-box !important;
+        border-radius: 10px !important;
     }
     
     .tab-btn:hover,
     .tab-btn:active {
         opacity: 1;
-        box-shadow: 0 3px 10px rgba(247, 124, 0, 0.2);
+        box-shadow: 0 3px 8px rgba(247, 124, 0, 0.2) !important;
         transform: translateY(-1px);
     }
     
     .tab-btn.active {
         opacity: 1;
-        box-shadow: 0 3px 12px rgba(247, 124, 0, 0.3);
-        order: 0;
+        box-shadow: 0 3px 10px rgba(247, 124, 0, 0.3) !important;
+        order: 0 !important;
     }
     
     /* Chat mobile */
