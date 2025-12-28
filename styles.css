@@ -13126,9 +13126,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         padding: 2rem 0 !important;
         margin: 0 !important;
         box-sizing: border-box !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         overflow-x: hidden !important;
-        overflow-y: visible !important;
+        overflow-y: hidden !important;
         height: auto !important;
         min-height: auto !important;
         max-height: none !important;
@@ -13146,9 +13146,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         margin: 0 !important;
         justify-items: center !important;
         box-sizing: border-box !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         overflow-x: hidden !important;
-        overflow-y: visible !important;
+        overflow-y: hidden !important;
         height: auto !important;
         max-height: none !important;
     }
@@ -13249,9 +13249,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         padding: 0 !important;
         margin: 0 !important;
         gap: 0 !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         overflow-x: hidden !important;
-        overflow-y: visible !important;
+        overflow-y: hidden !important;
         height: auto !important;
         max-height: none !important;
     }
@@ -13269,7 +13269,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         padding: 0 1rem !important;
         padding-bottom: 4rem !important;
         box-sizing: border-box !important;
+        overflow: hidden !important;
         overflow-x: hidden !important;
+        overflow-y: hidden !important;
     }
     
     /* Search mobile - vše vycentrované a seskupené */
