@@ -471,166 +471,19 @@ function parsePrice(priceText) {
     return { type: 'negotiable', value: null, from: null, to: null, unit: 'hour' };
 }
 
-// Úprava inzerátu
+// Úprava inzerátu - přesměrování na samostatnou stránku
 function editAd(adId) {
     console.log('EditAd volána s ID:', adId);
     const ad = userAds.find(a => a.id === adId);
     if (!ad) {
         console.log('Inzerát nenalezen:', adId);
+        showMessage('Inzerát nebyl nalezen', 'error');
         return;
     }
     
     console.log('Našel inzerát:', ad);
-    currentEditingAdId = adId;
-    
-    // Vyplnit základní pole
-    document.getElementById('editServiceTitle').value = ad.title || '';
-    document.getElementById('editServiceCategory').value = ad.category || '';
-    document.getElementById('editServiceDescription').value = ad.description || '';
-    document.getElementById('editServiceLocation').value = ad.location || '';
-    document.getElementById('editServiceStatus').value = ad.status || 'active';
-    
-    // Parsovat a nastavit cenu
-    const priceData = parsePrice(ad.price || '');
-    const priceTypeFixed = document.getElementById('editPriceTypeFixed');
-    const priceTypeRange = document.getElementById('editPriceTypeRange');
-    const priceTypeNegotiable = document.getElementById('editPriceTypeNegotiable');
-    const priceInput = document.getElementById('editServicePrice');
-    const priceFromInput = document.getElementById('editServicePriceFrom');
-    const priceToInput = document.getElementById('editServicePriceTo');
-    const unitPills = document.getElementById('editUnitPills');
-    const inputsContainer = document.querySelector('#editServiceForm .price-inline .inputs');
-    
-    // Nastavit typ ceny
-    if (priceData.type === 'fixed' && priceTypeFixed) {
-        priceTypeFixed.checked = true;
-        if (priceInput) {
-            priceInput.value = priceData.value || '';
-            priceInput.style.display = 'block';
-            priceInput.required = true;
-        }
-        if (unitPills) unitPills.style.display = 'block';
-        if (inputsContainer) inputsContainer.style.display = 'block';
-    } else if (priceData.type === 'range' && priceTypeRange) {
-        priceTypeRange.checked = true;
-        if (priceFromInput) {
-            priceFromInput.value = priceData.from || '';
-            priceFromInput.style.display = 'block';
-            priceFromInput.required = true;
-        }
-        if (priceToInput) {
-            priceToInput.value = priceData.to || '';
-            priceToInput.style.display = 'block';
-            priceToInput.required = true;
-        }
-        if (unitPills) unitPills.style.display = 'block';
-        if (inputsContainer) inputsContainer.style.display = 'block';
-    } else if (priceTypeNegotiable) {
-        priceTypeNegotiable.checked = true;
-        if (inputsContainer) inputsContainer.style.display = 'none';
-        if (unitPills) unitPills.style.display = 'none';
-    }
-    
-    // Nastavit jednotku
-    if (priceData.unit) {
-        const unitRadio = document.querySelector(`input[name="editPriceUnit"][value="${priceData.unit}"]`);
-        if (unitRadio) unitRadio.checked = true;
-    }
-    
-    // Načíst a zobrazit fotky
-    currentEditingImages = ad.images && Array.isArray(ad.images) ? [...ad.images] : [];
-    imagesToDelete = [];
-    newImagesToUpload = [];
-    
-    // Zobrazit náhledový obrázek (první fotka)
-    const previewImagePreview = document.getElementById('editPreviewImagePreview');
-    const previewImageInput = document.getElementById('editPreviewImage');
-    const noPreviewCheckbox = document.getElementById('editNoPreviewImage');
-    
-    if (currentEditingImages.length > 0) {
-        const firstImageUrl = typeof currentEditingImages[0] === 'string' 
-            ? currentEditingImages[0] 
-            : (currentEditingImages[0].url || currentEditingImages[0]);
-        
-        if (previewImagePreview) {
-            previewImagePreview.innerHTML = `<img src="${firstImageUrl}" alt="Náhled" style="max-width: 100%; border-radius: 8px;">`;
-            previewImagePreview.classList.remove('empty');
-        }
-        
-        if (noPreviewCheckbox) noPreviewCheckbox.checked = false;
-        if (previewImageInput) {
-            previewImageInput.required = true;
-            previewImageInput.disabled = false;
-        }
-    } else {
-        // Žádné fotky - použít výchozí logo
-        const DEFAULT_PREVIEW_LOGO = '/fotky/vychozi-inzerat.png';
-        if (previewImagePreview) {
-            previewImagePreview.innerHTML = `<img src="${DEFAULT_PREVIEW_LOGO}" alt="Náhled" style="max-width: 100%; border-radius: 8px;">`;
-        }
-        if (noPreviewCheckbox) noPreviewCheckbox.checked = true;
-        if (previewImageInput) {
-            previewImageInput.required = false;
-            previewImageInput.disabled = true;
-        }
-    }
-    
-    // Zobrazit další fotky (od druhé dál)
-    const additionalImagesPreview = document.getElementById('editAdditionalImagesPreview');
-    if (additionalImagesPreview) {
-        additionalImagesPreview.innerHTML = '';
-        if (currentEditingImages.length > 1) {
-            currentEditingImages.slice(1).forEach((img, index) => {
-                const imgUrl = typeof img === 'string' ? img : (img.url || img);
-                if (imgUrl && !imagesToDelete.includes(imgUrl)) {
-                    const imgDiv = document.createElement('div');
-                    imgDiv.className = 'image-preview-item';
-                    imgDiv.innerHTML = `
-                        <img src="${imgUrl}" alt="Fotka ${index + 2}">
-                        <button type="button" class="remove-image-btn" onclick="removeEditImage(${index + 1})" title="Odebrat">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    `;
-                    additionalImagesPreview.appendChild(imgDiv);
-                }
-            });
-        }
-    }
-    
-    // Nastavit event listenery pro obrázky
-    setupEditImageListeners();
-    
-    // Nastavit event listenery pro cenu
-    setupEditPriceListeners();
-    
-    // Aktualizovat counter po naplnění hodnoty
-    const editDescription = document.getElementById('editServiceDescription');
-    const editCounter = document.getElementById('editServiceDescriptionCounter');
-    if (editDescription && editCounter) {
-        const remaining = 600 - editDescription.value.length;
-        editCounter.textContent = remaining;
-        if (editCounter.parentElement) {
-            editCounter.parentElement.classList.remove('warning', 'error');
-            if (remaining < 50) {
-                editCounter.parentElement.classList.add('error');
-            } else if (remaining < 100) {
-                editCounter.parentElement.classList.add('warning');
-            }
-        }
-    }
-    
-    // Zobrazit modal
-    const modal = document.getElementById('editServiceModal');
-    console.log('Modal element:', modal);
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    // Inicializace counteru pro editaci popisu
-    if (typeof initCharCounter === 'function') {
-        setTimeout(() => {
-            initCharCounter('editServiceDescription', 'editServiceDescriptionCounter', 600);
-        }, 100);
-    }
+    // Přesměrovat na stránku pro úpravu
+    window.location.href = `edit-ad.html?id=${adId}`;
 }
 
 // Nastavení event listenerů pro obrázky v edit modalu
