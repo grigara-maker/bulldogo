@@ -2600,30 +2600,43 @@ function formatValue(value: any): string {
 
 /**
  * Porovná dva objekty a vrátí změněná pole
+ * Nyní sleduje pouze: email, phone, password (detekováno přes passwordChangedAt nebo password field)
  */
 function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any }> {
   const changes: Array<{ field: string; label: string; oldValue: any; newValue: any }> = [];
   
-  const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  // Sledovat email
+  if (before.email !== after.email) {
+    changes.push({
+      field: 'email',
+      label: 'E-mail',
+      oldValue: before.email,
+      newValue: after.email,
+    });
+  }
   
-  for (const key of allKeys) {
-    if (ignoredFields.includes(key)) continue;
-    
-    const oldVal = before[key];
-    const newVal = after[key];
-    
-    // Porovnání hodnot
-    const oldStr = JSON.stringify(oldVal);
-    const newStr = JSON.stringify(newVal);
-    
-    if (oldStr !== newStr) {
-      changes.push({
-        field: key,
-        label: fieldLabels[key] || key,
-        oldValue: oldVal,
-        newValue: newVal,
-      });
-    }
+  // Sledovat telefon
+  if (before.phone !== after.phone) {
+    changes.push({
+      field: 'phone',
+      label: 'Telefon',
+      oldValue: before.phone,
+      newValue: after.phone,
+    });
+  }
+  
+  // Detekovat změnu hesla (pokud se změnilo passwordChangedAt nebo password field)
+  const passwordChanged = 
+    (before.passwordChangedAt !== after.passwordChangedAt && after.passwordChangedAt) ||
+    (before.password !== after.password && after.password === 'changed');
+  
+  if (passwordChanged) {
+    changes.push({
+      field: 'password',
+      label: 'Heslo',
+      oldValue: '••••••••',
+      newValue: '••••••••',
+    });
   }
   
   return changes;
