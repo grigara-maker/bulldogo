@@ -13144,24 +13144,25 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Mobile menu button improvements */
     .mobile-menu-btn {
-        position: fixed;
-        top: 8px;
-        left: 8px;
-        z-index: 3000;
-        background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        width: 56px;
-        height: 56px;
+        position: fixed !important;
+        top: 8px !important;
+        left: 8px !important;
+        z-index: 3000 !important;
+        background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        width: 56px !important;
+        height: 56px !important;
         display: flex !important; /* Zajistit zobrazení na mobilních zařízeních */
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(247, 124, 0, 0.4);
-        transition: all 0.3s ease;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent; /* Odstranit modrý highlight na iOS/Android */
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        box-shadow: 0 4px 20px rgba(247, 124, 0, 0.4) !important;
+        transition: all 0.3s ease !important;
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: transparent !important; /* Odstranit modrý highlight na iOS/Android */
+        pointer-events: auto !important;
     }
     
     .mobile-menu-btn:hover {
