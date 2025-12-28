@@ -4858,9 +4858,10 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 
 .char-counter {
     text-align: right;
-    margin-top: 8px;
-    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
     color: #6b7280;
+    line-height: 1.2;
 }
 
 .char-counter.warning {
@@ -4869,6 +4870,145 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 
 .char-counter.error {
     color: #ef4444;
+}
+
+/* Price inline row - kompaktní zobrazení */
+.price-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.price-inline .radio-group {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.price-inline .radio-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.price-inline .radio-group input[type="radio"] {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.price-inline .inputs {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.price-inline .inputs input {
+    width: auto;
+    min-width: 120px;
+    flex: 0 0 auto;
+}
+
+.pill-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.pill-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #374151;
+    background: #fff;
+}
+
+.pill-group input[type="radio"] {
+    display: none;
+}
+
+.pill-group label span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.pill-group input[type="radio"]:checked + span {
+    color: #111827;
+    font-weight: 600;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+    background: #fff;
+}
+
+/* Kompaktní form-group pro edit modal */
+#editServiceModal .service-form .form-group {
+    margin-bottom: 1rem;
+}
+
+#editServiceModal .service-form .form-label {
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+#editServiceModal .service-form .char-counter {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+#editServiceModal .service-form .price-inline {
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+}
+
+#editServiceModal .service-form .price-inline .radio-group {
+    gap: 0.6rem;
+}
+
+#editServiceModal .service-form .price-inline .radio-group label {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+#editServiceModal .service-form .price-inline .inputs {
+    gap: 0.6rem;
+}
+
+#editServiceModal .service-form .pill-group {
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+}
+
+#editServiceModal .service-form .pill-group label span {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+/* Kompaktní mezery mezi sekcemi */
+#editServiceModal .service-form .form-group + .form-group {
+    margin-top: 0.75rem;
 }
 
 /* Footer */
@@ -10533,6 +10673,8 @@ input[type="tel"]:focus {
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: #333;
+    font-size: 0.95rem;
+    line-height: 1.4;
 }
 
 .form-label i {
@@ -10542,6 +10684,12 @@ input[type="tel"]:focus {
 
 .required {
     color: #dc3545;
+}
+
+.required-badge {
+    color: #ef4444;
+    margin-left: 4px;
+    font-weight: 600;
 }
 
 .image-preview {
@@ -14005,6 +14153,58 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .form-group select {
         font-size: 16px;
         padding: 14px;
+    }
+    
+    /* Kompaktní cena na mobilu */
+    .price-inline {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+    
+    .price-inline .radio-group {
+        width: 100% !important;
+        gap: 0.75rem !important;
+    }
+    
+    .price-inline .inputs {
+        width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    .price-inline .inputs input {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    
+    .pill-group {
+        width: 100% !important;
+        gap: 0.5rem !important;
+    }
+    
+    .char-counter {
+        font-size: 0.75rem !important;
+        margin-top: 0.4rem !important;
+    }
+    
+    #editServiceModal .service-form .price-inline {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    #editServiceModal .service-form .price-inline .radio-group {
+        width: 100% !important;
+    }
+    
+    #editServiceModal .service-form .price-inline .inputs {
+        width: 100% !important;
+        flex-direction: column !important;
+    }
+    
+    #editServiceModal .service-form .price-inline .inputs input {
+        width: 100% !important;
+        min-width: 0 !important;
     }
     
     .btn {
