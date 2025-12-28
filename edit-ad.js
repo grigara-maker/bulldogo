@@ -91,11 +91,40 @@
         setTimeout(() => clearInterval(waitForFirebase), 15000);
     });
 
+    // Kontrola admin statusu
+    async function checkAdminStatus(uid) {
+        if (!uid) return false;
+        try {
+            const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const profileRef = doc(window.firebaseDb, 'users', uid, 'profile', 'profile');
+            const profileSnap = await getDoc(profileRef);
+            if (profileSnap.exists()) {
+                const profileData = profileSnap.data();
+                if (profileData.isAdmin === true || profileData.role === 'admin') {
+                    return true;
+                }
+            }
+            const adminEmails = ['admin@bulldogo.cz', 'support@bulldogo.cz'];
+            const userEmail = window.firebaseAuth?.currentUser?.email;
+            if (userEmail && typeof userEmail === 'string' && adminEmails.includes(userEmail.toLowerCase())) {
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Chyba při kontrole admin statusu:', error);
+            return false;
+        }
+    }
+
+    // Globální proměnná pro userId inzerátu (pro adminy)
+    let targetUserId = null;
+
     // Načtení a předvyplnění dat
     async function initEditAdPage() {
         // Získat ID z URL
         const urlParams = new URLSearchParams(window.location.search);
         const adId = urlParams.get('id');
+        const urlUserId = urlParams.get('userId');
         
         if (!adId) {
             showMessage('Chybí ID inzerátu', 'error');
@@ -105,16 +134,26 @@
         
         currentEditingAdId = adId;
         
+        // Zkontrolovat, jestli je uživatel admin
+        const currentUserId = window.firebaseAuth.currentUser.uid;
+        const isAdmin = await checkAdminStatus(currentUserId);
+        
+        // Pokud je admin a je v URL userId, použít ho
+        if (isAdmin && urlUserId) {
+            targetUserId = urlUserId;
+        } else {
+            targetUserId = currentUserId;
+        }
+        
         // Načíst data inzerátu
         try {
             const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const userId = window.firebaseAuth.currentUser.uid;
-            const adRef = doc(window.firebaseDb, 'users', userId, 'inzeraty', adId);
+            const adRef = doc(window.firebaseDb, 'users', targetUserId, 'inzeraty', adId);
             const adSnap = await getDoc(adRef);
             
             if (!adSnap.exists()) {
                 showMessage('Inzerát nebyl nalezen', 'error');
-                setTimeout(() => window.location.href = 'my-ads.html', 2000);
+                setTimeout(() => window.location.href = isAdmin ? 'inzeraty.html' : 'my-ads.html', 2000);
                 return;
             }
             
@@ -132,7 +171,8 @@
         } catch (error) {
             console.error('Chyba při načítání inzerátu:', error);
             showMessage('Nepodařilo se načíst inzerát', 'error');
-            setTimeout(() => window.location.href = 'my-ads.html', 2000);
+            const isAdmin = await checkAdminStatus(currentUserId);
+            setTimeout(() => window.location.href = isAdmin ? 'inzeraty.html' : 'my-ads.html', 2000);
         }
     }
 
@@ -555,7 +595,8 @@
             const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
             
             const storage = getStorage(window.firebaseApp);
-            const userId = window.firebaseAuth.currentUser.uid;
+            // Použít targetUserId pokud je nastaven (pro adminy), jinak currentUser
+            const userId = targetUserId || window.firebaseAuth.currentUser.uid;
             
             // Smazat označené obrázky
             for (const imgUrl of imagesToDelete) {
@@ -658,12 +699,19 @@
                 updateData.defaultPreviewUrl = defaultPreviewUrl;
             }
             
+            // Použít targetUserId pokud je nastaven (pro adminy), jinak currentUser
+            const finalUserId = targetUserId || window.firebaseAuth.currentUser.uid;
+            
             console.log('Aktualizuji data:', updateData);
-            await updateDoc(doc(window.firebaseDb, 'users', userId, 'inzeraty', currentEditingAdId), updateData);
+            await updateDoc(doc(window.firebaseDb, 'users', finalUserId, 'inzeraty', currentEditingAdId), updateData);
             
             showMessage('Inzerát byl úspěšně aktualizován!', 'success');
+            
+            // Pokud je admin, přesměrovat na inzeraty.html, jinak na my-ads.html
+            const currentUserId = window.firebaseAuth.currentUser.uid;
+            const isAdmin = await checkAdminStatus(currentUserId);
             setTimeout(() => {
-                window.location.href = 'my-ads.html';
+                window.location.href = isAdmin && targetUserId && targetUserId !== currentUserId ? 'inzeraty.html' : 'my-ads.html';
             }, 1000);
             
         } catch (error) {

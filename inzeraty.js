@@ -243,7 +243,7 @@ function createAdCard(ad) {
                 </div>
             </div>
             <div class="ad-card-actions">
-                <button class="btn btn-primary" onclick="editAd('${ad.id}', '${ad.userId || ''}')">
+                <button class="btn btn-primary" onclick="window.location.href='edit-ad.html?id=${ad.id}${ad.userId ? '&userId=' + ad.userId : ''}'">
                     <i class="fas fa-edit"></i> Upravit
                 </button>
                 <button class="btn btn-danger" onclick="deleteAd('${ad.id}', '${ad.userId || ''}')">
