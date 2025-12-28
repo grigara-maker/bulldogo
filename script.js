@@ -84,41 +84,42 @@ function toggleMobileMenu() {
     const scrollY = window.scrollY || window.pageYOffset;
     
     if (isOpen) {
+        // Obnovit scroll pozici před zavřením menu
+        const savedScroll = parseInt(body.getAttribute('data-scroll-pos') || '0', 10);
+        
         sidebar.classList.remove('mobile-open');
         body.classList.remove('sidebar-open');
+        // Odstranit inline style top
+        body.style.top = '';
+        body.removeAttribute('data-scroll-pos');
+        
         // Remove overlay if exists
         const overlay = document.querySelector('.sidebar-overlay');
         if (overlay) overlay.remove();
         // Zobrazit tlačítko menu
         if (menuBtn) menuBtn.style.display = 'flex';
+        
+        // Obnovit scroll pozici po zavření menu
+        if (savedScroll > 0) {
+            window.scrollTo({
+                top: savedScroll,
+                left: 0,
+                behavior: 'instant'
+            });
+        }
     } else {
         // Uložit scroll pozici před otevřením
         const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
         body.setAttribute('data-scroll-pos', currentScrollY.toString());
         
+        // Nastavit top na negativní scroll pozici, aby se zachovala vizuální pozice
+        // když se přidá position: fixed
+        body.style.top = `-${currentScrollY}px`;
+        
         sidebar.classList.add('mobile-open');
         body.classList.add('sidebar-open');
         // Schovat tlačítko menu
         if (menuBtn) menuBtn.style.display = 'none';
-        
-        // Obnovit scroll pozici po otevření menu (aby se neposunulo na vrchol)
-        // Použít více pokusů, protože CSS změny mohou způsobit scroll
-        const restoreScroll = () => {
-            const savedScroll = parseInt(body.getAttribute('data-scroll-pos') || '0', 10);
-            if (savedScroll > 0) {
-                window.scrollTo({
-                    top: savedScroll,
-                    left: 0,
-                    behavior: 'instant' // Okamžitě, bez animace
-                });
-            }
-        };
-        
-        // Zkusit obnovit scroll několikrát, protože CSS změny mohou způsobit zpoždění
-        requestAnimationFrame(restoreScroll);
-        setTimeout(restoreScroll, 0);
-        setTimeout(restoreScroll, 10);
-        setTimeout(restoreScroll, 50);
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
