@@ -2527,26 +2527,14 @@ function generateWelcomeEmailHTML(userName: string): string {
  * Mapování názvů polí na české popisky
  */
 const fieldLabels: Record<string, string> = {
-  name: "Jméno",
   email: "E-mail",
   phone: "Telefon",
-  city: "Město",
-  bio: "O mně",
-  businessName: "Název firmy",
-  businessType: "Typ podnikání",
-  businessAddress: "Adresa firmy",
-  businessDescription: "Popis firmy",
-  companyName: "Název společnosti",
-  ico: "IČO",
-  dic: "DIČ",
-  address: "Adresa",
-  emailNotifications: "E-mailová upozornění",
-  smsNotifications: "SMS upozornění",
-  marketingEmails: "Marketingové e-maily",
+  password: "Heslo",
 };
 
 /**
  * Pole, která se mají ignorovat při porovnání změn
+ * Nyní ignorujeme všechna pole kromě email, phone a password
  */
 const ignoredFields = [
   "updatedAt",
@@ -2572,6 +2560,20 @@ const ignoredFields = [
   "firstName",
   "lastName",
   "birthDate",
+  "name",
+  "city",
+  "bio",
+  "businessName",
+  "businessType",
+  "businessAddress",
+  "businessDescription",
+  "companyName",
+  "ico",
+  "dic",
+  "address",
+  "emailNotifications",
+  "smsNotifications",
+  "marketingEmails",
 ];
 
 /**
