@@ -13382,17 +13382,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     /* Close sidebar when clicking overlay */
     body.sidebar-open {
         overflow: hidden !important;
-        position: fixed !important;
-        width: 100% !important;
-        height: 100% !important;
-        left: 0 !important;
-        right: 0 !important;
-    }
-    
-    /* Zajistit, aby main-content byl viditelný i když je body position: fixed */
-    body.sidebar-open .main-content {
-        position: relative !important;
-        z-index: 1 !important;
+        /* Nepoužívat position: fixed, aby byla stránka viditelná na pozadí */
+        /* position: fixed způsobuje bílou obrazovku */
     }
     
     /* Schovat tlačítko menu když je menu otevřené */

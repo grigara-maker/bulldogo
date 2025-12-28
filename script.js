@@ -84,13 +84,8 @@ function toggleMobileMenu() {
     const scrollY = window.scrollY || window.pageYOffset;
     
     if (isOpen) {
-        // Obnovit scroll pozici před zavřením menu
-        const savedScroll = parseInt(body.getAttribute('data-scroll-pos') || '0', 10);
-        
         sidebar.classList.remove('mobile-open');
         body.classList.remove('sidebar-open');
-        // Odstranit inline style top
-        body.style.top = '';
         body.removeAttribute('data-scroll-pos');
         
         // Remove overlay if exists
@@ -98,23 +93,10 @@ function toggleMobileMenu() {
         if (overlay) overlay.remove();
         // Zobrazit tlačítko menu
         if (menuBtn) menuBtn.style.display = 'flex';
-        
-        // Obnovit scroll pozici po zavření menu
-        if (savedScroll > 0) {
-            window.scrollTo({
-                top: savedScroll,
-                left: 0,
-                behavior: 'instant'
-            });
-        }
     } else {
-        // Uložit scroll pozici před otevřením
+        // Uložit scroll pozici před otevřením (pro případné budoucí použití)
         const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
         body.setAttribute('data-scroll-pos', currentScrollY.toString());
-        
-        // Nastavit top na negativní scroll pozici PŘED přidáním třídy
-        // aby se zachovala vizuální pozice když se přidá position: fixed
-        body.style.top = `-${currentScrollY}px`;
         
         sidebar.classList.add('mobile-open');
         body.classList.add('sidebar-open');
