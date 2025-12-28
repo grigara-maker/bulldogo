@@ -462,12 +462,61 @@
         const metaCat = document.getElementById('previewCardCategory');
         const metaLoc = document.getElementById('previewCardLocation');
         const pricePreview = document.getElementById('previewCardPrice');
+        const previewImageInput = document.getElementById('editPreviewImage');
+        const noPreviewCheckbox = document.getElementById('editNoPreviewImage');
+        const DEFAULT_PREVIEW_LOGO = '/fotky/vychozi-inzerat.png';
+        
+        // Nastavit počáteční obrázek
+        if (imgPreview && currentEditingImages.length > 0) {
+            const firstImageUrl = typeof currentEditingImages[0] === 'string' 
+                ? currentEditingImages[0] 
+                : (currentEditingImages[0].url || currentEditingImages[0]);
+            if (firstImageUrl) {
+                imgPreview.src = firstImageUrl;
+            } else {
+                imgPreview.src = DEFAULT_PREVIEW_LOGO;
+            }
+        } else if (imgPreview) {
+            imgPreview.src = DEFAULT_PREVIEW_LOGO;
+        }
         
         function updatePreview() {
             titlePreview.textContent = (titleEl?.value || 'Název inzerátu').trim() || 'Název inzerátu';
             metaCat.textContent = catEl?.options?.[catEl.selectedIndex || 0]?.text || 'Kategorie';
             metaLoc.textContent = locEl?.options?.[locEl.selectedIndex || 0]?.text || 'Kraj';
             pricePreview.textContent = computeEditPriceText();
+        }
+        
+        // Aktualizace obrázku při změně náhledového obrázku
+        if (previewImageInput && imgPreview) {
+            previewImageInput.addEventListener('change', function(e) {
+                const file = e.target.files?.[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        imgPreview.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Aktualizace obrázku při změně checkboxu "bez náhledového obrázku"
+        if (noPreviewCheckbox && imgPreview) {
+            noPreviewCheckbox.addEventListener('change', function() {
+                if (noPreviewCheckbox.checked) {
+                    imgPreview.src = DEFAULT_PREVIEW_LOGO;
+                } else if (currentEditingImages.length > 0) {
+                    const firstImageUrl = typeof currentEditingImages[0] === 'string' 
+                        ? currentEditingImages[0] 
+                        : (currentEditingImages[0].url || currentEditingImages[0]);
+                    if (firstImageUrl) {
+                        imgPreview.src = firstImageUrl;
+                    } else {
+                        imgPreview.src = DEFAULT_PREVIEW_LOGO;
+                    }
+                }
+            });
         }
         
         titleEl?.addEventListener('input', updatePreview);
