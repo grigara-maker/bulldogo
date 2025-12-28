@@ -141,15 +141,42 @@ function toggleMobileMenu() {
     }
 }
 
+// Reset mobile menu state on page load
+function resetMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const body = document.body;
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar) {
+        sidebar.classList.remove('mobile-open');
+    }
+    if (body) {
+        body.classList.remove('sidebar-open');
+    }
+    if (overlay) {
+        overlay.remove();
+    }
+    if (menuBtn) {
+        menuBtn.style.display = 'flex';
+    }
+}
+
 // Close mobile menu when clicking on a link
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', () => {
+    // Reset menu state on page load
+    resetMobileMenu();
+    
+    // Use event delegation for nav links (works for dynamically added links)
+    document.addEventListener('click', (e) => {
+        const navLink = e.target.closest('.nav-link');
+        if (navLink) {
             const sidebar = document.querySelector('.sidebar');
             if (sidebar && sidebar.classList.contains('mobile-open')) {
+                // Close menu immediately
                 toggleMobileMenu();
             }
-        });
+        }
     });
     
     // Close on escape key
@@ -161,6 +188,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+});
+
+// Also reset on page visibility change (when user returns to tab)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        resetMobileMenu();
+    }
+});
+
+// Reset on page unload
+window.addEventListener('beforeunload', () => {
+    resetMobileMenu();
 });
 
 // Dark mode disabled: force light theme
