@@ -549,12 +549,7 @@ async function processPayment() {
     const packageCheck = await checkPackageForTop(selectedPricing.duration);
     if (!packageCheck.valid) {
         const message = packageCheck.message || 'Pro topování inzerátů potřebujete aktivní balíček.';
-        alert(message);
-        
-        // Přesměrovat na stránku balíčků
-        setTimeout(() => {
-            window.location.href = 'packages.html';
-        }, 2000);
+        showPackageWarningModal(message);
         return;
     }
     // Mapování Stripe Price IDs (nahraďte skutečnými ID)
@@ -787,3 +782,65 @@ function checkAuthForChat() {
         callAuthModal('login');
     }
 }
+
+// Zobrazení modalu s upozorněním o balíčku
+function showPackageWarningModal(message) {
+    // Vytvořit modal, pokud ještě neexistuje
+    let modal = document.getElementById('packageWarningModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'packageWarningModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upozornění</h2>
+                    <span class="close" onclick="closePackageWarningModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #f77c00; margin-bottom: 1rem;"></i>
+                        <p id="packageWarningMessage" style="font-size: 1.1rem; line-height: 1.6; color: #333;"></p>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="window.location.href='packages.html'" style="padding: 12px 24px; font-size: 1rem; border-radius: 10px;">
+                            <i class="fas fa-box"></i> Zobrazit balíčky
+                        </button>
+                        <button class="btn btn-secondary" onclick="closePackageWarningModal()" style="padding: 12px 24px; font-size: 1rem; background: #6c757d; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                            Zavřít
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Zavřít při kliknutí mimo modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closePackageWarningModal();
+            }
+        });
+    }
+    
+    // Nastavit zprávu
+    const messageEl = document.getElementById('packageWarningMessage');
+    if (messageEl) {
+        messageEl.textContent = message;
+    }
+    
+    // Zobrazit modal
+    modal.style.display = 'flex';
+}
+
+// Zavření modalu
+function closePackageWarningModal() {
+    const modal = document.getElementById('packageWarningModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Exportovat funkci globálně
+window.showPackageWarningModal = showPackageWarningModal;
+window.closePackageWarningModal = closePackageWarningModal;
