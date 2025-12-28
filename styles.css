@@ -7181,7 +7181,7 @@ html {
 .auth-with-hero .modal-title {
 	color: #ffffff;
 	font-weight: 800;
-	font-size: 1.1rem;
+	font-size: 1.3rem;
 	background: none;
 	-webkit-text-fill-color: currentColor;
 	text-align: left; /* Zarovnání vlevo */
@@ -7268,9 +7268,9 @@ html {
         padding: 12px 2.5rem;
     }
     
-    /* Menší nadpis na PC pro lepší fit */
+    /* Stejná velikost nadpisu jako na mobilu */
     .auth-with-hero .modal-title {
-        font-size: 1.05rem;
+        font-size: 1.3rem;
     }
 }
 
