@@ -13172,10 +13172,13 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Zajistit, že mobile-menu-btn je vždy klikatelný na stránce nastavení */
     body:has(.settings-content) .mobile-menu-btn,
-    body:has(.settings-section) .mobile-menu-btn {
-        z-index: 9999 !important;
+    body:has(.settings-section) .mobile-menu-btn,
+    #mobileMenuBtn {
+        z-index: 99999 !important;
         pointer-events: auto !important;
         position: fixed !important;
+        top: 8px !important;
+        left: 8px !important;
     }
     
     /* Zajistit, že žádný prvek na stránce nastavení neblokuje mobile-menu-btn */
@@ -13183,17 +13186,29 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     body:has(.settings-content) .page-hero,
     body:has(.settings-content) .container,
     body:has(.settings-content) .settings-content,
-    body:has(.settings-content) .settings-section {
+    body:has(.settings-content) .settings-section,
+    body:has(.settings-content) .profile-stats-section {
         position: relative !important;
         z-index: 1 !important;
     }
     
     body:has(.settings-content) .page-hero {
         pointer-events: none !important;
+        z-index: 1 !important;
     }
     
     body:has(.settings-content) .page-hero * {
         pointer-events: auto !important;
+    }
+    
+    /* Zajistit, že žádný overlay nebo prvek neblokuje mobile-menu-btn */
+    body:has(.settings-content) *:not(.mobile-menu-btn):not(.sidebar):not(.sidebar-overlay) {
+        pointer-events: auto !important;
+    }
+    
+    body:has(.settings-content) .mobile-menu-btn {
+        pointer-events: auto !important;
+        z-index: 99999 !important;
     }
     
     .mobile-menu-btn:hover {
