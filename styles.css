@@ -7155,12 +7155,12 @@ html {
 	filter: drop-shadow(0 10px 18px rgba(0,0,0,0.25));
 }
 
-/* Vrchní „lištu“ s brand gradientem a titulkem */
-/* Vrchní „lištu“ s brand gradientem a titulkem */
+/* Vrchní „lištu" s brand gradientem a titulkem */
+/* Vrchní „lištu" s brand gradientem a titulkem */
 .auth-hero-ledge {
 	background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
 	border-radius: 20px; /* Více zaoblené rohy */
-	padding: 14px 18px; /* kompaktní výška přesně kolem titulku */
+	padding: 12px 18px; /* kompaktní výška přesně kolem titulku */
 	box-shadow: 0 12px 28px rgba(247,124,0,0.28);
 	color: #ffffff;
 	margin: 0;
@@ -7181,7 +7181,7 @@ html {
 .auth-with-hero .modal-title {
 	color: #ffffff;
 	font-weight: 800;
-	font-size: 1.3rem;
+	font-size: 1.1rem;
 	background: none;
 	-webkit-text-fill-color: currentColor;
 	text-align: left; /* Zarovnání vlevo */
@@ -7189,6 +7189,7 @@ html {
 	padding: 0;
 	flex: 0 0 auto; /* Nenatáhnout, jen potřebná šířka */
 	order: 1; /* První vlevo */
+	line-height: 1.2;
 }
 
 .auth-with-hero .close { 
@@ -7264,7 +7265,12 @@ html {
     }
     
     .auth-hero-ledge {
-        padding: 14px 2.5rem;
+        padding: 12px 2.5rem;
+    }
+    
+    /* Menší nadpis na PC pro lepší fit */
+    .auth-with-hero .modal-title {
+        font-size: 1.05rem;
     }
 }
 
