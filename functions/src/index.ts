@@ -355,7 +355,7 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
               <p style="margin: 0; font-size: 12px; color: #6b7280;">
-                © 2025 BULLDOGO. Všechna práva vyhrazena.
+                © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
           </tr>
@@ -443,7 +443,7 @@ export const sendInactivityWarningEmails = functions
               to: email,
               subject: "⚠️ Váš účet na Bulldogo.cz bude smazán",
               html: generateInactivityWarningEmailHTML(userName, deletionDate),
-              text: `Ahoj ${userName}!\n\nVšimli jsme si, že jste se na Bulldogo.cz dlouho nepřihlásili. Váš účet bude z důvodu neaktivity automaticky smazán dne ${formatDateCzech(deletionDate)}.\n\nTato akce je nevratná! Po smazání budou trvale odstraněny všechny vaše údaje.\n\nJak zabránit smazání? Stačí se přihlásit do svého účtu před datem smazání.\n\nPřihlásit se: https://bulldogo.cz\n\nMáte otázky? Kontaktujte podporu na support@bulldogo.cz nebo +420 605 121 023.\n\n© 2025 BULLDOGO`,
+              text: `Ahoj ${userName}!\n\nVšimli jsme si, že jste se na Bulldogo.cz dlouho nepřihlásili. Váš účet bude z důvodu neaktivity automaticky smazán dne ${formatDateCzech(deletionDate)}.\n\nTato akce je nevratná! Po smazání budou trvale odstraněny všechny vaše údaje.\n\nJak zabránit smazání? Stačí se přihlásit do svého účtu před datem smazání.\n\nPřihlásit se: https://bulldogo.cz\n\nMáte otázky? Kontaktujte podporu na support@bulldogo.cz nebo +420 605 121 023.\n\n© 2026 BULLDOGO`,
             };
             
             await smtpTransporter.sendMail(mailOptions);
@@ -654,7 +654,7 @@ function generateReportEmailForOwnerHTML(
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0; font-size: 12px; color: #6b7280;">© 2025 BULLDOGO. Všechna práva vyhrazena.</p>
+              <p style="margin: 0; font-size: 12px; color: #6b7280;">© 2026 BULLDOGO. Všechna práva vyhrazena.</p>
             </td>
           </tr>
           
@@ -1034,7 +1034,7 @@ function generateAccountDeletedEmailHTML(userName: string): string {
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
               <p style="margin: 0; font-size: 12px; color: #6b7280;">
-                © 2025 BULLDOGO. Všechna práva vyhrazena.
+                © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
           </tr>
@@ -1060,7 +1060,7 @@ async function sendAccountDeletedEmail(email: string, userName: string): Promise
     to: email,
     subject: "👋 Váš účet na Bulldogo.cz byl smazán",
     html: generateAccountDeletedEmailHTML(userName),
-    text: `Ahoj ${userName}!\n\nVáš účet na Bulldogo.cz byl z důvodu dlouhodobé neaktivity trvale smazán.\n\nCo bylo smazáno:\n- Váš profil a osobní údaje\n- Všechny vaše inzeráty\n- Recenze a hodnocení\n- Zprávy a konverzace\n\n⚠️ Tato akce je nevratná. Data již nelze obnovit.\n\n🧡 Děkujeme, že jste byli součástí Bulldogo! Pokud se rozhodnete vrátit, můžete si kdykoliv vytvořit nový účet na https://bulldogo.cz\n\n© 2025 BULLDOGO`,
+    text: `Ahoj ${userName}!\n\nVáš účet na Bulldogo.cz byl z důvodu dlouhodobé neaktivity trvale smazán.\n\nCo bylo smazáno:\n- Váš profil a osobní údaje\n- Všechny vaše inzeráty\n- Recenze a hodnocení\n- Zprávy a konverzace\n\n⚠️ Tato akce je nevratná. Data již nelze obnovit.\n\n🧡 Děkujeme, že jste byli součástí Bulldogo! Pokud se rozhodnete vrátit, můžete si kdykoliv vytvořit nový účet na https://bulldogo.cz\n\n© 2026 BULLDOGO`,
   };
   
   await smtpTransporter.sendMail(mailOptions);
@@ -1422,7 +1422,7 @@ function generateInvoiceHTML(
               </p>
               <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af; line-height: 1.6;">
                 Tato faktura byla vygenerována automaticky po úspěšné platbě.<br>
-                © 2025 BULLDOGO.CZ - Všechna práva vyhrazena.
+                © 2026 BULLDOGO.CZ - Všechna práva vyhrazena.
               </p>
             </td>
           </tr>
@@ -1521,7 +1521,7 @@ async function sendStripeInvoiceEmail(
     to: accountingEmail,
     subject: `Faktura ${invoiceNumber} - ${userName} (UID: ${userId})`,
     html: invoiceHTML,
-    text: `Faktura ${invoiceNumber} pro ${userName}\n\nUID: ${userId}\nEmail: ${userEmail || "neuvedeno"}\nTelefon: ${phone || "neuvedeno"}\nČástka: ${amount} ${currency}\nBalíček: ${planName}\n\n© 2025 BULLDOGO.CZ`,
+    text: `Faktura ${invoiceNumber} pro ${userName}\n\nUID: ${userId}\nEmail: ${userEmail || "neuvedeno"}\nTelefon: ${phone || "neuvedeno"}\nČástka: ${amount} ${currency}\nBalíček: ${planName}\n\n© 2026 BULLDOGO.CZ`,
   };
 
   await smtpTransporter.sendMail(accountingMailOptions);
@@ -1622,7 +1622,7 @@ async function sendTopAdInvoiceEmail(
     to: accountingEmail,
     subject: `Faktura ${invoiceNumber} - Topování inzerátu - ${userName} (UID: ${userId})`,
     html: invoiceHTML,
-    text: `Faktura ${invoiceNumber} pro ${userName}\n\nUID: ${userId}\nEmail: ${userEmail || "neuvedeno"}\nTelefon: ${phone || "neuvedeno"}\nČástka: ${amount} ${currency}\nTopování: ${planName}\nAd ID: ${adId || "neuvedeno"}\n\n© 2025 BULLDOGO.CZ`,
+    text: `Faktura ${invoiceNumber} pro ${userName}\n\nUID: ${userId}\nEmail: ${userEmail || "neuvedeno"}\nTelefon: ${phone || "neuvedeno"}\nČástka: ${amount} ${currency}\nTopování: ${planName}\nAd ID: ${adId || "neuvedeno"}\n\n© 2026 BULLDOGO.CZ`,
   };
 
   await smtpTransporter.sendMail(accountingMailOptions);
@@ -2509,7 +2509,7 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
               <p style="margin: 0; font-size: 12px; color: #6b7280;">
-                © 2025 BULLDOGO. Všechna práva vyhrazena.
+                © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
           </tr>
@@ -2792,7 +2792,7 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
               <p style="margin: 0; font-size: 12px; color: #6b7280;">
-                © 2025 BULLDOGO. Všechna práva vyhrazena.
+                © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
           </tr>
@@ -2851,7 +2851,7 @@ export const sendProfileChangeEmail = functions
       to: email,
       subject: "🔐 Změna údajů ve vašem účtu - Bulldogo.cz",
       html: generateProfileChangeEmailHTML(userName, changes),
-      text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2025 BULLDOGO`,
+      text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2026 BULLDOGO`,
     };
     
     try {
@@ -3041,7 +3041,7 @@ function generateNewMessageEmailHTML(
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
               <p style="margin: 0; font-size: 12px; color: #6b7280;">
-                © 2025 BULLDOGO. Všechna práva vyhrazena.
+                © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
           </tr>
@@ -3153,7 +3153,7 @@ export const sendNewMessageEmail = functions
         to: recipientEmail,
         subject: `💬 Nová zpráva od ${senderName} - Bulldogo.cz`,
         html: generateNewMessageEmailHTML(recipientName, senderName, listingTitle, displayText),
-        text: `Ahoj ${recipientName}!\n\nUživatel ${senderName} ti poslal novou zprávu${listingTitle ? ` k inzerátu "${listingTitle}"` : ""}.\n\nZpráva:\n${displayText}\n\nOdpověz na: https://bulldogo.cz/chat.html\n\n© 2025 BULLDOGO`,
+        text: `Ahoj ${recipientName}!\n\nUživatel ${senderName} ti poslal novou zprávu${listingTitle ? ` k inzerátu "${listingTitle}"` : ""}.\n\nZpráva:\n${displayText}\n\nOdpověz na: https://bulldogo.cz/chat.html\n\n© 2026 BULLDOGO`,
       };
       
       await smtpTransporter.sendMail(mailOptions);
@@ -3406,7 +3406,7 @@ export const sendWelcomeEmail = functions
       to: email,
       subject: "🎉 Vítejte na Bulldogo.cz!",
       html: generateWelcomeEmailHTML(userName),
-      text: `Ahoj ${userName}!\n\nDěkujeme za registraci na portálu Bulldogo.cz!\n\nJsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – vytvářet inzeráty, hledat služby a spojovat se s profesionály po celé České republice.\n\nNavštivte nás: https://bulldogo.cz\n\n„Služby jednoduše. Pro každého."\n\n© 2025 BULLDOGO`,
+      text: `Ahoj ${userName}!\n\nDěkujeme za registraci na portálu Bulldogo.cz!\n\nJsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – vytvářet inzeráty, hledat služby a spojovat se s profesionály po celé České republice.\n\nNavštivte nás: https://bulldogo.cz\n\n„Služby jednoduše. Pro každého."\n\n© 2026 BULLDOGO`,
     };
     
     try {
