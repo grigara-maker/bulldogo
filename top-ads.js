@@ -447,6 +447,90 @@ function updatePaymentSummary() {
     document.getElementById('totalPrice').textContent = selectedPricing.price + ' Kč';
 }
 
+// Kontrola balíčku před topováním
+async function checkPackageForTop(durationDays) {
+    try {
+        const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+        if (!user || !window.firebaseDb) {
+            return { valid: false, reason: 'not_logged_in', message: 'Pro topování se musíte přihlásit.' };
+        }
+
+        const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const profileRef = doc(window.firebaseDb, 'users', user.uid, 'profile', 'profile');
+        const profileSnap = await getDoc(profileRef);
+
+        if (!profileSnap.exists()) {
+            return { valid: false, reason: 'no_package', message: 'Pro topování inzerátů potřebujete aktivní balíček. Zakupte si balíček a zkuste to znovu.' };
+        }
+
+        const profile = profileSnap.data();
+        const plan = profile.plan;
+        const planPeriodEnd = profile.planPeriodEnd ? (profile.planPeriodEnd.toDate ? profile.planPeriodEnd.toDate() : new Date(profile.planPeriodEnd)) : null;
+        const planCancelAt = profile.planCancelAt ? (profile.planCancelAt.toDate ? profile.planCancelAt.toDate() : new Date(profile.planCancelAt)) : null;
+        const planDurationDays = profile.planDurationDays || 30; // Výchozí 30 dní
+
+        // Kontrola, jestli má balíček
+        if (!plan || plan === 'none') {
+            return { valid: false, reason: 'no_package', message: 'Pro topování inzerátů potřebujete aktivní balíček. Zakupte si balíček a zkuste to znovu.' };
+        }
+
+        // Kontrola, jestli je balíček aktivní
+        if (!planPeriodEnd || new Date() >= planPeriodEnd) {
+            return { valid: false, reason: 'package_expired', message: 'Váš balíček vypršel. Pro topování inzerátů si prosím obnovte balíček.' };
+        }
+
+        // Pro měsíční topování (30 dní) stačí, když má zapnuté auto-renewal (planCancelAt je null)
+        if (durationDays === 30) {
+            if (planCancelAt && planCancelAt <= planPeriodEnd) {
+                // Zrušení je naplánované a bude dřív nebo ve stejný den jako konec topování
+                const topEndDate = new Date();
+                topEndDate.setDate(topEndDate.getDate() + 30);
+                
+                if (planCancelAt < topEndDate) {
+                    return { 
+                        valid: false, 
+                        reason: 'cancellation_before_top_end', 
+                        message: `Váš balíček bude zrušen ${planCancelAt.toLocaleDateString('cs-CZ')}, což je dříve než konec topování (${topEndDate.toLocaleDateString('cs-CZ')}). Pro měsíční topování potřebujete aktivní auto-obnovení balíčku. Zrušte zrušení balíčku nebo zkuste kratší dobu topování.` 
+                    };
+                }
+            }
+            // Pokud má auto-renewal (planCancelAt je null), je to OK
+            return { valid: true };
+        }
+
+        // Pro kratší topování (1 den, 7 dní) musí být doba topování kratší než délka trvání balíčku
+        const now = new Date();
+        const packageRemainingDays = Math.ceil((planPeriodEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+        
+        if (durationDays > packageRemainingDays) {
+            return { 
+                valid: false, 
+                reason: 'top_longer_than_package', 
+                message: `Doba topování (${durationDays} ${durationDays === 1 ? 'den' : durationDays < 5 ? 'dny' : 'dní'}) je delší než zbývající doba vašeho balíčku (${packageRemainingDays} ${packageRemainingDays === 1 ? 'den' : packageRemainingDays < 5 ? 'dny' : 'dní'}). Zkuste kratší dobu topování nebo si prodlužte balíček.` 
+            };
+        }
+
+        // Kontrola, jestli je naplánované zrušení dřív než konec topování
+        if (planCancelAt && planCancelAt <= planPeriodEnd) {
+            const topEndDate = new Date();
+            topEndDate.setDate(topEndDate.getDate() + durationDays);
+            
+            if (planCancelAt < topEndDate) {
+                return { 
+                    valid: false, 
+                    reason: 'cancellation_before_top_end', 
+                    message: `Váš balíček bude zrušen ${planCancelAt.toLocaleDateString('cs-CZ')}, což je dříve než konec topování (${topEndDate.toLocaleDateString('cs-CZ')}). Zrušte zrušení balíčku nebo zkuste kratší dobu topování.` 
+                };
+            }
+        }
+
+        return { valid: true };
+    } catch (error) {
+        console.error('Chyba při kontrole balíčku:', error);
+        return { valid: false, reason: 'error', message: 'Nepodařilo se zkontrolovat balíček. Zkuste to prosím znovu.' };
+    }
+}
+
 async function processPayment() {
     // Kontroly výběrů
     if (!selectedPricing || !selectedAd) {
@@ -458,6 +542,19 @@ async function processPayment() {
     if (!user) {
         alert("Pro pokračování se prosím přihlaste.");
         try { if (typeof window.showAuthModal === 'function') window.showAuthModal('login'); } catch (_) {}
+        return;
+    }
+    
+    // Kontrola balíčku před topováním
+    const packageCheck = await checkPackageForTop(selectedPricing.duration);
+    if (!packageCheck.valid) {
+        const message = packageCheck.message || 'Pro topování inzerátů potřebujete aktivní balíček.';
+        alert(message);
+        
+        // Přesměrovat na stránku balíčků
+        setTimeout(() => {
+            window.location.href = 'packages.html';
+        }, 2000);
         return;
     }
     // Mapování Stripe Price IDs (nahraďte skutečnými ID)

@@ -7,13 +7,29 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Helper funkce pro kontrolu admin statusu
+    function isAdmin() {
+      return request.auth != null && (
+        // Kontrola přes profil
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)/profile/profile) &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)/profile/profile).data.isAdmin == true ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)/profile/profile).data.role == 'admin'
+        ) ||
+        // Kontrola přes email (fallback)
+        request.auth.token.email in ['admin@bulldogo.cz', 'support@bulldogo.cz']
+      );
+    }
+
     // ===== PRAVIDLA PRO INZERÁTY (MUSÍ BÝT PRVNÍ PRO COLLECTIONGROUP) =====
     // DŮLEŽITÉ: Pro collectionGroup("inzeraty") dotazy musí být toto pravidlo explicitní a první
     match /users/{userId}/inzeraty/{adId} {
       allow read: if true;  // Veřejné čtení pro všechny (i bez přihlášení)
       allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      allow delete: if request.auth != null && request.auth.uid == userId;
+      // Update: vlastník nebo admin
+      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Delete: vlastník nebo admin
+      allow delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
     
     // Veřejné čtení všech dokumentů uživatelů i bez autentifikace (pro collectionGroup dotazy)
