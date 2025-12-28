@@ -2,6 +2,9 @@
 
 let userAds = [];
 let currentEditingAdId = null;
+let currentEditingImages = []; // Aktuální seznam obrázků při editaci
+let imagesToDelete = []; // Obrázky k smazání
+let newImagesToUpload = []; // Nové obrázky k nahrání
 
 // Inicializace po načtení Firebase
 document.addEventListener('DOMContentLoaded', () => {
@@ -435,6 +438,39 @@ function getTopTimeRemaining(ad) {
 }
 
 
+// Parsování ceny z textu
+function parsePrice(priceText) {
+    if (!priceText || priceText.trim() === '' || priceText.toLowerCase().includes('dohodou')) {
+        return { type: 'negotiable', value: null, from: null, to: null, unit: 'hour' };
+    }
+    
+    // Rozpoznat rozmezí (např. "200 - 600 Kč/hod" nebo "200-600 Kč")
+    const rangeMatch = priceText.match(/(\d+)\s*-\s*(\d+)\s*Kč(?:\/(\w+))?/);
+    if (rangeMatch) {
+        return {
+            type: 'range',
+            value: null,
+            from: parseInt(rangeMatch[1]),
+            to: parseInt(rangeMatch[2]),
+            unit: rangeMatch[3] === 'práci' ? 'work' : 'hour'
+        };
+    }
+    
+    // Rozpoznat fixní cenu (např. "500 Kč/hod" nebo "500 Kč")
+    const fixedMatch = priceText.match(/(\d+)\s*Kč(?:\/(\w+))?/);
+    if (fixedMatch) {
+        return {
+            type: 'fixed',
+            value: parseInt(fixedMatch[1]),
+            from: null,
+            to: null,
+            unit: fixedMatch[2] === 'práci' ? 'work' : 'hour'
+        };
+    }
+    
+    return { type: 'negotiable', value: null, from: null, to: null, unit: 'hour' };
+}
+
 // Úprava inzerátu
 function editAd(adId) {
     console.log('EditAd volána s ID:', adId);
@@ -447,13 +483,125 @@ function editAd(adId) {
     console.log('Našel inzerát:', ad);
     currentEditingAdId = adId;
     
-    // Vyplnit formulář
-    document.getElementById('editServiceTitle').value = ad.title;
-    document.getElementById('editServiceCategory').value = ad.category;
-    document.getElementById('editServiceDescription').value = ad.description;
-    document.getElementById('editServicePrice').value = ad.price || '';
-    document.getElementById('editServiceLocation').value = ad.location;
-    document.getElementById('editServiceStatus').value = ad.status;
+    // Vyplnit základní pole
+    document.getElementById('editServiceTitle').value = ad.title || '';
+    document.getElementById('editServiceCategory').value = ad.category || '';
+    document.getElementById('editServiceDescription').value = ad.description || '';
+    document.getElementById('editServiceLocation').value = ad.location || '';
+    document.getElementById('editServiceStatus').value = ad.status || 'active';
+    
+    // Parsovat a nastavit cenu
+    const priceData = parsePrice(ad.price || '');
+    const priceTypeFixed = document.getElementById('editPriceTypeFixed');
+    const priceTypeRange = document.getElementById('editPriceTypeRange');
+    const priceTypeNegotiable = document.getElementById('editPriceTypeNegotiable');
+    const priceInput = document.getElementById('editServicePrice');
+    const priceFromInput = document.getElementById('editServicePriceFrom');
+    const priceToInput = document.getElementById('editServicePriceTo');
+    const unitPills = document.getElementById('editUnitPills');
+    const inputsContainer = document.querySelector('#editServiceForm .price-inline .inputs');
+    
+    // Nastavit typ ceny
+    if (priceData.type === 'fixed' && priceTypeFixed) {
+        priceTypeFixed.checked = true;
+        if (priceInput) {
+            priceInput.value = priceData.value || '';
+            priceInput.style.display = 'block';
+            priceInput.required = true;
+        }
+        if (unitPills) unitPills.style.display = 'block';
+        if (inputsContainer) inputsContainer.style.display = 'block';
+    } else if (priceData.type === 'range' && priceTypeRange) {
+        priceTypeRange.checked = true;
+        if (priceFromInput) {
+            priceFromInput.value = priceData.from || '';
+            priceFromInput.style.display = 'block';
+            priceFromInput.required = true;
+        }
+        if (priceToInput) {
+            priceToInput.value = priceData.to || '';
+            priceToInput.style.display = 'block';
+            priceToInput.required = true;
+        }
+        if (unitPills) unitPills.style.display = 'block';
+        if (inputsContainer) inputsContainer.style.display = 'block';
+    } else if (priceTypeNegotiable) {
+        priceTypeNegotiable.checked = true;
+        if (inputsContainer) inputsContainer.style.display = 'none';
+        if (unitPills) unitPills.style.display = 'none';
+    }
+    
+    // Nastavit jednotku
+    if (priceData.unit) {
+        const unitRadio = document.querySelector(`input[name="editPriceUnit"][value="${priceData.unit}"]`);
+        if (unitRadio) unitRadio.checked = true;
+    }
+    
+    // Načíst a zobrazit fotky
+    currentEditingImages = ad.images && Array.isArray(ad.images) ? [...ad.images] : [];
+    imagesToDelete = [];
+    newImagesToUpload = [];
+    
+    // Zobrazit náhledový obrázek (první fotka)
+    const previewImagePreview = document.getElementById('editPreviewImagePreview');
+    const previewImageInput = document.getElementById('editPreviewImage');
+    const noPreviewCheckbox = document.getElementById('editNoPreviewImage');
+    
+    if (currentEditingImages.length > 0) {
+        const firstImageUrl = typeof currentEditingImages[0] === 'string' 
+            ? currentEditingImages[0] 
+            : (currentEditingImages[0].url || currentEditingImages[0]);
+        
+        if (previewImagePreview) {
+            previewImagePreview.innerHTML = `<img src="${firstImageUrl}" alt="Náhled" style="max-width: 100%; border-radius: 8px;">`;
+            previewImagePreview.classList.remove('empty');
+        }
+        
+        if (noPreviewCheckbox) noPreviewCheckbox.checked = false;
+        if (previewImageInput) {
+            previewImageInput.required = true;
+            previewImageInput.disabled = false;
+        }
+    } else {
+        // Žádné fotky - použít výchozí logo
+        const DEFAULT_PREVIEW_LOGO = '/fotky/vychozi-inzerat.png';
+        if (previewImagePreview) {
+            previewImagePreview.innerHTML = `<img src="${DEFAULT_PREVIEW_LOGO}" alt="Náhled" style="max-width: 100%; border-radius: 8px;">`;
+        }
+        if (noPreviewCheckbox) noPreviewCheckbox.checked = true;
+        if (previewImageInput) {
+            previewImageInput.required = false;
+            previewImageInput.disabled = true;
+        }
+    }
+    
+    // Zobrazit další fotky (od druhé dál)
+    const additionalImagesPreview = document.getElementById('editAdditionalImagesPreview');
+    if (additionalImagesPreview) {
+        additionalImagesPreview.innerHTML = '';
+        if (currentEditingImages.length > 1) {
+            currentEditingImages.slice(1).forEach((img, index) => {
+                const imgUrl = typeof img === 'string' ? img : (img.url || img);
+                if (imgUrl && !imagesToDelete.includes(imgUrl)) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'image-preview-item';
+                    imgDiv.innerHTML = `
+                        <img src="${imgUrl}" alt="Fotka ${index + 2}">
+                        <button type="button" class="remove-image-btn" onclick="removeEditImage(${index + 1})" title="Odebrat">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    additionalImagesPreview.appendChild(imgDiv);
+                }
+            });
+        }
+    }
+    
+    // Nastavit event listenery pro obrázky
+    setupEditImageListeners();
+    
+    // Nastavit event listenery pro cenu
+    setupEditPriceListeners();
     
     // Aktualizovat counter po naplnění hodnoty
     const editDescription = document.getElementById('editServiceDescription');
@@ -477,12 +625,354 @@ function editAd(adId) {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
-    // Inicializace counteru pro editaci popisu (kdyby ještě nebyl inicializovaný)
+    // Inicializace counteru pro editaci popisu
     if (typeof initCharCounter === 'function') {
         setTimeout(() => {
             initCharCounter('editServiceDescription', 'editServiceDescriptionCounter', 600);
         }, 100);
     }
+}
+
+// Nastavení event listenerů pro obrázky v edit modalu
+function setupEditImageListeners() {
+    const previewImageInput = document.getElementById('editPreviewImage');
+    const previewImagePreview = document.getElementById('editPreviewImagePreview');
+    const noPreviewCheckbox = document.getElementById('editNoPreviewImage');
+    const additionalImagesInput = document.getElementById('editAdditionalImages');
+    const additionalImagesPreview = document.getElementById('editAdditionalImagesPreview');
+    
+    // Náhledový obrázek
+    if (previewImageInput && previewImagePreview) {
+        previewImageInput.onchange = function(e) {
+            const file = e.target.files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImagePreview.innerHTML = `<img src="${e.target.result}" alt="Náhled" style="max-width: 100%; border-radius: 8px;">`;
+                    previewImagePreview.classList.remove('empty');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+    
+    // Checkbox "bez náhledového obrázku"
+    if (noPreviewCheckbox && previewImageInput && previewImagePreview) {
+        noPreviewCheckbox.onchange = function() {
+            const checked = noPreviewCheckbox.checked;
+            previewImageInput.required = !checked;
+            previewImageInput.disabled = checked;
+            if (checked) {
+                previewImageInput.value = '';
+                const DEFAULT_PREVIEW_LOGO = '/fotky/vychozi-inzerat.png';
+                previewImagePreview.innerHTML = `<img src="${DEFAULT_PREVIEW_LOGO}" alt="Náhled" style="max-width: 100%; border-radius: 8px;">`;
+            }
+        };
+    }
+    
+    // Další fotky
+    if (additionalImagesInput && additionalImagesPreview) {
+        additionalImagesInput.onchange = function(e) {
+            const files = Array.from(e.target.files);
+            const totalImages = currentEditingImages.length + newImagesToUpload.length + files.length;
+            
+            if (totalImages > 10) {
+                showMessage('Můžete mít maximálně 10 fotek celkem.', 'error');
+                e.target.value = '';
+                return;
+            }
+            
+            files.forEach(file => {
+                newImagesToUpload.push(file);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'image-preview-item';
+                    imgDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Nová fotka">
+                        <button type="button" class="remove-image-btn" onclick="removeNewEditImage('${file.name}')" title="Odebrat">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    additionalImagesPreview.appendChild(imgDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            e.target.value = '';
+        };
+    }
+}
+
+// Odebrat existující fotku z dalších fotek
+function removeEditImage(index) {
+    if (index === 0) return; // Nemůžeme smazat hlavní fotku tady
+    const img = currentEditingImages[index];
+    const imgUrl = typeof img === 'string' ? img : (img.url || img);
+    if (imgUrl && !imgUrl.includes('vychozi-inzerat.png')) {
+        imagesToDelete.push(imgUrl);
+    }
+    currentEditingImages.splice(index, 1);
+    
+    // Znovu zobrazit další fotky
+    const additionalImagesPreview = document.getElementById('editAdditionalImagesPreview');
+    if (additionalImagesPreview) {
+        additionalImagesPreview.innerHTML = '';
+        if (currentEditingImages.length > 1) {
+            currentEditingImages.slice(1).forEach((img, idx) => {
+                const imgUrl = typeof img === 'string' ? img : (img.url || img);
+                if (imgUrl && !imagesToDelete.includes(imgUrl)) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'image-preview-item';
+                    imgDiv.innerHTML = `
+                        <img src="${imgUrl}" alt="Fotka ${idx + 2}">
+                        <button type="button" class="remove-image-btn" onclick="removeEditImage(${idx + 1})" title="Odebrat">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    additionalImagesPreview.appendChild(imgDiv);
+                }
+            });
+        }
+    }
+}
+
+// Odebrat novou fotku před nahráním
+function removeNewEditImage(fileName) {
+    newImagesToUpload = newImagesToUpload.filter(f => f.name !== fileName);
+    
+    // Znovu zobrazit náhledy
+    const additionalImagesPreview = document.getElementById('editAdditionalImagesPreview');
+    if (additionalImagesPreview) {
+        // Vymazat všechny nové fotky a znovu je přidat
+        const existingPreviews = additionalImagesPreview.querySelectorAll('.image-preview-item');
+        existingPreviews.forEach(el => {
+            const img = el.querySelector('img');
+            if (img && !img.src.startsWith('http') && !img.src.startsWith('data:')) {
+                // Toto je existující fotka, nechat
+            } else {
+                el.remove();
+            }
+        });
+        
+        // Přidat zbývající nové fotky
+        newImagesToUpload.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'image-preview-item';
+                imgDiv.innerHTML = `
+                    <img src="${e.target.result}" alt="Nová fotka">
+                    <button type="button" class="remove-image-btn" onclick="removeNewEditImage('${file.name}')" title="Odebrat">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                additionalImagesPreview.appendChild(imgDiv);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+// Nastavení event listenerů pro cenu v edit modalu
+function setupEditPriceListeners() {
+    const priceRadios = document.querySelectorAll('input[name="editPriceType"]');
+    const priceInput = document.getElementById('editServicePrice');
+    const priceFromInput = document.getElementById('editServicePriceFrom');
+    const priceToInput = document.getElementById('editServicePriceTo');
+    const unitPills = document.getElementById('editUnitPills');
+    const inputsContainer = document.querySelector('#editServiceForm .price-inline .inputs');
+    
+    function onPriceTypeChange() {
+        const sel = document.querySelector('input[name="editPriceType"]:checked');
+        if (!sel) {
+            if (inputsContainer) inputsContainer.style.display = 'none';
+            if (unitPills) unitPills.style.display = 'none';
+            return;
+        }
+        
+        if (inputsContainer) inputsContainer.style.display = 'block';
+        
+        if (priceInput && priceFromInput && priceToInput && unitPills) {
+            priceInput.style.display = 'none';
+            priceFromInput.style.display = 'none';
+            priceToInput.style.display = 'none';
+            unitPills.style.display = 'none';
+            priceInput.required = false;
+            priceFromInput.required = false;
+            priceToInput.required = false;
+            
+            if (sel.value === 'fixed') {
+                unitPills.style.display = 'block';
+                priceInput.style.display = 'block';
+                priceInput.required = true;
+            } else if (sel.value === 'range') {
+                unitPills.style.display = 'block';
+                priceFromInput.style.display = 'block';
+                priceToInput.style.display = 'block';
+                priceFromInput.required = true;
+                priceToInput.required = true;
+            } else {
+                // negotiable
+                if (inputsContainer) inputsContainer.style.display = 'none';
+                if (unitPills) unitPills.style.display = 'none';
+            }
+        }
+    }
+    
+    priceRadios.forEach(r => {
+        r.addEventListener('change', onPriceTypeChange);
+    });
+    
+    // Event listenery pro jednotky
+    document.querySelectorAll('input[name="editPriceUnit"]').forEach(r => {
+        r.addEventListener('change', function() {
+            // Můžeme přidat další logiku pokud je potřeba
+        });
+    });
+}
+
+// Zobrazení fotek v edit modalu
+function displayEditImages() {
+    const container = document.getElementById('editImagesPreview');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Zobrazit existující fotky
+    currentEditingImages.forEach((img, index) => {
+        const imgUrl = typeof img === 'string' ? img : (img.url || img);
+        if (!imgUrl || imagesToDelete.includes(imgUrl)) return;
+        
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'edit-image-item';
+        imgDiv.style.cssText = 'position: relative; border-radius: 10px; overflow: hidden; border: 2px solid ' + (index === 0 ? '#f77c00' : '#e5e7eb') + ';';
+        
+        const imgEl = document.createElement('img');
+        imgEl.src = imgUrl;
+        imgEl.style.cssText = 'width: 100%; height: 120px; object-fit: cover; display: block;';
+        imgEl.alt = 'Fotka ' + (index + 1);
+        
+        const actionsDiv = document.createElement('div');
+        actionsDiv.style.cssText = 'position: absolute; top: 0; right: 0; display: flex; gap: 0.25rem; padding: 0.25rem;';
+        
+        if (index !== 0) {
+            const setMainBtn = document.createElement('button');
+            setMainBtn.innerHTML = '<i class="fas fa-star"></i>';
+            setMainBtn.title = 'Nastavit jako hlavní';
+            setMainBtn.style.cssText = 'background: rgba(247, 124, 0, 0.9); color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;';
+            setMainBtn.onclick = () => setMainImage(index);
+            actionsDiv.appendChild(setMainBtn);
+        }
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.title = 'Smazat';
+        deleteBtn.style.cssText = 'background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;';
+        deleteBtn.onclick = () => deleteImage(index);
+        actionsDiv.appendChild(deleteBtn);
+        
+        if (index === 0) {
+            const mainLabel = document.createElement('div');
+            mainLabel.textContent = 'Hlavní';
+            mainLabel.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; background: rgba(247, 124, 0, 0.9); color: white; text-align: center; padding: 0.25rem; font-size: 0.75rem; font-weight: 600;';
+            imgDiv.appendChild(mainLabel);
+        }
+        
+        imgDiv.appendChild(imgEl);
+        imgDiv.appendChild(actionsDiv);
+        container.appendChild(imgDiv);
+    });
+    
+    // Zobrazit náhledy nových fotek
+    newImagesToUpload.forEach((file, index) => {
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'edit-image-item';
+        imgDiv.style.cssText = 'position: relative; border-radius: 10px; overflow: hidden; border: 2px dashed #d1d5db;';
+        
+        const imgEl = document.createElement('img');
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imgEl.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        imgEl.style.cssText = 'width: 100%; height: 120px; object-fit: cover; display: block;';
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+        deleteBtn.title = 'Odebrat';
+        deleteBtn.style.cssText = 'position: absolute; top: 0; right: 0; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; margin: 0.25rem;';
+        deleteBtn.onclick = () => {
+            newImagesToUpload.splice(index, 1);
+            displayEditImages();
+        };
+        
+        imgDiv.appendChild(imgEl);
+        imgDiv.appendChild(deleteBtn);
+        container.appendChild(imgDiv);
+    });
+}
+
+// Nastavit obrázek jako hlavní
+function setMainImage(index) {
+    if (index === 0) return;
+    const img = currentEditingImages[index];
+    currentEditingImages.splice(index, 1);
+    currentEditingImages.unshift(img);
+    displayEditImages();
+}
+
+// Smazat obrázek
+function deleteImage(index) {
+    const img = currentEditingImages[index];
+    const imgUrl = typeof img === 'string' ? img : (img.url || img);
+    if (imgUrl && !imgUrl.includes('bulldogo-logo.png')) {
+        imagesToDelete.push(imgUrl);
+    }
+    currentEditingImages.splice(index, 1);
+    displayEditImages();
+}
+
+// Zpracování nahrání nových fotek
+function handleNewImagesUpload(e) {
+    const files = Array.from(e.target.files);
+    const totalImages = currentEditingImages.length + newImagesToUpload.length + files.length;
+    
+    if (totalImages > 10) {
+        showMessage('Můžete mít maximálně 10 fotek celkem.', 'error');
+        e.target.value = '';
+        return;
+    }
+    
+    newImagesToUpload.push(...files);
+    displayEditImages();
+    e.target.value = '';
+}
+
+// Sestavení textu ceny (stejně jako v create-ad.js)
+function computeEditPriceText() {
+    const priceType = document.querySelector('input[name="editPriceType"]:checked')?.value || 'negotiable';
+    const unit = (document.querySelector('input[name="editPriceUnit"]:checked')?.value || 'hour');
+    const unitText = unit === 'hour' ? 'hod' : '';
+    const cur = 'Kč';
+    
+    if (priceType === 'fixed') {
+        const val = (document.getElementById('editServicePrice')?.value || '').trim();
+        if (!val) return '';
+        const numVal = val.replace(/[^0-9]/g, '');
+        if (!numVal) return '';
+        return unitText ? `${numVal} ${cur}/${unitText}` : `${numVal} ${cur}`;
+    } else if (priceType === 'range') {
+        const from = (document.getElementById('editServicePriceFrom')?.value || '').trim();
+        const to = (document.getElementById('editServicePriceTo')?.value || '').trim();
+        if (!from || !to) return '';
+        const numFrom = from.replace(/[^0-9]/g, '');
+        const numTo = to.replace(/[^0-9]/g, '');
+        if (!numFrom || !numTo) return '';
+        const unitPart = unitText ? `/${unitText}` : '';
+        return `${numFrom} - ${numTo} ${cur}${unitPart}`;
+    }
+    return 'Dohodou';
 }
 
 // Aktualizace inzerátu
@@ -495,20 +985,111 @@ async function updateAd() {
         }
         
         const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
+        
+        const storage = getStorage(window.firebaseApp);
+        const userId = window.firebaseAuth.currentUser.uid;
+        
+        // Smazat označené obrázky
+        for (const imgUrl of imagesToDelete) {
+            try {
+                // Extrahovat cestu z URL
+                const urlParts = imgUrl.split('/o/');
+                if (urlParts.length > 1) {
+                    const path = decodeURIComponent(urlParts[1].split('?')[0]);
+                    const imgRef = ref(storage, path);
+                    await deleteObject(imgRef);
+                    console.log('Obrázek smazán:', path);
+                }
+            } catch (deleteError) {
+                console.error('Chyba při mazání obrázku:', deleteError);
+            }
+        }
+        
+        // Zpracovat náhledový obrázek
+        const previewImageInput = document.getElementById('editPreviewImage');
+        const noPreviewCheckbox = document.getElementById('editNoPreviewImage');
+        let previewImageUrl = null;
+        
+        if (previewImageInput?.files?.[0]) {
+            // Nahrát nový náhledový obrázek
+            const imageRef = ref(storage, `services/${userId}/${Date.now()}_preview.jpg`);
+            const imageSnapshot = await uploadBytes(imageRef, previewImageInput.files[0], {
+                contentType: previewImageInput.files[0].type || 'image/jpeg'
+            });
+            previewImageUrl = await getDownloadURL(imageSnapshot.ref);
+        } else if (noPreviewCheckbox?.checked) {
+            // Použít výchozí logo
+            previewImageUrl = '/fotky/vychozi-inzerat.png';
+        } else if (currentEditingImages.length > 0) {
+            // Zachovat existující první obrázek
+            const firstImg = currentEditingImages[0];
+            const firstImgUrl = typeof firstImg === 'string' ? firstImg : (firstImg.url || firstImg);
+            if (firstImgUrl && !imagesToDelete.includes(firstImgUrl)) {
+                previewImageUrl = firstImgUrl;
+            } else {
+                previewImageUrl = '/fotky/vychozi-inzerat.png';
+            }
+        } else {
+            previewImageUrl = '/fotky/vychozi-inzerat.png';
+        }
+        
+        // Nahrát nové další obrázky
+        const uploadedImages = [];
+        for (let i = 0; i < newImagesToUpload.length; i++) {
+            const file = newImagesToUpload[i];
+            const imageRef = ref(storage, `services/${userId}/${Date.now()}_${i}.jpg`);
+            const imageSnapshot = await uploadBytes(imageRef, file, {
+                contentType: file.type || 'image/jpeg'
+            });
+            const imageUrl = await getDownloadURL(imageSnapshot.ref);
+            uploadedImages.push({
+                url: imageUrl,
+                isPreview: false,
+                name: file.name
+            });
+        }
+        
+        // Kombinovat obrázky: náhledový + existující další (bez smazaných) + nové
+        const finalImages = [];
+        
+        // Přidat náhledový obrázek
+        if (previewImageUrl) {
+            finalImages.push({
+                url: previewImageUrl,
+                isPreview: true
+            });
+        }
+        
+        // Přidat existující další obrázky (od druhé dál, bez smazaných)
+        if (currentEditingImages.length > 1) {
+            currentEditingImages.slice(1).forEach(img => {
+                const imgUrl = typeof img === 'string' ? img : (img.url || img);
+                if (imgUrl && !imagesToDelete.includes(imgUrl)) {
+                    finalImages.push(typeof img === 'string' ? { url: imgUrl } : img);
+                }
+            });
+        }
+        
+        // Přidat nové nahrané obrázky
+        finalImages.push(...uploadedImages);
         
         const formData = new FormData(document.getElementById('editServiceForm'));
+        const priceText = computeEditPriceText();
+        
         const updateData = {
             title: formData.get('title'),
             category: formData.get('category'),
             description: formData.get('description'),
-            price: formData.get('price'),
+            price: priceText,
             location: formData.get('location'),
             status: formData.get('status'),
+            images: finalImages,
             updatedAt: new Date()
         };
         
         console.log('Aktualizuji data:', updateData);
-        await updateDoc(doc(window.firebaseDb, 'users', window.firebaseAuth.currentUser.uid, 'inzeraty', currentEditingAdId), updateData);
+        await updateDoc(doc(window.firebaseDb, 'users', userId, 'inzeraty', currentEditingAdId), updateData);
         
         showMessage('Inzerát byl úspěšně aktualizován!', 'success');
         closeEditServiceModal();
@@ -614,6 +1195,12 @@ async function deleteAd(adId) {
 
 // Zavření edit modalu
 function closeEditServiceModal() {
+    // Resetovat proměnné
+    currentEditingImages = [];
+    imagesToDelete = [];
+    newImagesToUpload = [];
+    const fileInput = document.getElementById('editAdditionalImages');
+    if (fileInput) fileInput.value = '';
     document.getElementById('editServiceModal').style.display = 'none';
     document.body.style.overflow = 'auto';
     currentEditingAdId = null;
@@ -697,3 +1284,7 @@ window.editAd = editAd;
 window.toggleAdStatus = toggleAdStatus;
 window.deleteAd = deleteAd;
 window.topovatAd = topovatAd;
+window.removeEditImage = removeEditImage;
+window.removeNewEditImage = removeNewEditImage;
+window.removeEditImage = removeEditImage;
+window.removeNewEditImage = removeNewEditImage;
