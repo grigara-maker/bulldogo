@@ -13175,6 +13175,25 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     body:has(.settings-section) .mobile-menu-btn {
         z-index: 9999 !important;
         pointer-events: auto !important;
+        position: fixed !important;
+    }
+    
+    /* Zajistit, že žádný prvek na stránce nastavení neblokuje mobile-menu-btn */
+    body:has(.settings-content) .main-content,
+    body:has(.settings-content) .page-hero,
+    body:has(.settings-content) .container,
+    body:has(.settings-content) .settings-content,
+    body:has(.settings-content) .settings-section {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    body:has(.settings-content) .page-hero {
+        pointer-events: none !important;
+    }
+    
+    body:has(.settings-content) .page-hero * {
+        pointer-events: auto !important;
     }
     
     .mobile-menu-btn:hover {
@@ -13190,6 +13209,31 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .mobile-menu-btn i {
         font-size: 1.5rem;
         pointer-events: none; /* Zabraňuje problémům s klikáním na ikonu */
+    }
+    
+    /* Zajistit, že mobile-menu-btn je vždy klikatelný na stránce nastavení */
+    body:has(.settings-content) .mobile-menu-btn,
+    body:has(.settings-section) .mobile-menu-btn {
+        z-index: 9999 !important;
+        pointer-events: auto !important;
+        position: fixed !important;
+    }
+    
+    /* Zajistit, že žádný prvek na stránce nastavení neblokuje mobile-menu-btn */
+    body:has(.settings-content) .main-content,
+    body:has(.settings-content) .page-hero,
+    body:has(.settings-content) .container,
+    body:has(.settings-content) .settings-content,
+    body:has(.settings-content) .settings-section {
+        pointer-events: auto !important;
+    }
+    
+    body:has(.settings-content) .page-hero {
+        pointer-events: none !important;
+    }
+    
+    body:has(.settings-content) .page-hero * {
+        pointer-events: auto !important;
     }
     
     /* Close sidebar when clicking overlay */
