@@ -13868,31 +13868,22 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Tabs mobile */
     .tab-navigation {
-        flex-wrap: nowrap;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
         padding: 0.5rem 0;
         margin-bottom: 2.5rem;
-    }
-    
-    .tab-navigation::-webkit-scrollbar {
-        display: none;
     }
     
     .tab-btn {
         padding: 1rem 1.25rem;
         font-size: 0.9rem;
         white-space: nowrap;
-        min-width: auto;
-        flex-shrink: 0;
-        flex-grow: 0;
-        flex-basis: auto;
-        order: 0;
+        width: 100%;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         opacity: 0.95;
         transition: opacity 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        order: 0;
     }
     
     .tab-btn:hover,
