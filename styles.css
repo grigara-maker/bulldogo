@@ -13221,7 +13221,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .hero-slogan {
         font-size: clamp(1rem, 4vw, 1.3rem);
         text-align: center !important;
-        margin-bottom: 0 !important;
+        margin-bottom: 2rem !important;
         margin-top: 0 !important;
     }
     
@@ -13265,7 +13265,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-        margin-top: 1rem !important;
+        margin-top: 0 !important;
         margin-bottom: 0 !important;
         padding: 0 1rem !important;
         padding-bottom: 0 !important;
