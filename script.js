@@ -93,7 +93,8 @@ function toggleMobileMenu() {
         if (menuBtn) menuBtn.style.display = 'flex';
     } else {
         // Uložit scroll pozici před otevřením
-        body.setAttribute('data-scroll-pos', scrollY.toString());
+        const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
+        body.setAttribute('data-scroll-pos', currentScrollY.toString());
         
         sidebar.classList.add('mobile-open');
         body.classList.add('sidebar-open');
@@ -101,12 +102,23 @@ function toggleMobileMenu() {
         if (menuBtn) menuBtn.style.display = 'none';
         
         // Obnovit scroll pozici po otevření menu (aby se neposunulo na vrchol)
-        requestAnimationFrame(() => {
+        // Použít více pokusů, protože CSS změny mohou způsobit scroll
+        const restoreScroll = () => {
             const savedScroll = parseInt(body.getAttribute('data-scroll-pos') || '0', 10);
             if (savedScroll > 0) {
-                window.scrollTo(0, savedScroll);
+                window.scrollTo({
+                    top: savedScroll,
+                    left: 0,
+                    behavior: 'instant' // Okamžitě, bez animace
+                });
             }
-        });
+        };
+        
+        // Zkusit obnovit scroll několikrát, protože CSS změny mohou způsobit zpoždění
+        requestAnimationFrame(restoreScroll);
+        setTimeout(restoreScroll, 0);
+        setTimeout(restoreScroll, 10);
+        setTimeout(restoreScroll, 50);
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
