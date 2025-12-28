@@ -97,17 +97,66 @@
                                 
                                 // Vytvořit overlay s upozorněním
                                 const overlay = document.createElement('div');
-                                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;';
+                                overlay.style.cssText = `
+                                    position: fixed !important;
+                                    top: 0 !important;
+                                    left: 0 !important;
+                                    right: 0 !important;
+                                    bottom: 0 !important;
+                                    width: 100vw !important;
+                                    height: 100vh !important;
+                                    background: rgba(0, 0, 0, 0.7) !important;
+                                    backdrop-filter: blur(4px) !important;
+                                    display: flex !important;
+                                    align-items: center !important;
+                                    justify-content: center !important;
+                                    z-index: 10000 !important;
+                                    padding: 20px !important;
+                                    box-sizing: border-box !important;
+                                `;
                                 overlay.innerHTML = `
-                                    <div style="background:#fff;padding:2.5rem;border-radius:16px;max-width:450px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-                                        <div style="width:80px;height:80px;background:linear-gradient(135deg,#f77c00,#ff9a3c);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+                                    <div class="modal-content" style="
+                                        background: #ffffff;
+                                        padding: 2.5rem;
+                                        border-radius: 15px;
+                                        max-width: 500px;
+                                        width: 100%;
+                                        text-align: center;
+                                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                                        border: 1px solid #f0f0f0;
+                                        position: relative;
+                                        margin: auto;
+                                    ">
+                                        <div style="width:80px;height:80px;background:linear-gradient(135deg,#f77c00 0%,#fdf002 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
                                             <i class="fas fa-crown" style="font-size:2.5rem;color:#fff;"></i>
                                         </div>
-                                        <h2 style="margin:0 0 1rem;color:#1a1a2e;font-size:1.5rem;">Vyžadováno předplatné</h2>
-                                        <p style="color:#666;margin-bottom:1.5rem;line-height:1.6;">${message}</p>
-                                        <a href="packages.html" style="display:inline-block;background:linear-gradient(135deg,#f77c00,#ff9a3c);color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:1.1rem;transition:transform 0.2s;">
-                                            <i class="fas fa-arrow-right"></i> Zobrazit balíčky
-                                        </a>
+                                        <h2 style="
+                                            margin:0 0 1rem;
+                                            background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+                                            -webkit-background-clip: text;
+                                            -webkit-text-fill-color: transparent;
+                                            background-clip: text;
+                                            font-size:1.5rem;
+                                            font-weight: 800;
+                                        ">Vyžadováno předplatné</h2>
+                                        <p style="color:#666;margin-bottom:1.5rem;line-height:1.6;font-size:1rem;">${message}</p>
+                                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                                            <a href="packages.html" class="btn btn-primary" style="
+                                                display: inline-block;
+                                                background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+                                                color: #111827;
+                                                padding: 14px 32px;
+                                                border-radius: 10px;
+                                                text-decoration: none;
+                                                font-weight: 600;
+                                                font-size: 1.1rem;
+                                                transition: transform 0.2s;
+                                                border: none;
+                                                cursor: pointer;
+                                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(247,124,0,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                                <i class="fas fa-box"></i> Zobrazit balíčky
+                                            </a>
+                                        </div>
                                         <p style="margin-top:1.5rem;font-size:0.85rem;color:#999;">
                                             Budete přesměrováni za 5 sekund...
                                         </p>
