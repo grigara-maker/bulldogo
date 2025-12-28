@@ -210,6 +210,18 @@ window.addEventListener('beforeunload', () => {
     resetMobileMenu();
 });
 
+// Reset menu when hash changes (navigation to anchor links)
+window.addEventListener('hashchange', () => {
+    resetMobileMenu();
+});
+
+// Reset menu after page load (handles cases where DOMContentLoaded already fired)
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(() => {
+        resetMobileMenu();
+    }, 0);
+}
+
 // Dark mode disabled: force light theme
 function toggleDarkMode() {}
 
