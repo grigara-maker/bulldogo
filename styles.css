@@ -6967,7 +6967,8 @@ html {
 
 /* Speciální styl pro edit service modal - větší a ladící se stránkou */
 #editServiceModal .modal-content {
-    max-width: 700px;
+    max-width: 900px;
+    width: 90%;
     background: #ffffff;
     border-radius: 15px;
     border: 1px solid #f0f0f0;
@@ -6976,10 +6977,26 @@ html {
 }
 
 #editServiceModal .modal-content .service-form {
-    padding: 2rem;
+    padding: 2.5rem;
     overflow-y: auto;
     max-height: calc(100vh - 40px);
     max-height: calc(100dvh - 40px);
+}
+
+/* Na větších obrazovkách ještě větší */
+@media (min-width: 1200px) {
+    #editServiceModal .modal-content {
+        max-width: 1000px;
+        width: 85%;
+    }
+    
+    #editServiceModal .modal-content .service-form {
+        padding: 3rem;
+    }
+    
+    #editServiceModal .modal-header {
+        padding: 2rem 3rem;
+    }
 }
 
 /* Rezerva nahoře kvůli „opřenému“ buldokovi */
@@ -7091,6 +7108,13 @@ html {
 #editServiceModal .modal-header {
     background: linear-gradient(135deg, rgba(247, 124, 0, 0.08) 0%, rgba(253, 240, 2, 0.08) 100%);
     border-bottom: 1px solid rgba(247, 124, 0, 0.1);
+    padding: 1.75rem 2.5rem;
+}
+
+@media (min-width: 1200px) {
+    #editServiceModal .modal-header {
+        padding: 2rem 3rem;
+    }
 }
 
 .modal-header h2 {
