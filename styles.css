@@ -7266,6 +7266,8 @@ html {
     
     .auth-hero-ledge {
         padding: 12px 2.5rem;
+        max-width: 85%;
+        margin: 0 auto;
     }
     
     /* Stejná velikost nadpisu jako na mobilu */
