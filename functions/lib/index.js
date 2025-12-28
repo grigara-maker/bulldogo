@@ -2310,8 +2310,55 @@ function generateWelcomeEmailHTML(userName) {
 </html>
 `;
 }
-// Pole fieldLabels a ignoredFields již nejsou potřeba, protože funkce getChangedFields
-// nyní kontroluje pouze email, phone a password explicitně
+/**
+ * Mapování názvů polí na české popisky
+ */
+const fieldLabels = {
+    name: "Jméno",
+    email: "E-mail",
+    phone: "Telefon",
+    city: "Město",
+    bio: "O mně",
+    businessName: "Název firmy",
+    businessType: "Typ podnikání",
+    businessAddress: "Adresa firmy",
+    businessDescription: "Popis firmy",
+    companyName: "Název společnosti",
+    ico: "IČO",
+    dic: "DIČ",
+    address: "Adresa",
+    emailNotifications: "E-mailová upozornění",
+    smsNotifications: "SMS upozornění",
+    marketingEmails: "Marketingové e-maily",
+};
+/**
+ * Pole, která se mají ignorovat při porovnání změn
+ */
+const ignoredFields = [
+    "updatedAt",
+    "createdAt",
+    "rating",
+    "totalReviews",
+    "ratingBreakdown",
+    "recentReviews",
+    "totalAds",
+    "activeAds",
+    "totalViews",
+    "totalContacts",
+    "balance",
+    "plan",
+    "planName",
+    "planUpdatedAt",
+    "planPeriodStart",
+    "planPeriodEnd",
+    "planDurationDays",
+    "planCancelAt",
+    "planExpiredAt",
+    "planExpiredProcessedAt",
+    "firstName",
+    "lastName",
+    "birthDate",
+];
 /**
  * Formátuje hodnotu pro zobrazení v emailu
  */
@@ -2342,47 +2389,27 @@ function formatValue(value) {
 }
 /**
  * Porovná dva objekty a vrátí změněná pole
- * Sleduje POUZE: email, phone, password
- * Všechny ostatní změny (bio, name, city, companyName, ico, dic, address, atd.) jsou IGNOROVÁNY
  */
 function getChangedFields(before, after) {
     const changes = [];
-    // Sledovat POUZE email, telefon a heslo - všechny ostatní změny ignorujeme
-    // 1. Sledovat email
-    const oldEmail = before.email || '';
-    const newEmail = after.email || '';
-    if (oldEmail !== newEmail) {
-        changes.push({
-            field: 'email',
-            label: 'E-mail',
-            oldValue: oldEmail || '—',
-            newValue: newEmail || '—',
-        });
+    const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
+    for (const key of allKeys) {
+        if (ignoredFields.includes(key))
+            continue;
+        const oldVal = before[key];
+        const newVal = after[key];
+        // Porovnání hodnot
+        const oldStr = JSON.stringify(oldVal);
+        const newStr = JSON.stringify(newVal);
+        if (oldStr !== newStr) {
+            changes.push({
+                field: key,
+                label: fieldLabels[key] || key,
+                oldValue: oldVal,
+                newValue: newVal,
+            });
+        }
     }
-    // 2. Sledovat telefon
-    const oldPhone = before.phone || '';
-    const newPhone = after.phone || '';
-    if (oldPhone !== newPhone) {
-        changes.push({
-            field: 'phone',
-            label: 'Telefon',
-            oldValue: oldPhone || '—',
-            newValue: newPhone || '—',
-        });
-    }
-    // 3. Detekovat změnu hesla (pokud se změnilo passwordChangedAt nebo password field)
-    const passwordChanged = (before.passwordChangedAt !== after.passwordChangedAt && after.passwordChangedAt) ||
-        (before.password !== after.password && after.password === 'changed');
-    if (passwordChanged) {
-        changes.push({
-            field: 'password',
-            label: 'Heslo',
-            oldValue: '••••••••',
-            newValue: '••••••••',
-        });
-    }
-    // Vrátit pouze změny v email, phone nebo password
-    // Všechny ostatní změny (bio, name, city, companyName, ico, dic, address, atd.) jsou IGNOROVÁNY
     return changes;
 }
 /**
@@ -2572,28 +2599,11 @@ exports.sendProfileChangeEmail = functions
     const beforeData = change.before.data();
     const afterData = change.after.data();
     const userId = context.params.userId;
-    // Získej změněná pole (pouze email, phone, password)
+    // Získej změněná pole
     const changes = getChangedFields(beforeData, afterData);
-    // Pokud nejsou žádné relevantní změny (email, phone, password), neposílej email
+    // Pokud nejsou žádné relevantní změny, neposílej email
     if (changes.length === 0) {
-        functions.logger.debug("Žádné relevantní změny v profilu (email, phone, password)", {
-            userId,
-            changedFields: Object.keys(afterData).filter(key => {
-                const beforeVal = beforeData[key];
-                const afterVal = afterData[key];
-                return JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
-            })
-        });
-        return null;
-    }
-    // Explicitní kontrola: email se posílá POUZE při změně email, phone nebo password
-    const allowedFields = ['email', 'phone', 'password'];
-    const hasOnlyAllowedChanges = changes.every(change => allowedFields.includes(change.field));
-    if (!hasOnlyAllowedChanges) {
-        functions.logger.debug("Změny obsahují pole, která nejsou povolena (email, phone, password)", {
-            userId,
-            changes: changes.map(c => c.field)
-        });
+        functions.logger.debug("Žádné relevantní změny v profilu", { userId });
         return null;
     }
     // Získej email uživatele

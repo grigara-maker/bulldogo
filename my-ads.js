@@ -607,7 +607,7 @@ function removeNewEditImage(fileName) {
                 el.remove();
             }
         });
-        
+    
         // Přidat zbývající nové fotky
         newImagesToUpload.forEach(file => {
             const reader = new FileReader();
@@ -730,7 +730,7 @@ function displayEditImages() {
             mainLabel.textContent = 'Hlavní';
             mainLabel.style.cssText = 'position: absolute; bottom: 0; left: 0; right: 0; background: rgba(247, 124, 0, 0.9); color: white; text-align: center; padding: 0.25rem; font-size: 0.75rem; font-weight: 600;';
             imgDiv.appendChild(mainLabel);
-        }
+            }
         
         imgDiv.appendChild(imgEl);
         imgDiv.appendChild(actionsDiv);
