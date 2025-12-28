@@ -12750,11 +12750,16 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-top: 1.5rem !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
         position: relative !important;
-        left: 0 !important;
-        right: 0 !important;
+        z-index: 1 !important;
+        pointer-events: none !important;
+    }
+    
+    .page-hero *,
+    .services-hero *,
+    .top-ads-hero *,
+    .my-ads-hero * {
+        pointer-events: auto !important;
     }
     
     /* Footer - 100vw */
@@ -13147,7 +13152,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         position: fixed !important;
         top: 8px !important;
         left: 8px !important;
-        z-index: 3000 !important;
+        z-index: 9999 !important;
         background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%) !important;
         color: white !important;
         border: none !important;
@@ -13162,6 +13167,13 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         transition: all 0.3s ease !important;
         touch-action: manipulation !important;
         -webkit-tap-highlight-color: transparent !important; /* Odstranit modrý highlight na iOS/Android */
+        pointer-events: auto !important;
+    }
+    
+    /* Zajistit, že mobile-menu-btn je vždy klikatelný na stránce nastavení */
+    body:has(.settings-content) .mobile-menu-btn,
+    body:has(.settings-section) .mobile-menu-btn {
+        z-index: 9999 !important;
         pointer-events: auto !important;
     }
     
