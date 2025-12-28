@@ -7093,7 +7093,7 @@ html {
 
 .modal-content {
 	background: #ffffff;
-	border-radius: 15px;
+	border-radius: 15px !important;
     padding: 0;
     width: auto;
     max-width: 700px;
@@ -7117,7 +7117,7 @@ html {
     max-width: 900px;
     width: 90%;
     background: #ffffff;
-    border-radius: 15px;
+    border-radius: 15px !important;
     border: 1px solid #f0f0f0;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     overflow: hidden;
@@ -7777,6 +7777,7 @@ html {
         width: 95%;
         padding: 0;
         margin: 1rem;
+        border-radius: 15px !important;
     }
     
     #editServiceModal .modal-content .service-form {
@@ -7863,6 +7864,7 @@ html {
         max-width: 95%;
         margin: 1rem auto;
         padding: 0;
+        border-radius: 15px !important;
     }
     
     #editServiceModal .modal-content .service-form {
@@ -14140,6 +14142,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         padding: 0;
         max-height: 90vh;
         overflow: hidden;
+        border-radius: 15px !important;
     }
     
     #editServiceModal .modal-content {
@@ -15397,6 +15400,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         /* Přizpůsobit výšku obsahu, ne celé obrazovce */
         height: auto !important;
         min-height: auto !important;
+        border-radius: 15px !important;
     }
     
     .modal-content.auth-with-hero {
