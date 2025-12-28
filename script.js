@@ -173,8 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navLink) {
             const sidebar = document.querySelector('.sidebar');
             if (sidebar && sidebar.classList.contains('mobile-open')) {
-                // Close menu immediately
-                toggleMobileMenu();
+                // Close menu immediately before navigation
+                resetMobileMenu();
             }
         }
     });
@@ -184,10 +184,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') {
             const sidebar = document.querySelector('.sidebar');
             if (sidebar && sidebar.classList.contains('mobile-open')) {
-                toggleMobileMenu();
+                resetMobileMenu();
             }
         }
     });
+    
+    // Reset menu when page is loaded with hash (after navigation)
+    if (window.location.hash) {
+        // Wait a bit for page to fully load
+        setTimeout(() => {
+            resetMobileMenu();
+        }, 100);
+    }
 });
 
 // Also reset on page visibility change (when user returns to tab)
