@@ -13868,7 +13868,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     /* Tabs mobile */
     .tab-navigation {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 1rem;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -13886,10 +13886,13 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         font-size: 0.9rem;
         white-space: nowrap;
         min-width: auto;
-        margin-bottom: 0.5rem;
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: auto;
+        order: 0;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         opacity: 0.95;
-        transition: all 0.3s ease;
+        transition: opacity 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
     }
     
     .tab-btn:hover,
@@ -13902,6 +13905,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .tab-btn.active {
         opacity: 1;
         box-shadow: 0 6px 20px rgba(247, 124, 0, 0.3);
+        order: 0;
     }
     
     /* Chat mobile */
