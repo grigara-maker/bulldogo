@@ -80,6 +80,9 @@ function toggleMobileMenu() {
     const menuBtn = document.querySelector('.mobile-menu-btn');
     const isOpen = sidebar.classList.contains('mobile-open');
     
+    // Uložit aktuální scroll pozici před otevřením menu
+    const scrollY = window.scrollY || window.pageYOffset;
+    
     if (isOpen) {
         sidebar.classList.remove('mobile-open');
         body.classList.remove('sidebar-open');
@@ -89,10 +92,21 @@ function toggleMobileMenu() {
         // Zobrazit tlačítko menu
         if (menuBtn) menuBtn.style.display = 'flex';
     } else {
+        // Uložit scroll pozici před otevřením
+        body.setAttribute('data-scroll-pos', scrollY.toString());
+        
         sidebar.classList.add('mobile-open');
         body.classList.add('sidebar-open');
         // Schovat tlačítko menu
         if (menuBtn) menuBtn.style.display = 'none';
+        
+        // Obnovit scroll pozici po otevření menu (aby se neposunulo na vrchol)
+        requestAnimationFrame(() => {
+            const savedScroll = parseInt(body.getAttribute('data-scroll-pos') || '0', 10);
+            if (savedScroll > 0) {
+                window.scrollTo(0, savedScroll);
+            }
+        });
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
