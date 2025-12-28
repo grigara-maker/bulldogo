@@ -7209,10 +7209,12 @@ html {
 /* Odstup mezi lištou a obsahem formuláře */
 .auth-with-hero .auth-form { 
 	margin-top: 14px; 
+	padding: 0 1.5rem 1.5rem 1.5rem;
 	text-align: left; /* Zarovnání formuláře vlevo */
 	display: flex;
 	flex-direction: column;
 	gap: 12px; /* Mezera mezi inputy */
+	box-sizing: border-box;
 }
 
 /* Pozice psa nad titulkem v liště */
@@ -7254,6 +7256,15 @@ html {
 @media (min-width: 1200px) {
     #editServiceModal .modal-header {
         padding: 2rem 3rem;
+    }
+    
+    /* Auth modal - větší padding na PC */
+    .auth-with-hero .auth-form {
+        padding: 0 2.5rem 2rem 2.5rem;
+    }
+    
+    .auth-hero-ledge {
+        padding: 14px 2.5rem;
     }
 }
 
@@ -7656,6 +7667,15 @@ html {
         margin: 1rem;
     }
     
+    /* Auth form - menší padding na mobilu */
+    .auth-with-hero .auth-form {
+        padding: 0 1rem 1rem 1rem;
+    }
+    
+    .auth-hero-ledge {
+        padding: 14px 1rem;
+    }
+    
     #editServiceModal .modal-content {
         width: 95%;
         padding: 0;
@@ -7722,6 +7742,15 @@ html {
 @media (max-width: 480px) {
     .modal-content {
         padding: 1rem;
+    }
+    
+    /* Auth form - ještě menší padding na malých mobilních zařízeních */
+    .auth-with-hero .auth-form {
+        padding: 0 0.75rem 0.75rem 0.75rem;
+    }
+    
+    .auth-hero-ledge {
+        padding: 12px 0.75rem;
     }
     
     .auth-form input,
