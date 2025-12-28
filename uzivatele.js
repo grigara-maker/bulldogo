@@ -343,9 +343,11 @@ async function deleteUser(userId) {
 
 // Helper funkce pro zobrazení zprávy
 function showMessage(message, type = 'info') {
-    if (typeof window.showMessage === 'function') {
+    // Použít globální showMessage z auth.js, pokud existuje
+    if (typeof window.showMessage === 'function' && window.showMessage !== showMessage) {
         window.showMessage(message, type);
     } else {
+        // Fallback na alert, pokud není dostupná globální funkce
         alert(message);
     }
 }
