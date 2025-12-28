@@ -112,16 +112,14 @@ function toggleMobileMenu() {
         const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
         body.setAttribute('data-scroll-pos', currentScrollY.toString());
         
+        // Nastavit top na negativní scroll pozici PŘED přidáním třídy
+        // aby se zachovala vizuální pozice když se přidá position: fixed
+        body.style.top = `-${currentScrollY}px`;
+        
         sidebar.classList.add('mobile-open');
         body.classList.add('sidebar-open');
         // Schovat tlačítko menu
         if (menuBtn) menuBtn.style.display = 'none';
-        
-        // Nastavit top na negativní scroll pozici PO přidání třídy, aby se zachovala vizuální pozice
-        // když se přidá position: fixed
-        requestAnimationFrame(() => {
-            body.style.top = `-${currentScrollY}px`;
-        });
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
