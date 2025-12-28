@@ -221,7 +221,7 @@
     margin-top: 8px;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+    align-items: stretch; /* Zajistí stejnou výšku tlačítek */
 }
 
 /* CTA fade efekt jako pilulka (bez bubliny) */
@@ -780,6 +780,8 @@
     border-radius: 12px;
     font-weight: 700;
     text-decoration: none;
+    min-height: 48px; /* Zajistí stejnou minimální výšku */
+    box-sizing: border-box;
 }
 .btn-cta-primary { color: #111827; background: #ffffff; box-shadow: 0 10px 22px rgba(17, 24, 39, 0.08); }
 .btn-cta-primary i { color: #111827; }
