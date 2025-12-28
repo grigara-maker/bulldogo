@@ -2791,12 +2791,31 @@ export const sendProfileChangeEmail = functions
     const afterData = change.after.data() as AnyObj;
     const userId = context.params.userId;
     
-    // Získej změněná pole
+    // Získej změněná pole (pouze email, phone, password)
     const changes = getChangedFields(beforeData, afterData);
     
-    // Pokud nejsou žádné relevantní změny, neposílej email
+    // Pokud nejsou žádné relevantní změny (email, phone, password), neposílej email
     if (changes.length === 0) {
-      functions.logger.debug("Žádné relevantní změny v profilu", { userId });
+      functions.logger.debug("Žádné relevantní změny v profilu (email, phone, password)", { 
+        userId,
+        changedFields: Object.keys(afterData).filter(key => {
+          const beforeVal = beforeData[key];
+          const afterVal = afterData[key];
+          return JSON.stringify(beforeVal) !== JSON.stringify(afterVal);
+        })
+      });
+      return null;
+    }
+    
+    // Explicitní kontrola: email se posílá POUZE při změně email, phone nebo password
+    const allowedFields = ['email', 'phone', 'password'];
+    const hasOnlyAllowedChanges = changes.every(change => allowedFields.includes(change.field));
+    
+    if (!hasOnlyAllowedChanges) {
+      functions.logger.debug("Změny obsahují pole, která nejsou povolena (email, phone, password)", { 
+        userId,
+        changes: changes.map(c => c.field)
+      });
       return null;
     }
     
