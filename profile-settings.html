@@ -173,35 +173,6 @@
     <button class="mobile-menu-btn" id="mobileMenuBtn" style="z-index: 9999 !important; pointer-events: auto !important; position: fixed !important;">
         <i class="fas fa-bars"></i>
     </button>
-    <script>
-        // Zajistit, že mobile menu button funguje i na stránce nastavení
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-            if (mobileMenuBtn) {
-                // Odstranit všechny existující event listenery
-                const newBtn = mobileMenuBtn.cloneNode(true);
-                mobileMenuBtn.parentNode.replaceChild(newBtn, mobileMenuBtn);
-                
-                // Přidat nový event listener
-                newBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (typeof toggleMobileMenu === 'function') {
-                        toggleMobileMenu();
-                    }
-                });
-                
-                // Také přidat touch event pro mobilní zařízení
-                newBtn.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (typeof toggleMobileMenu === 'function') {
-                        toggleMobileMenu();
-                    }
-                });
-            }
-        });
-    </script>
 
     <!-- Sidebar Toggle Button (when collapsed) -->
     <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
@@ -1874,7 +1845,7 @@ Prosím kontaktujte podporu.
         window.saveNotifications = saveNotifications;
 
         // CSS pro animace a toggle switch
-        const style = document.createElement('style');
+        const settingsStyle = document.createElement('style');
         style.textContent = `
             @keyframes slideIn {
                 from { transform: translateX(100%); opacity: 0; }
@@ -1908,7 +1879,7 @@ Prosím kontaktujte podporu.
                 transform: translateX(22px);
             }
         `;
-        document.head.appendChild(style);
+        document.head.appendChild(settingsStyle);
 
         // Cleanup při opuštění stránky
         window.addEventListener('beforeunload', () => {
@@ -2052,44 +2023,80 @@ Prosím kontaktujte podporu.
     <script src="script.js" defer></script>
     <script src="auth.js" defer></script>
     <script>
-        // Zajistit, že mobile menu button funguje i po načtení všech skriptů
-        window.addEventListener('load', function() {
+        // Definovat toggleMobileMenu přímo na stránce nastavení
+        function toggleMobileMenuSettings() {
+            const sidebar = document.querySelector('.sidebar');
+            const body = document.body;
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            const isOpen = sidebar && sidebar.classList.contains('mobile-open');
+            
+            if (isOpen) {
+                sidebar.classList.remove('mobile-open');
+                body.classList.remove('sidebar-open');
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (overlay) overlay.remove();
+                if (menuBtn) menuBtn.style.display = 'flex';
+            } else {
+                if (sidebar) sidebar.classList.add('mobile-open');
+                body.classList.add('sidebar-open');
+                if (menuBtn) menuBtn.style.display = 'none';
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'sidebar-overlay';
+                overlay.style.cssText = `
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    background: rgba(0, 0, 0, 0.5) !important;
+                    z-index: 1999 !important;
+                `;
+                overlay.addEventListener('click', toggleMobileMenuSettings);
+                document.body.appendChild(overlay);
+            }
+        }
+        
+        // Exportovat funkci globálně
+        window.toggleMobileMenu = toggleMobileMenuSettings;
+        
+        // Zajistit, že mobile menu button funguje
+        document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuBtn = document.getElementById('mobileMenuBtn') || document.querySelector('.mobile-menu-btn');
             if (mobileMenuBtn) {
-                // Odstranit všechny existující event listenery a přidat nový
-                const newBtn = mobileMenuBtn.cloneNode(true);
-                mobileMenuBtn.parentNode.replaceChild(newBtn, mobileMenuBtn);
+                // Odstranit onclick a přidat event listener
+                mobileMenuBtn.removeAttribute('onclick');
                 
-                // Přidat nový event listener s vysokou prioritou
-                newBtn.addEventListener('click', function(e) {
+                function handleMenuClick(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
-                    console.log('Mobile menu button clicked');
-                    if (typeof toggleMobileMenu === 'function') {
-                        toggleMobileMenu();
+                    if (typeof window.toggleMobileMenu === 'function') {
+                        window.toggleMobileMenu();
                     } else {
-                        console.error('toggleMobileMenu function not found');
+                        toggleMobileMenuSettings();
                     }
-                }, true); // Use capture phase
+                }
                 
-                // Také přidat touch event pro mobilní zařízení
-                newBtn.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
-                    console.log('Mobile menu button touched');
-                    if (typeof toggleMobileMenu === 'function') {
-                        toggleMobileMenu();
-                    }
-                }, true);
+                mobileMenuBtn.addEventListener('click', handleMenuClick, true);
+                mobileMenuBtn.addEventListener('touchend', handleMenuClick, true);
                 
                 // Zajistit, že tlačítko je viditelné a klikatelné
-                newBtn.style.zIndex = '99999';
-                newBtn.style.pointerEvents = 'auto';
-                newBtn.style.position = 'fixed';
-                newBtn.style.top = '8px';
-                newBtn.style.left = '8px';
+                mobileMenuBtn.style.zIndex = '99999';
+                mobileMenuBtn.style.pointerEvents = 'auto';
+                mobileMenuBtn.style.position = 'fixed';
+                mobileMenuBtn.style.top = '8px';
+                mobileMenuBtn.style.left = '8px';
+            }
+        });
+        
+        // Také zkusit po načtení všech skriptů
+        window.addEventListener('load', function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn') || document.querySelector('.mobile-menu-btn');
+            if (mobileMenuBtn && typeof window.toggleMobileMenu !== 'function') {
+                window.toggleMobileMenu = toggleMobileMenuSettings;
             }
         });
     </script>
