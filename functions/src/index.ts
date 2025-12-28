@@ -2523,58 +2523,8 @@ function generateWelcomeEmailHTML(userName: string): string {
 `;
 }
 
-/**
- * Mapování názvů polí na české popisky
- */
-const fieldLabels: Record<string, string> = {
-  email: "E-mail",
-  phone: "Telefon",
-  password: "Heslo",
-};
-
-/**
- * Pole, která se mají ignorovat při porovnání změn
- * Nyní ignorujeme všechna pole kromě email, phone a password
- */
-const ignoredFields = [
-  "updatedAt",
-  "createdAt",
-  "rating",
-  "totalReviews",
-  "ratingBreakdown",
-  "recentReviews",
-  "totalAds",
-  "activeAds",
-  "totalViews",
-  "totalContacts",
-  "balance",
-  "plan",
-  "planName",
-  "planUpdatedAt",
-  "planPeriodStart",
-  "planPeriodEnd",
-  "planDurationDays",
-  "planCancelAt",
-  "planExpiredAt",
-  "planExpiredProcessedAt",
-  "firstName",
-  "lastName",
-  "birthDate",
-  "name",
-  "city",
-  "bio",
-  "businessName",
-  "businessType",
-  "businessAddress",
-  "businessDescription",
-  "companyName",
-  "ico",
-  "dic",
-  "address",
-  "emailNotifications",
-  "smsNotifications",
-  "marketingEmails",
-];
+// Pole fieldLabels a ignoredFields již nejsou potřeba, protože funkce getChangedFields
+// nyní kontroluje pouze email, phone a password explicitně
 
 /**
  * Formátuje hodnotu pro zobrazení v emailu
@@ -2600,32 +2550,39 @@ function formatValue(value: any): string {
 
 /**
  * Porovná dva objekty a vrátí změněná pole
- * Nyní sleduje pouze: email, phone, password (detekováno přes passwordChangedAt nebo password field)
+ * Sleduje POUZE: email, phone, password
+ * Všechny ostatní změny (bio, name, city, companyName, ico, dic, address, atd.) jsou IGNOROVÁNY
  */
 function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any }> {
   const changes: Array<{ field: string; label: string; oldValue: any; newValue: any }> = [];
   
-  // Sledovat email
-  if (before.email !== after.email) {
+  // Sledovat POUZE email, telefon a heslo - všechny ostatní změny ignorujeme
+  
+  // 1. Sledovat email
+  const oldEmail = before.email || '';
+  const newEmail = after.email || '';
+  if (oldEmail !== newEmail) {
     changes.push({
       field: 'email',
       label: 'E-mail',
-      oldValue: before.email,
-      newValue: after.email,
+      oldValue: oldEmail || '—',
+      newValue: newEmail || '—',
     });
   }
   
-  // Sledovat telefon
-  if (before.phone !== after.phone) {
+  // 2. Sledovat telefon
+  const oldPhone = before.phone || '';
+  const newPhone = after.phone || '';
+  if (oldPhone !== newPhone) {
     changes.push({
       field: 'phone',
       label: 'Telefon',
-      oldValue: before.phone,
-      newValue: after.phone,
+      oldValue: oldPhone || '—',
+      newValue: newPhone || '—',
     });
   }
   
-  // Detekovat změnu hesla (pokud se změnilo passwordChangedAt nebo password field)
+  // 3. Detekovat změnu hesla (pokud se změnilo passwordChangedAt nebo password field)
   const passwordChanged = 
     (before.passwordChangedAt !== after.passwordChangedAt && after.passwordChangedAt) ||
     (before.password !== after.password && after.password === 'changed');
@@ -2639,6 +2596,8 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
     });
   }
   
+  // Vrátit pouze změny v email, phone nebo password
+  // Všechny ostatní změny (bio, name, city, companyName, ico, dic, address, atd.) jsou IGNOROVÁNY
   return changes;
 }
 
