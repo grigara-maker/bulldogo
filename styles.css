@@ -784,7 +784,7 @@
     box-sizing: border-box;
 }
 .btn-cta-primary { color: #111827; background: #ffffff; box-shadow: 0 10px 22px rgba(17, 24, 39, 0.08); }
-.btn-cta-primary i { color: #111827; }
+.btn-cta-primary i { color: #ffffff; }
 .btn-cta-secondary { color: #111827; background: #ffffff; box-shadow: 0 10px 22px rgba(17, 24, 39, 0.08); }
 .btn-cta-secondary i { color: #111827; }
 
