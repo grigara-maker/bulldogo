@@ -6945,27 +6945,41 @@ html {
 }
 
 .modal-content {
-	background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.94));
-	border-radius: 28px; /* Ještě více zaoblené rohy */
-    padding: 1.5rem;
+	background: #ffffff;
+	border-radius: 15px;
+    padding: 0;
     width: auto;
-    max-width: 400px;
+    max-width: 700px;
     min-width: 320px;
-    max-height: calc(100vh - 40px); /* Výška viewportu minus padding modalu */
-    max-height: calc(100dvh - 40px); /* Pro mobilní zařízení s safe-area */
-	border: 1px solid rgba(247,124,0,0.18);
-	box-shadow: 0 18px 48px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.6) inset, 0 12px 24px rgba(247,124,0,0.12);
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+	border: 1px solid #f0f0f0;
+	box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     animation: modalSlideIn 0.3s ease-out;
-    overflow-y: auto; /* Scroll pouze uvnitř popupu */
-    overflow-x: hidden;
+    overflow: hidden;
     margin: auto;
     box-sizing: border-box;
 	position: relative;
-    /* Zajistit, aby se modal neposouval */
     flex-shrink: 0;
-    /* Přizpůsobit výšku obsahu, ne celé obrazovce */
     height: auto;
     min-height: auto;
+}
+
+/* Speciální styl pro edit service modal - větší a ladící se stránkou */
+#editServiceModal .modal-content {
+    max-width: 700px;
+    background: #ffffff;
+    border-radius: 15px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+#editServiceModal .modal-content .service-form {
+    padding: 2rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
 }
 
 /* Rezerva nahoře kvůli „opřenému“ buldokovi */
@@ -7068,9 +7082,15 @@ html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 0;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(135deg, rgba(247, 124, 0, 0.05) 0%, rgba(253, 240, 2, 0.05) 100%);
+}
+
+#editServiceModal .modal-header {
+    background: linear-gradient(135deg, rgba(247, 124, 0, 0.08) 0%, rgba(253, 240, 2, 0.08) 100%);
+    border-bottom: 1px solid rgba(247, 124, 0, 0.1);
 }
 
 .modal-header h2 {
@@ -7085,13 +7105,26 @@ html {
     font-size: 1.8rem;
     color: #333;
     margin: 0;
+    font-weight: 700;
 }
 
 .close {
-    font-size: 2rem;
-    color: #999;
+    font-size: 1.8rem;
+    color: #6b7280;
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.close:hover {
+    color: #f77c00;
+    background: rgba(247, 124, 0, 0.1);
+}
 }
 
 .close:hover {
@@ -7101,11 +7134,15 @@ html {
 .auth-form, .service-form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1.25rem;
 }
 
 .auth-form .form-group,
 .service-form .form-group {
+    margin-bottom: 0;
+}
+
+#editServiceModal .service-form .form-group {
     margin-bottom: 0;
 }
 
@@ -7177,11 +7214,19 @@ html {
 .service-form textarea {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
-    background-color: #ffffff; /* Bílé pozadí jako na obrázku */
+    transition: all 0.3s ease;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+#editServiceModal .service-form input,
+#editServiceModal .service-form select,
+#editServiceModal .service-form textarea {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 }
 
 .auth-form input:focus,
@@ -7190,8 +7235,15 @@ html {
 .service-form textarea:focus {
     outline: none;
     border-color: #f77c00;
-	box-shadow: 0 0 0 3px rgba(247,124,0,0.15);
+	box-shadow: 0 0 0 3px rgba(247,124,0,0.1);
     background-color: white;
+}
+
+#editServiceModal .service-form input:focus,
+#editServiceModal .service-form select:focus,
+#editServiceModal .service-form textarea:focus {
+    border-color: #f77c00;
+    box-shadow: 0 0 0 3px rgba(247,124,0,0.1);
 }
 
 .auth-switch {
@@ -7360,12 +7412,53 @@ html {
     min-height: 100px;
 }
 
+/* Tlačítko v edit service modalu */
+#editServiceModal .service-form .btn-primary {
+    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(247, 124, 0, 0.25);
+    width: 100%;
+    margin-top: 1rem;
+}
+
+#editServiceModal .service-form .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(247, 124, 0, 0.35);
+}
+
+#editServiceModal .service-form .btn-primary:active {
+    transform: translateY(0);
+}
+
 /* Responsive Modal */
 @media (max-width: 768px) {
     .modal-content {
         width: 95%;
-        padding: 1.5rem;
+        padding: 0;
         margin: 1rem;
+    }
+    
+    #editServiceModal .modal-content {
+        width: 95%;
+        padding: 0;
+        margin: 1rem;
+    }
+    
+    #editServiceModal .modal-content .service-form {
+        padding: 1.5rem;
+        overflow-y: auto;
+        max-height: calc(90vh - 80px);
+    }
+    
+    #editServiceModal .modal-header {
+        padding: 1.25rem 1.5rem;
     }
     
     .modal-title {
@@ -7426,6 +7519,23 @@ html {
     .service-form textarea {
         padding: 10px 12px;
         font-size: 0.9rem;
+    }
+    
+    #editServiceModal .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 1rem auto;
+        padding: 0;
+    }
+    
+    #editServiceModal .modal-content .service-form {
+        padding: 1.25rem;
+        overflow-y: auto;
+        max-height: calc(90vh - 80px);
+    }
+    
+    #editServiceModal .modal-header {
+        padding: 1rem 1.25rem;
     }
 }
 
@@ -13582,15 +13692,35 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         width: 95%;
         max-width: 95%;
         margin: 1rem auto;
-        padding: 1.5rem;
+        padding: 0;
         max-height: 90vh;
+        overflow: hidden;
+    }
+    
+    #editServiceModal .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 1rem auto;
+        padding: 0;
+    }
+    
+    #editServiceModal .modal-content .service-form {
+        padding: 1.25rem;
         overflow-y: auto;
+        max-height: calc(90vh - 80px);
+    }
+    
+    #editServiceModal .modal-header {
+        padding: 1rem 1.25rem;
+        flex-direction: row;
+        gap: 0;
+        align-items: center;
     }
     
     .modal-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
+        flex-direction: row;
+        gap: 0;
+        align-items: center;
     }
     
     .modal-close {
