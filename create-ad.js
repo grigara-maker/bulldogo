@@ -97,69 +97,28 @@
                                 
                                 // Vytvořit overlay s upozorněním
                                 const overlay = document.createElement('div');
-                                overlay.style.cssText = `
-                                    position: fixed !important;
-                                    top: 0 !important;
-                                    left: 0 !important;
-                                    right: 0 !important;
-                                    bottom: 0 !important;
-                                    width: 100vw !important;
-                                    height: 100vh !important;
-                                    background: rgba(0, 0, 0, 0.7) !important;
-                                    backdrop-filter: blur(4px) !important;
-                                    display: flex !important;
-                                    align-items: center !important;
-                                    justify-content: center !important;
-                                    z-index: 10000 !important;
-                                    padding: 20px !important;
-                                    box-sizing: border-box !important;
-                                `;
+                                overlay.id = 'packageRequiredOverlay';
+                                overlay.className = 'modal';
+                                overlay.style.display = 'flex';
                                 overlay.innerHTML = `
-                                    <div class="modal-content" style="
-                                        background: #ffffff;
-                                        padding: 2.5rem;
-                                        border-radius: 15px;
-                                        max-width: 500px;
-                                        width: 100%;
-                                        text-align: center;
-                                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-                                        border: 1px solid #f0f0f0;
-                                        position: relative;
-                                        margin: auto;
-                                    ">
-                                        <div style="width:80px;height:80px;background:linear-gradient(135deg,#f77c00 0%,#fdf002 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-                                            <i class="fas fa-crown" style="font-size:2.5rem;color:#fff;"></i>
+                                    <div class="modal-content" style="max-width: 500px; width: 100%; text-align: center;">
+                                        <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+                                            <h2 class="modal-title" style="margin: 0 auto;">Vyžadováno předplatné</h2>
                                         </div>
-                                        <h2 style="
-                                            margin:0 0 1rem;
-                                            background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-                                            -webkit-background-clip: text;
-                                            -webkit-text-fill-color: transparent;
-                                            background-clip: text;
-                                            font-size:1.5rem;
-                                            font-weight: 800;
-                                        ">Vyžadováno předplatné</h2>
-                                        <p style="color:#666;margin-bottom:1.5rem;line-height:1.6;font-size:1rem;">${message}</p>
-                                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
-                                            <a href="packages.html" class="btn btn-primary" style="
-                                                display: inline-block;
-                                                background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-                                                color: #111827;
-                                                padding: 14px 32px;
-                                                border-radius: 10px;
-                                                text-decoration: none;
-                                                font-weight: 600;
-                                                font-size: 1.1rem;
-                                                transition: transform 0.2s;
-                                                border: none;
-                                                cursor: pointer;
-                                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(247,124,0,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
-                                                <i class="fas fa-box"></i> Zobrazit balíčky
-                                            </a>
+                                        <div class="modal-body">
+                                            <div style="width:80px;height:80px;background:linear-gradient(135deg,#f77c00 0%,#fdf002 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+                                                <i class="fas fa-crown" style="font-size:2.5rem;color:#fff;"></i>
+                                            </div>
+                                            <p style="color:#666;margin-bottom:1.5rem;line-height:1.6;font-size:1rem;">${message}</p>
+                                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                                                <a href="packages.html" class="btn btn-primary">
+                                                    <i class="fas fa-box"></i> Zobrazit balíčky
+                                                </a>
+                                            </div>
+                                            <p style="margin-top:1.5rem;font-size:0.85rem;color:#999;">
+                                                Budete přesměrováni za 5 sekund...
+                                            </p>
                                         </div>
-                                        <p style="margin-top:1.5rem;font-size:0.85rem;color:#999;">
-                                            Budete přesměrováni za 5 sekund...
-                                        </p>
                                     </div>
                                 `;
                                 document.body.appendChild(overlay);

@@ -7074,6 +7074,13 @@ html {
     overflow: hidden; /* Zakázat scroll celé stránky */
     padding: 20px;
     box-sizing: border-box;
+    margin: 0;
+}
+
+/* Speciální overlay pro balíček - tmavší pozadí */
+#packageRequiredOverlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(4px) !important;
 }
 
 /* Když je modal zobrazený, použít flexbox pro vycentrování */
