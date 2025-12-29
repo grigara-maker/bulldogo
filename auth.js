@@ -1790,6 +1790,19 @@ async function addService(serviceData) {
             return false; // DŮLEŽITÉ: vrátit false pro zastavení
         }
 
+        // Kontrola zakázaných slov
+        if (window.ProfanityFilter) {
+            const profanityCheck = window.ProfanityFilter.checkMultiple({
+                title: serviceData.title || '',
+                description: serviceData.description || ''
+            });
+            
+            if (!profanityCheck.isClean) {
+                showMessage('⚠️ Váš text obsahuje nevhodný obsah. Prosím upravte název nebo popis inzerátu.', 'error');
+                return false;
+            }
+        }
+
         // Zkontrolovat, zda uživatel existuje, pokud ne, vytvořit ho
         const userRef = doc(db, 'users', authCurrentUser.uid);
         const userSnap = await getDoc(userRef);

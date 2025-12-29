@@ -679,6 +679,16 @@ function igHandleSend() {
 	const input = igQ('igText');
 	const text = (input?.value || '').trim();
 	if (!text && igSelectedFiles.length === 0) return;
+	
+	// Kontrola zakázaných slov
+	if (text && window.ProfanityFilter) {
+		const profanityCheck = window.ProfanityFilter.check(text);
+		if (!profanityCheck.isClean) {
+			igNotify('Vaše zpráva obsahuje nevhodný obsah. Prosím upravte text.', 'error');
+			return;
+		}
+	}
+	
 	igSendMessageToFirestore(igSelectedConvId, text, igSelectedFiles).catch(e=>console.warn(e));
 	if (input) input.value = '';
 	igSelectedFiles = [];

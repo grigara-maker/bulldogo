@@ -533,6 +533,17 @@
                 const lastName = lastNameEl ? lastNameEl.value : '';
                 
                 const phoneRaw = phoneEl ? phoneEl.value.trim() : '';
+                const bioText = bioEl ? bioEl.value : '';
+                
+                // Kontrola zakázaných slov
+                if (window.ProfanityFilter && bioText) {
+                    const profanityCheck = window.ProfanityFilter.check(bioText);
+                    if (!profanityCheck.isClean) {
+                        showMessage('⚠️ Váš popis obsahuje nevhodný obsah. Prosím upravte text.', 'error');
+                        return;
+                    }
+                }
+                
                 const personalData = {
                     firstName: firstName,
                     lastName: lastName,
@@ -540,7 +551,7 @@
                     email: emailEl ? emailEl.value : '',
                     phone: phoneRaw === '+420' ? '' : phoneRaw,
                     city: cityEl ? cityEl.value : '',
-                    bio: bioEl ? bioEl.value : '',
+                    bio: bioText,
                     updatedAt: new Date()
                 };
 
@@ -613,13 +624,27 @@
                     }
                 }
 
+                const businessDescriptionText = businessDescriptionEl ? businessDescriptionEl.value : '';
+                
+                // Kontrola zakázaných slov
+                if (window.ProfanityFilter && businessDescriptionText) {
+                    const profanityCheck = window.ProfanityFilter.checkMultiple({
+                        businessName: businessNameEl ? businessNameEl.value : '',
+                        businessDescription: businessDescriptionText
+                    });
+                    if (!profanityCheck.isClean) {
+                        showMessage('⚠️ Váš text obsahuje nevhodný obsah. Prosím upravte název nebo popis firmy.', 'error');
+                        return;
+                    }
+                }
+                
                 const businessData = {
                     businessName: businessNameEl ? businessNameEl.value : '',
                     businessType: businessTypeEl ? businessTypeEl.value : '',
                     businessIco: normalizedIco || '',
                     businessDic: businessDicEl ? businessDicEl.value : '',
                     businessAddress: businessAddressEl ? businessAddressEl.value : '',
-                    businessDescription: businessDescriptionEl ? businessDescriptionEl.value : '',
+                    businessDescription: businessDescriptionText,
                     updatedAt: new Date()
                 };
 
@@ -2014,6 +2039,7 @@ Prosím kontaktujte podporu.
         }
     </script>
     <!-- Načtení skriptů pro správné zobrazení navbaru -->
+    <script src="profanity-filter.js"></script>
     <script src="script.js" defer></script>
     <script src="auth.js" defer></script>
     <script>
