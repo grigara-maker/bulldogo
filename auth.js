@@ -1798,7 +1798,10 @@ async function addService(serviceData) {
             });
             
             if (!profanityCheck.isClean) {
-                showMessage('⚠️ Váš text obsahuje nevhodný obsah. Prosím upravte název nebo popis inzerátu.', 'error');
+                const bannedWords = profanityCheck.bannedWords.join(', ');
+                console.warn('🚫 Blokováno zakázanými slovy:', bannedWords);
+                console.warn('🚫 Detaily:', profanityCheck.fields);
+                showMessage(`⚠️ Váš text obsahuje nevhodný obsah: "${bannedWords}". Prosím upravte název nebo popis inzerátu.`, 'error');
                 return false;
             }
         }

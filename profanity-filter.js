@@ -115,17 +115,50 @@
     }
 
     /**
+     * Escapuje string pro použití v regex patternu
+     */
+    function escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    /**
      * Vytvoří regex pattern pro slovo s podporou mezer a teček mezi písmeny
+     * Omezuje mezery mezi písmeny - max 1-2 mezery/tečky mezi písmeny
      */
     function createFlexiblePattern(word) {
-        // Escapovat speciální regex znaky
-        const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (!word || word.length === 0) return null;
         
-        // Vytvořit pattern, který umožňuje mezery, tečky, pomlčky mezi písmeny
-        // Např. "k u r v a" nebo "k.u.r.v.a" nebo "k-u-r-v-a"
-        const flexiblePattern = escaped.split('').join('[\\s\\.\\-]*');
+        // Escapovat celé slovo
+        const escaped = escapeRegex(word);
         
-        return new RegExp(flexiblePattern, 'i');
+        // Pro krátká slova použít jednoduchý pattern s word boundaries
+        if (word.length <= 3) {
+            try {
+                return new RegExp('\\b' + escaped + '\\b', 'i');
+            } catch (e) {
+                console.warn('Chyba při vytváření regex pro:', word, e);
+                return null;
+            }
+        }
+        
+        // Pro delší slova vytvořit pattern s možnými mezerami mezi písmeny
+        // Escapovat každé písmeno zvlášť
+        const escapedChars = word.split('').map(char => escapeRegex(char));
+        const flexiblePattern = escapedChars.join('[\\s\\.\\-]{0,2}');
+        
+        // Vytvořit pattern s word boundaries
+        try {
+            return new RegExp('(?:^|\\s)' + flexiblePattern + '(?:\\s|$)', 'i');
+        } catch (e) {
+            console.warn('Chyba při vytváření flexibilního regex pro:', word, e);
+            // Fallback na jednoduchý pattern
+            try {
+                return new RegExp('\\b' + escaped + '\\b', 'i');
+            } catch (e2) {
+                console.warn('Chyba i v fallback patternu pro:', word, e2);
+                return null;
+            }
+        }
     }
 
     /**
@@ -140,27 +173,58 @@
         for (const bannedWord of BANNED_WORDS) {
             const normalizedBanned = normalizeText(bannedWord);
             
-            // Přímá kontrola
-            if (normalized.includes(normalizedBanned)) {
-                return { found: true, word: bannedWord };
+            // Přímá kontrola - hledat jako celé slovo (s word boundaries)
+            try {
+                const escapedBanned = escapeRegex(normalizedBanned);
+                const directPattern = new RegExp('\\b' + escapedBanned + '\\b', 'i');
+                if (directPattern.test(normalized)) {
+                    return { found: true, word: bannedWord };
+                }
+            } catch (e) {
+                console.warn('Chyba při vytváření přímého patternu pro:', bannedWord, e);
             }
             
-            // Kontrola s flexibilním patternem (mezery, tečky)
-            const flexiblePattern = createFlexiblePattern(normalizedBanned);
-            if (flexiblePattern.test(normalized)) {
-                return { found: true, word: bannedWord };
+            // Kontrola s flexibilním patternem (mezery, tečky) - pouze pro delší slova
+            if (normalizedBanned.length > 3) {
+                const flexiblePattern = createFlexiblePattern(normalizedBanned);
+                if (flexiblePattern) {
+                    try {
+                        if (flexiblePattern.test(normalized)) {
+                            return { found: true, word: bannedWord };
+                        }
+                    } catch (e) {
+                        console.warn('Chyba při testování flexibilního patternu pro:', bannedWord, e);
+                    }
+                }
             }
             
             // Kontrola leetspeak variant
             const leetVariants = generateLeetVariants(normalizedBanned);
             for (const variant of leetVariants) {
-                if (normalized.includes(variant)) {
-                    return { found: true, word: bannedWord };
+                // Přímá kontrola varianty
+                try {
+                    const escapedVariant = escapeRegex(variant);
+                    const variantDirectPattern = new RegExp('\\b' + escapedVariant + '\\b', 'i');
+                    if (variantDirectPattern.test(normalized)) {
+                        return { found: true, word: bannedWord };
+                    }
+                } catch (e) {
+                    console.warn('Chyba při testování varianty:', variant, e);
+                    continue;
                 }
                 
-                const variantPattern = createFlexiblePattern(variant);
-                if (variantPattern.test(normalized)) {
-                    return { found: true, word: bannedWord };
+                // Flexibilní pattern pouze pro delší varianty
+                if (variant.length > 3) {
+                    const variantPattern = createFlexiblePattern(variant);
+                    if (variantPattern) {
+                        try {
+                            if (variantPattern.test(normalized)) {
+                                return { found: true, word: bannedWord };
+                            }
+                        } catch (e) {
+                            console.warn('Chyba při testování flexibilního patternu varianty:', variant, e);
+                        }
+                    }
                 }
             }
         }
@@ -185,7 +249,7 @@
             return {
                 isClean: false,
                 bannedWords: [result.word],
-                message: `Text obsahuje nevhodný obsah.`
+                message: `Text obsahuje nevhodný obsah: "${result.word}"`
             };
         }
         
