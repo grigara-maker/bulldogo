@@ -1,836 +1,688 @@
-// Instagram-like chat: pouze frontend (UI), připraveno na API integraci
-// - Levý panel: konverzace
-// - Pravý panel: aktivní chat (bubliny, avatar, timestamp)
-// - Posílání textu + až 5 obrázků (náhledy)
-// - Psaní jen pro přihlášené (gating přes Firebase auth)
+// ============================================
+// NOVÝ CHAT SYSTÉM - BULLDOGO
+// ============================================
+// Struktura Firestore:
+// - conversations/{conversationId}
+//   - participants: [uid1, uid2]
+//   - listingId: string
+//   - listingTitle: string
+//   - lastMessage: string
+//   - lastMessageAt: timestamp
+//   - createdAt: timestamp
+// - conversations/{conversationId}/messages/{messageId}
+//   - senderId: string
+//   - text: string
+//   - createdAt: timestamp
 
-console.log('💬 IG Chat: init');
+console.log('💬 Nový chat systém: inicializace');
 
-/** Stav **/
-let igCurrentUser = null;                 // přihlášený uživatel
-let igConversations = [];                 // seznam konverzací (z Firestore)
-let igMessagesByConvId = {};              // zprávy podle ID konverzace (cache)
-let igSelectedConvId = null;              // aktivní konverzace
-let igSelectedFiles = [];                 // vybrané obrázky pro aktuální zprávu
-let igUnsubConvs = null;                  // odpojení listeneru konverzací
-let igUnsubMsgs = null;                   // odpojení listeneru zpráv
-let igPeerPhone = '';                     // telefon protistrany (pro tel:)
+// ============================================
+// STAV
+// ============================================
+let currentUser = null;
+let conversations = [];
+let currentConversationId = null;
+let messages = [];
+let conversationsUnsubscribe = null;
+let messagesUnsubscribe = null;
 
-/** Pomocné **/
-function igFormatTime(date) {
-	const d = date instanceof Date ? date : new Date(date);
-	return d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
-}
-function igParams() { return new URLSearchParams(window.location.search); }
-function igNotify(message, type = 'info') {
-	try {
-		if (typeof window.showMessage === 'function') {
-			window.showMessage(message, type);
-		} else {
-			console.warn(`[chat notify:${type}]`, message);
-		}
-	} catch (_) {}
-}
-function igExplainFirestoreBlock(err) {
-	const msg = (err && (err.message || err.toString())) ? String(err.message || err.toString()) : '';
-	const code = err?.code ? String(err.code) : '';
-	// Safari často hlásí "due to access control checks" (CORS) u Firestore Listen.
-	const looksLikeCors =
-		/access control checks/i.test(msg) ||
-		/cors/i.test(msg) ||
-		/failed to fetch/i.test(msg) ||
-		/Load failed/i.test(msg) ||
-		/XMLHttpRequest cannot load/i.test(msg);
-	if (looksLikeCors) {
-		igNotify('Firestore je blokovaný (CORS) na této doméně. Pokud testujete na Vercel, je potřeba povolit doménu/API key (nebo použít Firebase Hosting).', 'error');
-		return;
-	}
-	if (code === 'permission-denied') {
-		igNotify('Chybí oprávnění Firestore (permission-denied). Zkontrolujte publikované Firestore Rules ve Firebase Console.', 'error');
-		return;
-	}
-	if (code) {
-		igNotify(`Chat: chyba Firestore (${code}). Otevřete konzoli pro detail.`, 'error');
-	}
-}
-async function igWaitForFirebase(maxMs = 3000) {
-	const start = Date.now();
-	while (Date.now() - start < maxMs) {
-		if (window.firebaseAuth && window.firebaseDb) return true;
-		await new Promise(r => setTimeout(r, 50));
-	}
-	return !!(window.firebaseAuth && window.firebaseDb);
-}
-async function igResolveSellerUidByListingId(listingId) {
-	try {
-		if (!listingId) return null;
-		await igWaitForFirebase(3000);
-		if (!window.firebaseDb) return null;
-		const { collectionGroup, query, where, getDocs, documentId, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-		const ref = collectionGroup(window.firebaseDb, 'inzeraty');
-		const q = query(ref, where(documentId(), '==', listingId), limit(1));
-		const snap = await getDocs(q);
-		if (snap.empty) return null;
-		const docSnap = snap.docs[0];
-		const uid = docSnap.ref?.parent?.parent?.id || null;
-		return uid;
-	} catch (e) {
-		console.warn('igResolveSellerUidByListingId failed', e);
-		return null;
-	}
+// ============================================
+// POMOCNÉ FUNKCE
+// ============================================
+function q(id) {
+    return document.getElementById(id);
 }
 
-/** Inicializace po načtení DOM + auth watcher **/
-document.addEventListener('DOMContentLoaded', async () => {
-	// Firebase auth (pokud je k dispozici)
-	try {
-		await igWaitForFirebase(3000);
-		if (window.firebaseAuth) {
-        const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+function formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDate(timestamp) {
+    if (!timestamp) return '';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+        return 'Dnes';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+        return 'Včera';
+    } else {
+        return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' });
+    }
+}
+
+function showError(message) {
+    if (typeof window.showMessage === 'function') {
+        window.showMessage(message, 'error');
+    } else {
+        alert(message);
+    }
+}
+
+function showSuccess(message) {
+    if (typeof window.showMessage === 'function') {
+        window.showMessage(message, 'success');
+    } else {
+        console.log('✅', message);
+    }
+}
+
+// ============================================
+// KONTROLA PŘIHLÁŠENÍ
+// ============================================
+async function checkAuth() {
+    if (!window.firebaseAuth) {
+        console.warn('⚠️ Firebase Auth není inicializován');
+        return false;
+    }
+    
+    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    
+    return new Promise((resolve) => {
         onAuthStateChanged(window.firebaseAuth, (user) => {
-				igCurrentUser = user || null;
-				igUpdateGating();
-				if (igCurrentUser) {
-					igStartConversationsListener(igCurrentUser.uid);
-					// Po přihlášení zkusit zpracovat deep link znovu (pokud je v URL)
-					igHandleDeepLink();
-				} else {
-					if (igUnsubConvs) { igUnsubConvs(); igUnsubConvs = null; }
-					if (igUnsubMsgs) { igUnsubMsgs(); igUnsubMsgs = null; }
-					igConversations = [];
-					igRenderConversations();
-					igRenderRightAds(); // Reset pravého panelu
-					const box = igQ('igMessages'); if (box) box.innerHTML = '<div class="ig-empty">Vyberte konverzaci vlevo nebo začněte novou.</div>';
-				}
-			});
-		}
-	} catch (_) {}
-
-	igInitUI();
-	igHandleDeepLink();
-	igRenderConversations();
-	igRenderRightAds(); // Načte se až při výběru konverzace
-	igUpdateGating();
-});
-
-/** UI prvky **/
-function igQ(id) { return document.getElementById(id); }
-
-function igInitUI() {
-	const backBtn = igQ('igBackBtn');
-	if (backBtn) backBtn.addEventListener('click', () => {
-		window.history.back?.();
-	});
-	const openProfile = igQ('igOpenProfile');
-	if (openProfile) openProfile.addEventListener('click', () => {
-		igOpenPeerProfile();
-	});
-	const peerHeader = igQ('igPeerHeader');
-	if (peerHeader) {
-		peerHeader.addEventListener('click', () => igOpenPeerProfile());
-		peerHeader.addEventListener('keydown', (e) => {
-			if (e.key === 'Enter' || e.key === ' ') {
-				e.preventDefault();
-				igOpenPeerProfile();
-			}
-		});
-	}
-	const callBtn = igQ('igCallPhone');
-	if (callBtn) {
-		callBtn.addEventListener('click', () => {
-			if (!igPeerPhone) return;
-			const normalized = String(igPeerPhone).replace(/[^\d+]/g, '');
-			if (!normalized) return;
-			window.location.href = `tel:${normalized}`;
-		});
-	}
-
-	const input = igQ('igText');
-	const send = igQ('igSend');
-	const files = igQ('igFiles');
-	if (input) {
-		input.addEventListener('keydown', (e) => {
-			if (e.key === 'Enter') {
-				e.preventDefault();
-				igHandleSend();
-			}
-		});
-	}
-	if (send) {
-		send.addEventListener('click', (e) => { e.preventDefault(); igHandleSend(); });
-	}
-	if (files) {
-		files.addEventListener('change', () => {
-			const selected = Array.from(files.files || []);
-			igSelectedFiles = selected.slice(0, 5);
-			igRenderFilePreview();
-		});
-	}
-	const search = igQ('igSearch');
-	if (search) search.addEventListener('input', igFilterConversations);
-}
-
-/** Realtime konverzace aktuálního uživatele z Firestore **/
-async function igStartConversationsListener(uid) {
-	try {
-		if (!window.firebaseDb) {
-			console.warn('⚠️ Firestore není inicializován');
-			return;
-		}
-		if (!uid) {
-			console.warn('⚠️ UID není k dispozici');
-			return;
-		}
-		const { collection, query, where, onSnapshot, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-		const chatsRef = collection(window.firebaseDb, 'chats');
-		const q = query(chatsRef, where('participants', 'array-contains', uid));
-		if (igUnsubConvs) { igUnsubConvs(); igUnsubConvs = null; }
-		console.log('🔍 Spouštím listener konverzací pro UID:', uid);
-		igUnsubConvs = onSnapshot(q, async (snap) => {
-			console.log('📨 Konverzace aktualizovány:', snap.docs.length);
-			// Nejdříve vytvoř základní seznam konverzací
-			const conversations = snap.docs.map(d => {
-				const data = d.data() || {};
-				const otherId = (data.participants || []).find(p => p !== uid) || '';
-				return {
-					id: d.id,
-					title: data.peerName || 'Načítám...',
-					last: data.lastMessage || '',
-					time: data.lastAt?.toDate?.() || new Date(0),
-					avatar: data.peerAvatar || '',
-					peerId: otherId,
-					participants: data.participants || []
-				};
-			}).sort((a,b) => (b.time?.getTime?.()||0) - (a.time?.getTime?.()||0));
-			
-			// Zobrazit ihned se základními daty
-			igConversations = conversations;
-			igRenderConversations();
-			
-            // Načíst jména (a avatar) uživatelů asynchronně
-			for (let conv of conversations) {
-				if (conv.peerId) {
-					try {
-						// Zkusit načíst z profilu
-						const profileRef = doc(window.firebaseDb, 'users', conv.peerId, 'profile', 'profile');
-						const profileSnap = await getDoc(profileRef);
-						let userName = null;
-                        let avatarUrl = null;
-						
-						if (profileSnap.exists()) {
-							const profileData = profileSnap.data();
-							userName = profileData.name || profileData.email;
-                            avatarUrl = profileData.photoURL || profileData.avatarUrl || '';
-						} else {
-							// Fallback - zkusit users dokument
-							const userRef = doc(window.firebaseDb, 'users', conv.peerId);
-							const userSnap = await getDoc(userRef);
-							if (userSnap.exists()) {
-								userName = userSnap.data().email;
-							}
-						}
-						
-						if (userName) {
-							// Aktualizovat název konverzace
-							const convIndex = igConversations.findIndex(c => c.id === conv.id);
-							if (convIndex !== -1) {
-								igConversations[convIndex].title = userName;
-                                if (avatarUrl) igConversations[convIndex].avatar = avatarUrl;
-								igRenderConversations();
-							}
-						}
-					} catch (e) {
-						console.warn(`⚠️ Nepodařilo se načíst jméno pro ${conv.peerId}:`, e);
-					}
-				}
-			}
-		}, (err) => {
-			console.error('❌ Chats listener error:', err);
-			console.error('❌ Error code:', err?.code);
-			console.error('❌ Error message:', err?.message);
-			
-			// Pokud chybí index, zobrazit uživatelsky přívětivou zprávu
-			if (err?.code === 'failed-precondition' || err?.message?.includes('index')) {
-				igNotify('Pro chat je potřeba vytvořit Firestore index. Zkontrolujte konzoli pro odkaz.', 'error');
-				console.error('📋 Vytvořte index v Firebase Console:');
-				console.error('   Collection: chats');
-				console.error('   Fields: participants (Array), lastAt (Timestamp)');
-			}
-			
-			igExplainFirestoreBlock(err);
-		});
-	} catch (e) {
-		console.warn('igStartConversationsListener failed', e);
-		igExplainFirestoreBlock(e);
-	}
-}
-
-/** Deep link: ?userId=...&listingId=...&listingTitle=... **/
-async function igHandleDeepLink() {
-	const p = igParams();
-	let userId = p.get('userId');
-	const listingTitle = p.get('listingTitle');
-	const listingId = p.get('listingId');
-
-	// Pokud chybí userId, ale máme listingId, zkusit dohledat UID majitele podle ID inzerátu
-	if (!userId && listingId) {
-		const resolvedUid = await igResolveSellerUidByListingId(listingId);
-		if (resolvedUid) {
-			userId = resolvedUid;
-			try {
-				p.set('userId', resolvedUid);
-				const newUrl = `${window.location.pathname}?${p.toString()}`;
-				window.history.replaceState({}, '', newUrl);
-			} catch (_) {}
-		} else {
-			// Neumíme dohledat uživatele → necháme jen připnutý předmět, ale upozorníme
-			igNotify('Nepodařilo se zjistit majitele inzerátu pro chat. Otevřete chat z detailu inzerátu znovu.', 'error');
-		}
-	}
-
-	// Zajistit/otevřít konverzaci s daným uživatelem (pokud je přihlášeno)
-	if (userId && igCurrentUser) {
-		igEnsureChatWith(userId, listingId, listingTitle).then((chatId) => {
-			if (chatId) {
-				igSelectedConvId = chatId;
-				// Předat userId pro načtení inzerátů (pro případ, že konverzace ještě není v seznamu)
-				igOpenConversation(chatId, userId);
-			} else {
-				igNotify('Chat se nepodařilo otevřít (chybí oprávnění nebo problém s databází).', 'error');
-			}
-		}).catch(()=>{});
-	}
-	// Zobrazit předmět (ad title) nad zprávami
-	if (listingTitle) {
-		const subject = igQ('igSubject');
-		const subjectText = igQ('igSubjectText');
-		if (subject && subjectText) {
-			// Pokud máme ID inzerátu, udělat z předmětu odkaz na detail inzerátu
-			if (listingId) {
-				const a = document.createElement('a');
-				a.href = `ad-detail.html?id=${encodeURIComponent(listingId)}&userId=${encodeURIComponent(userId || '')}`;
-				a.textContent = listingTitle;
-				a.target = '_blank';
-				a.rel = 'noopener';
-				subjectText.innerHTML = '';
-				subjectText.appendChild(a);
-			} else {
-				subjectText.textContent = listingTitle;
-			}
-			subject.style.display = 'inline-flex';
-		}
-		// Předvyplnit placeholder i samotný text zprávy
-		const input = igQ('igText');
-		if (input) {
-			if (!input.placeholder) input.placeholder = 'K inzerátu: ' + listingTitle;
-			if (!input.value) input.value = 'K inzerátu: ' + listingTitle + ' – ';
-		}
-	}
-}
-
-// Zajistit existenci chat dokumentu mezi aktuálním uživatelem a protistranou
-async function igEnsureChatWith(peerUid, listingId, listingTitle) {
-	try {
-		if (!igCurrentUser || !window.firebaseDb) {
-			console.warn('⚠️ igEnsureChatWith: Chybí currentUser nebo firebaseDb');
-			return null;
-		}
-		if (!peerUid) {
-			console.warn('⚠️ igEnsureChatWith: Chybí peerUid');
-			return null;
-		}
-		
-		const a = igCurrentUser.uid;
-		const b = peerUid;
-		
-		// Pokud se pokouší vytvořit chat se sebou samým, vrátit null
-		if (a === b) {
-			console.warn('⚠️ Nelze vytvořit chat se sebou samým');
-			return null;
-		}
-		
-		const chatId = [a, b].sort().join('_');
-		const { doc, getDoc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-		const ref = doc(window.firebaseDb, 'chats', chatId);
-		const snap = await getDoc(ref);
-		
-		if (!snap.exists()) {
-			console.log('📝 Vytvářím nový chat:', chatId);
-			console.log('📝 Participants:', [a, b]);
-			console.log('📝 Current user UID:', igCurrentUser.uid);
-			const chatData = {
-				participants: [a, b],
-				lastMessage: '',
-				lastAt: serverTimestamp(),
-				createdAt: serverTimestamp(),
-				listingId: listingId || null,
-				listingTitle: listingTitle || null
-			};
-			console.log('📝 Chat data:', chatData);
-			await setDoc(ref, chatData);
-			console.log('✅ Chat vytvořen:', chatId);
-		} else {
-			console.log('✅ Chat již existuje:', chatId);
-			const existingData = snap.data();
-			console.log('📋 Existující participants:', existingData?.participants);
-		}
-		return chatId;
-	} catch (e) {
-		console.error('❌ igEnsureChatWith failed:', e);
-		console.error('❌ Error code:', e?.code);
-		console.error('❌ Error message:', e?.message);
-		igExplainFirestoreBlock(e);
-		return null;
-	}
-}
-
-/** Pravý panel – 3 nejnovější inzeráty daného uživatele **/
-async function igRenderRightAds(peerUserId = null) {
-	const el = igQ('igRightAds');
-	if (!el) return;
-	
-	console.log('📋 igRenderRightAds volána s peerUserId:', peerUserId);
-	
-	// Pokud není zadán peerUserId, zobrazit prázdný stav
-	if (!peerUserId) {
-		console.warn('⚠️ peerUserId je null, zobrazuji prázdný stav');
-		el.innerHTML = '<div style="padding:12px; color:#6b7280;">Vyberte konverzaci pro zobrazení inzerátů</div>';
-		return;
-	}
-	
-	try {
-		// Počkat na inicializaci Firebasu (až 3s)
-		let tries = 0;
-		while (!window.firebaseDb && tries < 30) {
-			await new Promise(r => setTimeout(r, 100));
-			tries++;
-		}
-		if (!window.firebaseDb) throw new Error('Firestore není inicializován');
-		
-		// Načíst inzeráty konkrétního uživatele
-		const { collection, getDocs, query, orderBy, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-		const inzeraty = collection(window.firebaseDb, 'users', peerUserId, 'inzeraty');
-		const q = query(inzeraty, orderBy('createdAt', 'desc'), limit(3));
-		const snap = await getDocs(q);
-		if (snap.empty) {
-			el.innerHTML = '<div style="padding:12px; color:#6b7280;">Zatím žádné inzeráty</div>';
-			return;
-		}
-        const items = [];
-        snap.forEach(doc => {
-			const d = doc.data() || {};
-			const userRef = doc.ref.parent?.parent;
-			const userId = userRef?.id || '';
-			const title = d.title || 'Bez názvu';
-			const location = d.location || 'Neuvedeno';
-			const category = d.category || '';
-			const price = d.price || '';
-			
-			// TOP badge s oranžovo-žlutým gradientem (barvy webu)
-			const topBadge = d.isTop ? `
-				<span style="
-					background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-					color: #111827;
-					padding: 2px 8px;
-					border-radius: 12px;
-					font-size: 11px;
-					font-weight: 700;
-					text-transform: uppercase;
-					letter-spacing: 0.5px;
-					display: inline-flex;
-					align-items: center;
-					gap: 4px;
-					box-shadow: 0 2px 8px rgba(247, 124, 0, 0.3);
-				">
-					<i class="fas fa-fire" style="font-size: 10px; color: #f77c00;"></i>
-					TOP
-				</span>
-			` : '';
-			
-            // Moderní karta s hover efektem
-            items.push(`
-                <div style="
-					background: white;
-					border-radius: 12px;
-					padding: 14px;
-					margin-bottom: 12px;
-					cursor: pointer;
-					transition: all 0.2s ease;
-					border: 1px solid #e5e7eb;
-					box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-				" 
-				onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(247,124,0,0.25)'; this.style.borderColor='#f77c00';"
-				onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)'; this.style.borderColor='#e5e7eb';"
-				onclick="window.location.href='ad-detail.html?id=${encodeURIComponent(doc.id)}&userId=${encodeURIComponent(userId)}'">
-					
-					<!-- Hlavička s názvem a TOP badge -->
-					<div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px;">
-						<h4 style="
-							font-size: 15px;
-							font-weight: 600;
-							color: #111827;
-							line-height: 1.4;
-							flex: 1;
-							margin: 0;
-						">${title}</h4>
-						${topBadge}
-					</div>
-					
-					<!-- Lokace a kategorie -->
-					<div style="
-						display: flex;
-						align-items: center;
-						gap: 8px;
-						font-size: 13px;
-						color: #6b7280;
-						margin-bottom: 8px;
-					">
-						<i class="fas fa-map-marker-alt" style="color:#f77c00; font-size:11px;"></i>
-						<span>${location}</span>
-						${category ? `
-							<span style="color:#d1d5db;">•</span>
-							<span>${category}</span>
-						` : ''}
-					</div>
-					
-					<!-- Cena a šipka -->
-					<div style="display:flex; align-items:center; justify-content:space-between;">
-						${price ? `
-							<div style="
-								font-size: 16px;
-								font-weight: 700;
-								background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-								-webkit-background-clip: text;
-								-webkit-text-fill-color: transparent;
-								background-clip: text;
-							">${price}</div>
-						` : '<div></div>'}
-						<i class="fas fa-arrow-right" style="
-							color: #f77c00;
-							font-size: 14px;
-							opacity: 0.7;
-						"></i>
-					</div>
-				</div>
-            `);
-		});
-		el.innerHTML = items.join('');
-	} catch (e) {
-		console.warn('Pravý panel – nepodařilo se načíst inzeráty:', e);
-		// Fallback – 3 statické karty s logem
-		el.innerHTML = Array.from({ length: 3 }).map((_, i) => `
-			<div class="ig-conv">
-				<div class="ig-avatar"><img src="fotky/bulldogo-logo.png" alt="Bulldogo logo" loading="lazy" decoding="async"></div>
-				<div>
-					<div class="ig-title">Bulldogo</div>
-					<div class="ig-last">Ukázka ${i + 1}</div>
-				</div>
-				<div class="ig-time"></div>
-			</div>
-		`).join('');
-	}
-}
-
-/** Gating – přihlášení povolí psaní **/
-function igUpdateGating() {
-	const prompt = igQ('igLoginPrompt');
-	const inputBar = igQ('igInput');
-	const input = igQ('igText');
-	const send = igQ('igSend');
-	const files = igQ('igFiles');
-	const isLogged = !!igCurrentUser;
-	if (prompt) prompt.style.display = isLogged ? 'none' : 'flex';
-	if (inputBar) inputBar.style.display = isLogged ? 'block' : 'none';
-	if (input) input.disabled = !isLogged;
-	if (send) send.disabled = !isLogged;
-	if (files) files.disabled = !isLogged;
-}
-
-/** Render konverzací **/
-function igRenderConversations(list = igConversations) {
-	const el = igQ('igConversations');
-	if (!el) return;
-	if (!list || list.length === 0) {
-		el.innerHTML = '<div style="padding:12px; color:#6b7280;">Žádné konverzace</div>';
-        return;
-    }
-	el.innerHTML = list.map(c => `
-		<div class="ig-conv ${igSelectedConvId === c.id ? 'active' : ''}" data-id="${c.id}">
-			<div class="ig-avatar">
-                ${c.avatar ? `<img src="${c.avatar}" alt="Avatar" loading="lazy" decoding="async">` : `<i class="fas fa-user"></i>`}
-            </div>
-			<div>
-				<div class="ig-title">${c.title}</div>
-				<div class="ig-last">${c.last || ''}</div>
-            </div>
-			<div class="ig-time">${igFormatTime(c.time)}</div>
-                </div>
-	`).join('');
-	// click handlers
-	Array.from(el.querySelectorAll('.ig-conv')).forEach(item => {
-		item.addEventListener('click', () => {
-			const id = item.getAttribute('data-id');
-			igOpenConversation(id);
-            });
+            currentUser = user;
+            if (!user) {
+                // Zobrazit CTA pro přihlášení
+                showLoginPrompt();
+                resolve(false);
+            } else {
+                hideLoginPrompt();
+                resolve(true);
+            }
         });
+    });
 }
 
-function igFilterConversations() {
-	const q = (igQ('igSearch')?.value || '').toLowerCase();
-	const filtered = igConversations.filter(c => (c.title || '').toLowerCase().includes(q) || (c.last || '').toLowerCase().includes(q));
-	igRenderConversations(filtered);
+function showLoginPrompt() {
+    const mainContent = q('igMain');
+    const loginPrompt = q('igLoginPrompt');
+    const inputBar = q('igInput');
+    
+    if (mainContent) {
+        mainContent.style.display = 'none';
+    }
+    if (loginPrompt) {
+        loginPrompt.style.display = 'flex';
+    }
+    if (inputBar) {
+        inputBar.style.display = 'none';
+    }
 }
 
-/** Otevření konverzace **/
-async function igOpenConversation(convId, peerUserIdFromUrl = null) {
-	igSelectedConvId = convId;
-	igRenderConversations();
-	// hlavička
-	const conv = igConversations.find(c => c.id === convId);
-	const peerUserId = peerUserIdFromUrl || conv?.peerId || null;
-	igPeerPhone = '';
-	
-	// Načíst jméno uživatele z profilu
-	let peerName = conv?.title || 'Konverzace';
-	let peerAvatarUrl = conv?.avatar || '';
-	if (peerUserId && window.firebaseDb) {
-		try {
-			const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-			const profileRef = doc(window.firebaseDb, 'users', peerUserId, 'profile', 'profile');
-			const profileSnap = await getDoc(profileRef);
-			if (profileSnap.exists()) {
-				const profileData = profileSnap.data();
-				peerName = profileData.name || profileData.email || 'Uživatel';
-				peerAvatarUrl = profileData.photoURL || profileData.avatarUrl || peerAvatarUrl || '';
-				igPeerPhone = profileData.phone || profileData.telefon || profileData.phoneNumber || '';
-				console.log('✅ Načteno jméno uživatele:', peerName);
-			} else {
-				// Fallback - použít email z users dokumentu
-				const userRef = doc(window.firebaseDb, 'users', peerUserId);
-				const userSnap = await getDoc(userRef);
-				if (userSnap.exists()) {
-					const userData = userSnap.data();
-					peerName = userData.email || 'Uživatel';
-				}
-			}
-		} catch (e) {
-			console.warn('⚠️ Nepodařilo se načíst jméno uživatele:', e);
-		}
-	}
-	
-	igQ('igPeerName').textContent = peerName;
-	igQ('igPeerStatus').textContent = 'Online';
-	// Avatar v hlavičce
-	const peerAvatarEl = igQ('igPeerAvatar');
-	if (peerAvatarEl) {
-		peerAvatarEl.innerHTML = peerAvatarUrl
-			? `<img src="${peerAvatarUrl}" alt="Avatar" loading="lazy" decoding="async">`
-			: `<i class="fas fa-user"></i>`;
-	}
-	// Telefonní tlačítko (tel:)
-	const callBtn = igQ('igCallPhone');
-	if (callBtn) {
-		callBtn.disabled = !igPeerPhone;
-		callBtn.title = igPeerPhone ? `Zavolat: ${igPeerPhone}` : 'Telefon není uveden';
-	}
-	
-	console.log('🔍 igOpenConversation:', {
-		convId,
-		peerUserIdFromUrl,
-		convPeerId: conv?.peerId,
-		finalPeerUserId: peerUserId,
-		peerName
-	});
-	
-	if (peerUserId) {
-		igRenderRightAds(peerUserId);
-	} else {
-		console.warn('⚠️ Nepodařilo se zjistit peerUserId pro načtení inzerátů');
-	}
-	
-	igStartMessagesListener(convId);
-	igRenderMessages();
+function hideLoginPrompt() {
+    const mainContent = q('igMain');
+    const loginPrompt = q('igLoginPrompt');
+    const inputBar = q('igInput');
+    
+    if (mainContent) {
+        mainContent.style.display = 'block';
+    }
+    if (loginPrompt) {
+        loginPrompt.style.display = 'none';
+    }
+    if (inputBar) {
+        inputBar.style.display = 'block';
+    }
 }
 
-/** Otevřít profil druhého účastníka chatu **/
-function igOpenPeerProfile() {
-	if (!igSelectedConvId) {
-		console.warn('⚠️ Žádná vybraná konverzace');
-		return;
-	}
-	
-	// Najít konverzaci a získat userId druhého účastníka
-	const conv = igConversations.find(c => c.id === igSelectedConvId);
-	if (!conv || !conv.participants || conv.participants.length < 2) {
-		console.warn('⚠️ Konverzace nemá účastníky');
-		return;
-	}
-	
-	// Zjistit userId druhého účastníka (ne mě)
-	const myUid = igCurrentUser?.uid;
-	const peerUid = conv.participants.find(uid => uid !== myUid);
-	
-	if (!peerUid) {
-		console.warn('⚠️ Nepodařilo se najít druhého účastníka');
-		return;
-	}
-	
-	console.log('🔗 Otevírám profil:', peerUid);
-	// Přesměrovat na profil
-	window.location.href = `profile-detail.html?userId=${encodeURIComponent(peerUid)}`;
-}
-
-/** Render zpráv **/
-function igRenderMessages() {
-	const box = igQ('igMessages');
-	if (!box) return;
-	const msgs = igMessagesByConvId[igSelectedConvId] || [];
-    const conv = igConversations.find(c => c.id === igSelectedConvId);
-    const peerAvatar = conv?.avatar || '';
-	if (msgs.length === 0) {
-		box.innerHTML = '<div class="ig-empty">Zatím žádné zprávy – napište první.</div>';
+// ============================================
+// NAČÍTÁNÍ KONVERZACÍ
+// ============================================
+async function loadConversations() {
+    if (!currentUser || !window.firebaseDb) {
+        console.warn('⚠️ Nelze načíst konverzace: chybí user nebo db');
         return;
     }
-	box.innerHTML = msgs.map(m => {
-		const mine = igCurrentUser ? (m.uid === 'me' || m.uid === igCurrentUser.uid) : (m.uid === 'me');
-		const imgs = (m.images || []).map(img => `<img src="${img.url}" alt="${img.name||''}" loading="lazy" decoding="async">`).join('');
+    
+    try {
+        const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        const conversationsRef = collection(window.firebaseDb, 'conversations');
+        const q = query(
+            conversationsRef,
+            where('participants', 'array-contains', currentUser.uid),
+            orderBy('lastMessageAt', 'desc')
+        );
+        
+        if (conversationsUnsubscribe) {
+            conversationsUnsubscribe();
+        }
+        
+        conversationsUnsubscribe = onSnapshot(q, async (snapshot) => {
+            conversations = [];
+            
+            for (const doc of snapshot.docs) {
+                const data = doc.data();
+                const otherParticipantId = data.participants.find(uid => uid !== currentUser.uid);
+                
+                // Načíst jméno a avatar druhého účastníka
+                let otherParticipantName = 'Uživatel';
+                let otherParticipantAvatar = '';
+                let otherParticipantPhone = '';
+                
+                if (otherParticipantId) {
+                    try {
+                        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                        const profileRef = doc(window.firebaseDb, 'users', otherParticipantId, 'profile', 'profile');
+                        const profileSnap = await getDoc(profileRef);
+                        
+                        if (profileSnap.exists()) {
+                            const profileData = profileSnap.data();
+                            otherParticipantName = profileData.name || profileData.email || 'Uživatel';
+                            otherParticipantAvatar = profileData.photoURL || profileData.avatarUrl || '';
+                            otherParticipantPhone = profileData.phone || profileData.telefon || '';
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Nepodařilo se načíst profil:', e);
+                    }
+                }
+                
+                conversations.push({
+                    id: doc.id,
+                    participants: data.participants,
+                    otherParticipantId: otherParticipantId,
+                    otherParticipantName: otherParticipantName,
+                    otherParticipantAvatar: otherParticipantAvatar,
+                    otherParticipantPhone: otherParticipantPhone,
+                    listingId: data.listingId || null,
+                    listingTitle: data.listingTitle || null,
+                    lastMessage: data.lastMessage || '',
+                    lastMessageAt: data.lastMessageAt || data.createdAt,
+                    createdAt: data.createdAt
+                });
+            }
+            
+            renderConversations();
+            
+            // Pokud je v URL conversationId, otevřít ho
+            const urlParams = new URLSearchParams(window.location.search);
+            const conversationId = urlParams.get('conversationId');
+            if (conversationId && !currentConversationId) {
+                openConversation(conversationId);
+            }
+        }, (error) => {
+            console.error('❌ Chyba při načítání konverzací:', error);
+            if (error.code === 'permission-denied') {
+                showError('Chybí oprávnění Firestore. Zkontrolujte publikované Firestore Rules ve Firebase Console.');
+            } else if (error.code === 'failed-precondition') {
+                showError('Pro chat je potřeba vytvořit Firestore index. Zkontrolujte konzoli pro odkaz.');
+            }
+        });
+    } catch (error) {
+        console.error('❌ Chyba při inicializaci listeneru konverzací:', error);
+        showError('Nepodařilo se načíst konverzace.');
+    }
+}
+
+// ============================================
+// RENDEROVÁNÍ KONVERZACÍ
+// ============================================
+function renderConversations() {
+    const container = q('igConversations');
+    if (!container) return;
+    
+    if (conversations.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Zatím nemáte žádné zprávy</div>';
+        return;
+    }
+    
+    container.innerHTML = conversations.map(conv => {
+        const time = formatDate(conv.lastMessageAt);
+        const avatar = conv.otherParticipantAvatar 
+            ? `<img src="${conv.otherParticipantAvatar}" alt="${conv.otherParticipantName}" loading="lazy">`
+            : `<i class="fas fa-user"></i>`;
+        
         return `
-			<div class="ig-row ${mine ? 'mine' : ''}">
-				<div class="ig-avatar">
-                    ${!mine && peerAvatar ? `<img src="${peerAvatar}" alt="Avatar" loading="lazy" decoding="async">` : `<i class="fas fa-user"></i>`}
+            <div class="ig-conv ${currentConversationId === conv.id ? 'active' : ''}" 
+                 data-conversation-id="${conv.id}"
+                 onclick="openConversation('${conv.id}')">
+                <div class="ig-avatar">${avatar}</div>
+                <div>
+                    <div class="ig-title">${conv.otherParticipantName}</div>
+                    <div class="ig-last">${conv.lastMessage || 'Žádná zpráva'}</div>
                 </div>
-				<div class="ig-bubble">
-					${m.text ? `<div>${m.text}</div>` : ''}
-					${imgs ? `<div class=\"ig-images\">${imgs}</div>` : ''}
-					<div class="ig-meta">${igFormatTime(m.at)}</div>
+                <div class="ig-time">${time}</div>
             </div>
-			</div>`;
+        `;
     }).join('');
-	box.scrollTop = box.scrollHeight;
 }
 
-/** Náhled vybraných obrázků **/
-function igRenderFilePreview() {
-	const wrap = igQ('igFilePreview');
-	if (!wrap) return;
-	if (igSelectedFiles.length === 0) { wrap.innerHTML=''; return; }
-	wrap.innerHTML = igSelectedFiles.map((f, i) => {
-		const url = URL.createObjectURL(f);
-		return `<img src="${url}" alt="náhled ${i+1}">`;
-	}).join('');
+// ============================================
+// OTEVŘENÍ KONVERZACE
+// ============================================
+async function openConversation(conversationId) {
+    if (!currentUser || !window.firebaseDb) {
+        showError('Musíte být přihlášeni');
+        return;
+    }
+    
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (!conversation) {
+        showError('Konverzace nenalezena');
+        return;
+    }
+    
+    currentConversationId = conversationId;
+    renderConversations();
+    
+    // Aktualizovat hlavičku
+    const peerNameEl = q('igPeerName');
+    const peerAvatarEl = q('igPeerAvatar');
+    const peerStatusEl = q('igPeerStatus');
+    const subjectEl = q('igSubject');
+    const subjectTextEl = q('igSubjectText');
+    
+    if (peerNameEl) peerNameEl.textContent = conversation.otherParticipantName;
+    if (peerStatusEl) peerStatusEl.textContent = 'Online';
+    
+    if (peerAvatarEl) {
+        if (conversation.otherParticipantAvatar) {
+            peerAvatarEl.innerHTML = `<img src="${conversation.otherParticipantAvatar}" alt="${conversation.otherParticipantName}" loading="lazy">`;
+        } else {
+            peerAvatarEl.innerHTML = '<i class="fas fa-user"></i>';
+        }
+    }
+    
+    // Zobrazit předmět (listingTitle)
+    if (conversation.listingTitle) {
+        if (subjectEl) subjectEl.style.display = 'inline-flex';
+        if (subjectTextEl) {
+            if (conversation.listingId) {
+                subjectTextEl.innerHTML = `<a href="ad-detail.html?id=${conversation.listingId}&userId=${conversation.otherParticipantId}" target="_blank">${conversation.listingTitle}</a>`;
+            } else {
+                subjectTextEl.textContent = conversation.listingTitle;
+            }
+        }
+    } else {
+        if (subjectEl) subjectEl.style.display = 'none';
+    }
+    
+    // Nastavit telefonní tlačítko
+    const callBtn = q('igCallPhone');
+    if (callBtn) {
+        callBtn.disabled = !conversation.otherParticipantPhone;
+        callBtn.title = conversation.otherParticipantPhone ? `Zavolat: ${conversation.otherParticipantPhone}` : 'Telefon není uveden';
+        callBtn.onclick = () => {
+            if (conversation.otherParticipantPhone) {
+                window.location.href = `tel:${conversation.otherParticipantPhone.replace(/[^\d+]/g, '')}`;
+            }
+        };
+    }
+    
+    // Nastavit tlačítko profilu
+    const profileBtn = q('igOpenProfile');
+    if (profileBtn) {
+        profileBtn.onclick = () => {
+            window.location.href = `profile-detail.html?userId=${conversation.otherParticipantId}`;
+        };
+    }
+    
+    // Načíst zprávy
+    loadMessages(conversationId);
 }
 
-/** Odeslání zprávy **/
-function igHandleSend() {
-	if (!igCurrentUser) return; // gating
-	if (!igSelectedConvId) return;
-	const input = igQ('igText');
-	const text = (input?.value || '').trim();
-	if (!text && igSelectedFiles.length === 0) return;
-	
-	// Kontrola zakázaných slov
-	if (text && window.ProfanityFilter) {
-		const profanityCheck = window.ProfanityFilter.check(text);
-		if (!profanityCheck.isClean) {
-			igNotify('Vaše zpráva obsahuje nevhodný obsah. Prosím upravte text.', 'error');
-			return;
-		}
-	}
-	
-	igSendMessageToFirestore(igSelectedConvId, text, igSelectedFiles).catch(e=>console.warn(e));
-	if (input) input.value = '';
-	igSelectedFiles = [];
-	igRenderFilePreview();
+// ============================================
+// NAČÍTÁNÍ ZPRÁV
+// ============================================
+async function loadMessages(conversationId) {
+    if (!currentUser || !window.firebaseDb) {
+        return;
+    }
+    
+    try {
+        const { collection, query, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        const messagesRef = collection(window.firebaseDb, 'conversations', conversationId, 'messages');
+        const q = query(messagesRef, orderBy('createdAt', 'asc'));
+        
+        if (messagesUnsubscribe) {
+            messagesUnsubscribe();
+        }
+        
+        messagesUnsubscribe = onSnapshot(q, (snapshot) => {
+            messages = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    senderId: data.senderId,
+                    text: data.text || '',
+                    createdAt: data.createdAt
+                };
+            });
+            
+            renderMessages();
+        }, (error) => {
+            console.error('❌ Chyba při načítání zpráv:', error);
+            if (error.code === 'permission-denied') {
+                showError('Chybí oprávnění pro čtení zpráv.');
+            }
+        });
+    } catch (error) {
+        console.error('❌ Chyba při inicializaci listeneru zpráv:', error);
+    }
 }
 
-// Realtime listener zpráv pro aktivní chat
-async function igStartMessagesListener(chatId) {
-	try {
-		if (!window.firebaseDb) return;
-		if (igUnsubMsgs) { igUnsubMsgs(); igUnsubMsgs = null; }
-		const { collection, query, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-		const msgsRef = collection(window.firebaseDb, 'chats', chatId, 'messages');
-		const q = query(msgsRef, orderBy('createdAt', 'asc'));
-		igUnsubMsgs = onSnapshot(q, (snap) => {
-			const list = snap.docs.map(d => {
-				const m = d.data() || {};
-				return {
-					id: d.id,
-					uid: m.fromUid === igCurrentUser?.uid ? 'me' : (m.fromUid || 'other'),
-					text: m.text || '',
-					images: Array.isArray(m.images) ? m.images : [],
-					at: m.createdAt?.toDate?.() || new Date()
-				};
-			});
-			igMessagesByConvId[chatId] = list;
-			if (igSelectedConvId === chatId) igRenderMessages();
-		}, (err) => {
-			console.warn('Messages listener error', err);
-			igExplainFirestoreBlock(err);
-		});
-	} catch (e) {
-		console.warn('igStartMessagesListener failed', e);
-		igExplainFirestoreBlock(e);
-	}
+// ============================================
+// RENDEROVÁNÍ ZPRÁV
+// ============================================
+function renderMessages() {
+    const container = q('igMessages');
+    if (!container) return;
+    
+    if (messages.length === 0) {
+        container.innerHTML = '<div class="ig-empty">Zatím žádné zprávy – napište první.</div>';
+        return;
+    }
+    
+    container.innerHTML = messages.map(msg => {
+        const isMine = msg.senderId === currentUser.uid;
+        const time = formatTime(msg.createdAt);
+        
+        return `
+            <div class="ig-row ${isMine ? 'mine' : ''}">
+                <div class="ig-avatar">
+                    ${!isMine ? '<i class="fas fa-user"></i>' : ''}
+                </div>
+                <div class="ig-bubble">
+                    ${msg.text ? `<div>${msg.text}</div>` : ''}
+                    <div class="ig-meta">${time}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Scroll na konec
+    container.scrollTop = container.scrollHeight;
 }
 
-// Odeslání zprávy do Firestore
-async function igSendMessageToFirestore(chatId, text, files) {
-	if (!igCurrentUser || !window.firebaseDb) return;
-	try {
-		const { collection, addDoc, doc, updateDoc, serverTimestamp, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-		
-		// Zkontrolovat, zda chat existuje
-		const chatRef = doc(window.firebaseDb, 'chats', chatId);
-		const chatSnap = await getDoc(chatRef);
-		
-		if (!chatSnap.exists()) {
-			console.warn('⚠️ Chat dokument neexistuje:', chatId);
-			igNotify('Chat neexistuje. Zkuste obnovit stránku.', 'error');
-			return;
-		}
-		
-		// Přidat zprávu
-		const msgsRef = collection(window.firebaseDb, 'chats', chatId, 'messages');
-		await addDoc(msgsRef, {
-			fromUid: igCurrentUser.uid,
-			text: text || '',
-			images: [],
-			createdAt: serverTimestamp()
-		});
-		
-		// Aktualizovat chat dokument (lastMessage a lastAt)
-		await updateDoc(chatRef, {
-			lastMessage: text || '📷 Foto',
-			lastAt: serverTimestamp()
-		});
-	} catch (e) {
-		console.error('❌ Chyba při odesílání zprávy:', e);
-		igExplainFirestoreBlock(e);
-		igNotify('Nepodařilo se odeslat zprávu. Zkuste to znovu.', 'error');
-	}
+// ============================================
+// ODESLÁNÍ ZPRÁVY
+// ============================================
+async function sendMessage() {
+    if (!currentUser || !currentConversationId || !window.firebaseDb) {
+        showError('Musíte být přihlášeni a mít otevřenou konverzaci');
+        return;
+    }
+    
+    const input = q('igText');
+    const text = (input?.value || '').trim();
+    
+    if (!text) {
+        return;
+    }
+    
+    // Kontrola profanity filtru
+    if (window.ProfanityFilter) {
+        const profanityCheck = window.ProfanityFilter.check(text);
+        if (!profanityCheck.isClean) {
+            const blockedWords = profanityCheck.bannedWords.join(', ');
+            showError(`Vaše zpráva obsahuje nevhodný obsah: ${blockedWords}. Prosím upravte text.`);
+            return;
+        }
+    }
+    
+    try {
+        const { collection, addDoc, doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Přidat zprávu
+        const messagesRef = collection(window.firebaseDb, 'conversations', currentConversationId, 'messages');
+        await addDoc(messagesRef, {
+            senderId: currentUser.uid,
+            text: text,
+            createdAt: serverTimestamp()
+        });
+        
+        // Aktualizovat konverzaci
+        const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
+        await updateDoc(conversationRef, {
+            lastMessage: text,
+            lastMessageAt: serverTimestamp()
+        });
+        
+        // Vyčistit input
+        if (input) input.value = '';
+    } catch (error) {
+        console.error('❌ Chyba při odesílání zprávy:', error);
+        if (error.code === 'permission-denied') {
+            showError('Chybí oprávnění pro odesílání zpráv. Zkontrolujte Firestore Rules.');
+        } else {
+            showError('Nepodařilo se odeslat zprávu.');
+        }
+    }
 }
 
-// Export / integrace: voláno z inzerátu (přesměruje na chat s parametry)
+// ============================================
+// VYTVOŘENÍ NEBO NAJITÍ KONVERZACE
+// ============================================
+async function findOrCreateConversation(otherUserId, listingId, listingTitle) {
+    if (!currentUser || !window.firebaseDb) {
+        showError('Musíte být přihlášeni');
+        return null;
+    }
+    
+    if (currentUser.uid === otherUserId) {
+        showError('Nemůžete kontaktovat sami sebe');
+        return null;
+    }
+    
+    try {
+        const { collection, query, where, getDocs, doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        // Najít existující konverzaci
+        const conversationsRef = collection(window.firebaseDb, 'conversations');
+        const q = query(
+            conversationsRef,
+            where('participants', 'array-contains', currentUser.uid)
+        );
+        
+        const snapshot = await getDocs(q);
+        const existingConv = snapshot.docs.find(doc => {
+            const data = doc.data();
+            return data.participants.includes(currentUser.uid) && 
+                   data.participants.includes(otherUserId);
+        });
+        
+        if (existingConv) {
+            return existingConv.id;
+        }
+        
+        // Vytvořit novou konverzaci
+        const newConvRef = doc(conversationsRef);
+        await setDoc(newConvRef, {
+            participants: [currentUser.uid, otherUserId].sort(),
+            listingId: listingId || null,
+            listingTitle: listingTitle || null,
+            lastMessage: '',
+            lastMessageAt: serverTimestamp(),
+            createdAt: serverTimestamp()
+        });
+        
+        return newConvRef.id;
+    } catch (error) {
+        console.error('❌ Chyba při vytváření/nalezení konverzace:', error);
+        if (error.code === 'permission-denied') {
+            showError('Chybí oprávnění pro vytváření konverzací. Zkontrolujte Firestore Rules.');
+        } else {
+            showError('Nepodařilo se vytvořit konverzaci.');
+        }
+        return null;
+    }
+}
+
+// ============================================
+// GLOBÁLNÍ FUNKCE PRO INTEGRACI
+// ============================================
 window.contactSeller = async function(listingId, sellerUid, listingTitle) {
-	let uid = sellerUid || '';
-	// Pokud UID chybí, zkusit ho dohledat podle listingId
-	if (!uid && listingId) {
-		const resolvedUid = await igResolveSellerUidByListingId(listingId);
-		if (resolvedUid) uid = resolvedUid;
-	}
-	if (!uid) {
-		igNotify('Nelze otevřít chat: chybí ID uživatele u inzerátu.', 'error');
-		return;
-	}
-	const url = new URL('chat.html', window.location.href);
-	url.searchParams.set('userId', uid);
-	if (listingId) url.searchParams.set('listingId', listingId);
-	if (listingTitle) url.searchParams.set('listingTitle', listingTitle);
-	window.location.href = url.toString();
+    if (!currentUser) {
+        if (typeof showAuthModal === 'function') {
+            showAuthModal('login');
+        } else {
+            showError('Pro kontaktování se musíte přihlásit');
+        }
+        return;
+    }
+    
+    const conversationId = await findOrCreateConversation(sellerUid, listingId, listingTitle);
+    if (conversationId) {
+        window.location.href = `chat.html?conversationId=${conversationId}`;
+    }
 };
 
-// Export pro případné využití
-window.igOpenConversation = igOpenConversation;
+// ============================================
+// NAČÍTÁNÍ NEJNOVĚJŠÍCH INZERÁTŮ (PRAVÝ PANEL)
+// ============================================
+async function loadLatestAds() {
+    const container = q('igRightAds');
+    if (!container || !window.firebaseDb) return;
+    
+    try {
+        const { collectionGroup, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
+        const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
+        const q = query(inzeratyRef, orderBy('createdAt', 'desc'), limit(3));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+            container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Zatím žádné inzeráty</div>';
+            return;
+        }
+        
+        const ads = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const userId = doc.ref.parent.parent.id;
+            ads.push({
+                id: doc.id,
+                userId: userId,
+                title: data.title || 'Bez názvu',
+                location: data.location || 'Neuvedeno',
+                category: data.category || '',
+                price: data.price || '',
+                isTop: data.isTop || false
+            });
+        });
+        
+        container.innerHTML = ads.map(ad => {
+            const topBadge = ad.isTop ? `
+                <span style="
+                    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+                    color: #111827;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                ">TOP</span>
+            ` : '';
+            
+            return `
+                <div style="
+                    background: white;
+                    border-radius: 12px;
+                    padding: 14px;
+                    margin-bottom: 12px;
+                    cursor: pointer;
+                    border: 1px solid #e5e7eb;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                " onclick="window.location.href='ad-detail.html?id=${ad.id}&userId=${ad.userId}'">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px;">
+                        <h4 style="font-size: 15px; font-weight: 600; color: #111827; margin: 0; flex: 1;">${ad.title}</h4>
+                        ${topBadge}
+                    </div>
+                    <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+                        <i class="fas fa-map-marker-alt" style="color:#f77c00;"></i> ${ad.location}
+                        ${ad.category ? ` • ${ad.category}` : ''}
+                    </div>
+                    ${ad.price ? `<div style="font-size: 16px; font-weight: 700; color: #f77c00;">${ad.price}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.warn('⚠️ Nepodařilo se načíst inzeráty:', error);
+        container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Nepodařilo se načíst inzeráty</div>';
+    }
+}
 
-// Konec – UI je čistě frontend mock, přizpůsoben stylu IG DM
+// ============================================
+// INICIALIZACE
+// ============================================
+async function init() {
+    console.log('🚀 Inicializace chatu...');
+    
+    // Počkat na Firebase
+    let tries = 0;
+    while ((!window.firebaseAuth || !window.firebaseDb) && tries < 30) {
+        await new Promise(r => setTimeout(r, 100));
+        tries++;
+    }
+    
+    if (!window.firebaseAuth || !window.firebaseDb) {
+        console.error('❌ Firebase není inicializován');
+        showError('Firebase není inicializován. Obnovte stránku.');
+        return;
+    }
+    
+    // Kontrola přihlášení
+    const isAuthenticated = await checkAuth();
+    if (!isAuthenticated) {
+        return;
+    }
+    
+    // Nastavit event listenery
+    const sendBtn = q('igSend');
+    const input = q('igText');
+    
+    if (sendBtn) {
+        sendBtn.onclick = sendMessage;
+    }
+    
+    if (input) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+    
+    // Načíst konverzace
+    await loadConversations();
+    
+    // Načíst nejnovější inzeráty
+    await loadLatestAds();
+    
+    // Zpracovat URL parametry
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    const listingId = urlParams.get('listingId');
+    const listingTitle = urlParams.get('listingTitle');
+    const conversationId = urlParams.get('conversationId');
+    
+    if (userId && !conversationId) {
+        // Vytvořit nebo najít konverzaci
+        const convId = await findOrCreateConversation(userId, listingId, listingTitle);
+        if (convId) {
+            window.history.replaceState({}, '', `chat.html?conversationId=${convId}`);
+            await openConversation(convId);
+        }
+    } else if (conversationId) {
+        await openConversation(conversationId);
+    }
+}
+
+// ============================================
+// SPUŠTĚNÍ PO NAČTENÍ DOM
+// ============================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+
+// Export pro globální použití
+window.openConversation = openConversation;
+
