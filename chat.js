@@ -389,16 +389,37 @@ async function loadMessages(conversationId) {
             messagesUnsubscribe();
         }
         
-        messagesUnsubscribe = onSnapshot(q, (snapshot) => {
-            messages = snapshot.docs.map(doc => {
+        messagesUnsubscribe = onSnapshot(q, async (snapshot) => {
+            messages = [];
+            
+            // Načíst zprávy a avatary odesílatelů
+            for (const doc of snapshot.docs) {
                 const data = doc.data();
-                return {
+                let senderAvatar = '';
+                
+                // Načíst avatar odesílatele
+                if (data.senderId) {
+                    try {
+                        const { doc: getDoc, getDoc: getDocFn } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                        const profileRef = getDoc(window.firebaseDb, 'users', data.senderId, 'profile', 'profile');
+                        const profileSnap = await getDocFn(profileRef);
+                        if (profileSnap.exists()) {
+                            const profileData = profileSnap.data();
+                            senderAvatar = profileData.photoURL || profileData.avatarUrl || '';
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Nepodařilo se načíst avatar odesílatele:', e);
+                    }
+                }
+                
+                messages.push({
                     id: doc.id,
                     senderId: data.senderId,
                     text: data.text || '',
-                    createdAt: data.createdAt
-                };
-            });
+                    createdAt: data.createdAt,
+                    senderAvatar: senderAvatar
+                });
+            }
             
             renderMessages();
         }, (error) => {
@@ -449,11 +470,14 @@ function renderMessages() {
     container.innerHTML = messages.map(msg => {
         const isMine = msg.senderId === currentUser.uid;
         const time = formatTime(msg.createdAt);
+        const avatar = !isMine && msg.senderAvatar
+            ? `<img src="${msg.senderAvatar}" alt="Avatar" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`
+            : (!isMine ? '<i class="fas fa-user"></i>' : '');
         
         return `
             <div class="ig-row ${isMine ? 'mine' : ''}">
                 <div class="ig-avatar">
-                    ${!isMine ? '<i class="fas fa-user"></i>' : ''}
+                    ${avatar}
                 </div>
                 <div class="ig-bubble">
                     ${msg.text ? `<div>${msg.text}</div>` : ''}
@@ -611,21 +635,11 @@ async function loadLatestAds() {
     }
     
     try {
-        const { collectionGroup, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { collectionGroup, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
+        // Použít stejnou metodu jako na services stránce - bez orderBy, veřejné čtení
         const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
-        
-        // Zkusit query s orderBy, pokud selže, použít bez orderBy
-        let q;
-        try {
-            q = query(inzeratyRef, orderBy('createdAt', 'desc'), limit(3));
-        } catch (e) {
-            // Pokud selže (chybí index), použít jednodušší query bez orderBy
-            console.warn('⚠️ Nelze použít orderBy pro inzeráty, chybí index. Používám jednodušší query.');
-            q = query(inzeratyRef, limit(3));
-        }
-        
-        const snapshot = await getDocs(q);
+        const snapshot = await getDocs(inzeratyRef);
         
         if (snapshot.empty) {
             container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Zatím žádné inzeráty</div>';
@@ -648,7 +662,7 @@ async function loadLatestAds() {
             });
         });
         
-        // Seřadit podle createdAt (pokud není orderBy v query)
+        // Seřadit podle createdAt (nejnovější první)
         ads.sort((a, b) => {
             const timeA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
             const timeB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
@@ -695,17 +709,8 @@ async function loadLatestAds() {
         }).join('');
     } catch (error) {
         console.error('❌ Chyba při načítání inzerátů:', error);
-        if (error.code === 'permission-denied') {
-            container.innerHTML = '<div style="padding: 12px; color: #f77c00;">Chybí oprávnění pro načtení inzerátů</div>';
-        } else if (error.code === 'failed-precondition') {
-            const indexUrl = error.message?.match(/https:\/\/console\.firebase\.google\.com[^\s]+/)?.[0];
-            if (indexUrl) {
-                console.error('📋 Vytvořte index pro inzeráty na tomto odkazu:', indexUrl);
-            }
-            container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Pro zobrazení inzerátů je potřeba vytvořit Firestore index</div>';
-        } else {
-            container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Nepodařilo se načíst inzeráty</div>';
-        }
+        // Tichý fallback - nechat prázdný nebo zobrazit neutrální zprávu
+        container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Zatím žádné inzeráty</div>';
     }
 }
 
@@ -714,6 +719,26 @@ async function loadLatestAds() {
 // ============================================
 async function init() {
     console.log('🚀 Inicializace chatu...');
+    
+    // Nejdříve zobrazit prázdný stav
+    const messagesContainer = q('igMessages');
+    const inputContainer = q('igInput');
+    if (messagesContainer && !currentConversationId) {
+        messagesContainer.innerHTML = `
+            <div class="ig-empty-state">
+                <div class="ig-empty-icon">
+                    <i class="fas fa-comments" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                </div>
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 8px 0;">Vyberte konverzaci</h3>
+                <p style="font-size: 14px; color: #6b7280; margin: 0; line-height: 1.5;">
+                    Zvolte si konverzaci vlevo nebo začněte novou kliknutím na tlačítko "Chat" u inzerátu.
+                </p>
+            </div>
+        `;
+    }
+    if (inputContainer && !currentConversationId) {
+        inputContainer.style.display = 'none';
+    }
     
     // Počkat na Firebase
     let tries = 0;
