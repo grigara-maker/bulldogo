@@ -254,6 +254,25 @@ function renderConversations() {
     
     if (conversations.length === 0) {
         container.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Zatím nemáte žádné zprávy</div>';
+        // Pokud není žádná konverzace, skrýt input a zobrazit prázdný stav
+        if (!currentConversationId) {
+            const messagesContainer = q('igMessages');
+            const inputContainer = q('igInput');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = `
+                    <div class="ig-empty-state">
+                        <div class="ig-empty-icon">
+                            <i class="fas fa-comments" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                        </div>
+                        <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 8px 0;">Začněte novou konverzaci</h3>
+                        <p style="font-size: 14px; color: #6b7280; margin: 0; line-height: 1.5;">
+                            Klikněte na tlačítko "Chat" u nějakého inzerátu a začněte komunikovat s poskytovatelem služby.
+                        </p>
+                    </div>
+                `;
+            }
+            if (inputContainer) inputContainer.style.display = 'none';
+        }
         return;
     }
     
@@ -398,7 +417,29 @@ async function loadMessages(conversationId) {
 // ============================================
 function renderMessages() {
     const container = q('igMessages');
+    const inputContainer = q('igInput');
+    
     if (!container) return;
+    
+    // Pokud není vybraná konverzace, zobrazit zprávu a skrýt input
+    if (!currentConversationId) {
+        container.innerHTML = `
+            <div class="ig-empty-state">
+                <div class="ig-empty-icon">
+                    <i class="fas fa-comments" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                </div>
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 8px 0;">Vyberte konverzaci</h3>
+                <p style="font-size: 14px; color: #6b7280; margin: 0; line-height: 1.5;">
+                    Zvolte si konverzaci vlevo nebo začněte novou kliknutím na tlačítko "Chat" u inzerátu.
+                </p>
+            </div>
+        `;
+        if (inputContainer) inputContainer.style.display = 'none';
+        return;
+    }
+    
+    // Zobrazit input když je vybraná konverzace
+    if (inputContainer) inputContainer.style.display = 'block';
     
     if (messages.length === 0) {
         container.innerHTML = '<div class="ig-empty">Zatím žádné zprávy – napište první.</div>';
