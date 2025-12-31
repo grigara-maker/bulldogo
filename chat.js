@@ -308,7 +308,7 @@ async function openConversation(conversationId) {
     
     if (peerAvatarEl) {
         if (conversation.otherParticipantAvatar) {
-            peerAvatarEl.innerHTML = `<img src="${conversation.otherParticipantAvatar}" alt="${conversation.otherParticipantName}" loading="lazy">`;
+            peerAvatarEl.innerHTML = `<img src="${conversation.otherParticipantAvatar}" alt="${conversation.otherParticipantName}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
         } else {
             peerAvatarEl.innerHTML = '<i class="fas fa-user"></i>';
         }
