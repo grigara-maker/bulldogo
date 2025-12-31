@@ -356,17 +356,23 @@ async function igEnsureChatWith(peerUid, listingId, listingTitle) {
 		
 		if (!snap.exists()) {
 			console.log('📝 Vytvářím nový chat:', chatId);
-			await setDoc(ref, {
+			console.log('📝 Participants:', [a, b]);
+			console.log('📝 Current user UID:', igCurrentUser.uid);
+			const chatData = {
 				participants: [a, b],
 				lastMessage: '',
 				lastAt: serverTimestamp(),
 				createdAt: serverTimestamp(),
 				listingId: listingId || null,
 				listingTitle: listingTitle || null
-			});
+			};
+			console.log('📝 Chat data:', chatData);
+			await setDoc(ref, chatData);
 			console.log('✅ Chat vytvořen:', chatId);
 		} else {
 			console.log('✅ Chat již existuje:', chatId);
+			const existingData = snap.data();
+			console.log('📋 Existující participants:', existingData?.participants);
 		}
 		return chatId;
 	} catch (e) {

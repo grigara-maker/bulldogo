@@ -85,36 +85,46 @@ service cloud.firestore {
     // ===== PRAVIDLA PRO CHATY =====
     // Chat dokumenty - přístup pouze pro účastníky chatu
     match /chats/{chatId} {
-      // Helper funkce pro kontrolu účastníka chatu
-      function isParticipant() {
-        return request.auth != null && (
-          // Pokud dokument existuje, kontrolujeme resource.data.participants
-          (resource != null && resource.data.participants != null && request.auth.uid in resource.data.participants) ||
-          // Pokud dokument neexistuje (při vytváření), kontrolujeme request.resource.data.participants
-          (request.resource != null && request.resource.data.participants != null && request.auth.uid in request.resource.data.participants)
-        );
+      // Helper funkce pro kontrolu účastníka chatu při čtení
+      function isParticipantRead() {
+        return request.auth != null && 
+               resource != null &&
+               resource.data.participants != null &&
+               request.auth.uid in resource.data.participants;
+      }
+      
+      // Helper funkce pro kontrolu účastníka při vytváření
+      function isParticipantCreate() {
+        return request.auth != null && 
+               request.resource.data.participants != null &&
+               request.auth.uid in request.resource.data.participants;
+      }
+      
+      // Helper funkce pro kontrolu účastníka při aktualizaci
+      function isParticipantUpdate() {
+        return request.auth != null && 
+               resource != null &&
+               resource.data.participants != null &&
+               request.auth.uid in resource.data.participants;
       }
       
       // Čtení: povoleno pouze účastníkům chatu
-      allow read: if isParticipant();
+      allow read: if isParticipantRead();
       
       // Vytvoření: povoleno přihlášeným uživatelům, kteří jsou v participants
-      allow create: if request.auth != null && 
-                      request.resource.data.participants != null &&
-                      request.auth.uid in request.resource.data.participants;
+      // Povolujeme i merge operace (setDoc s merge: true)
+      allow create: if isParticipantCreate();
       
       // Aktualizace: povoleno účastníkům (např. pro lastMessage, lastAt)
       // Povolujeme aktualizaci, pokud je uživatel účastníkem
       // Participants se nesmí měnit (musí zůstat stejné nebo se neaktualizují)
-      allow update: if request.auth != null && 
-                      resource.data.participants != null &&
-                      request.auth.uid in resource.data.participants &&
-                      // Participants se buď neaktualizují, nebo zůstávají stejné
+      allow update: if isParticipantUpdate() &&
+                      // Pokud participants existují v request.resource, musí být stejné jako v resource
                       (!('participants' in request.resource.data) ||
                        request.resource.data.participants == resource.data.participants);
       
       // Smazání: povoleno účastníkům
-      allow delete: if isParticipant();
+      allow delete: if isParticipantUpdate();
       
       // Zprávy v chatu
       match /messages/{messageId} {
