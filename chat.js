@@ -173,12 +173,21 @@ function igInitUI() {
 /** Realtime konverzace aktuálního uživatele z Firestore **/
 async function igStartConversationsListener(uid) {
 	try {
-		if (!window.firebaseDb) return;
+		if (!window.firebaseDb) {
+			console.warn('⚠️ Firestore není inicializován');
+			return;
+		}
+		if (!uid) {
+			console.warn('⚠️ UID není k dispozici');
+			return;
+		}
 		const { collection, query, where, onSnapshot, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 		const chatsRef = collection(window.firebaseDb, 'chats');
 		const q = query(chatsRef, where('participants', 'array-contains', uid));
 		if (igUnsubConvs) { igUnsubConvs(); igUnsubConvs = null; }
+		console.log('🔍 Spouštím listener konverzací pro UID:', uid);
 		igUnsubConvs = onSnapshot(q, async (snap) => {
+			console.log('📨 Konverzace aktualizovány:', snap.docs.length);
 			// Nejdříve vytvoř základní seznam konverzací
 			const conversations = snap.docs.map(d => {
 				const data = d.data() || {};
@@ -236,7 +245,18 @@ async function igStartConversationsListener(uid) {
 				}
 			}
 		}, (err) => {
-			console.warn('Chats listener error:', err);
+			console.error('❌ Chats listener error:', err);
+			console.error('❌ Error code:', err?.code);
+			console.error('❌ Error message:', err?.message);
+			
+			// Pokud chybí index, zobrazit uživatelsky přívětivou zprávu
+			if (err?.code === 'failed-precondition' || err?.message?.includes('index')) {
+				igNotify('Pro chat je potřeba vytvořit Firestore index. Zkontrolujte konzoli pro odkaz.', 'error');
+				console.error('📋 Vytvořte index v Firebase Console:');
+				console.error('   Collection: chats');
+				console.error('   Fields: participants (Array), lastAt (Timestamp)');
+			}
+			
 			igExplainFirestoreBlock(err);
 		});
 	} catch (e) {
@@ -311,14 +331,31 @@ async function igHandleDeepLink() {
 // Zajistit existenci chat dokumentu mezi aktuálním uživatelem a protistranou
 async function igEnsureChatWith(peerUid, listingId, listingTitle) {
 	try {
-		if (!igCurrentUser || !window.firebaseDb) return null;
+		if (!igCurrentUser || !window.firebaseDb) {
+			console.warn('⚠️ igEnsureChatWith: Chybí currentUser nebo firebaseDb');
+			return null;
+		}
+		if (!peerUid) {
+			console.warn('⚠️ igEnsureChatWith: Chybí peerUid');
+			return null;
+		}
+		
 		const a = igCurrentUser.uid;
 		const b = peerUid;
+		
+		// Pokud se pokouší vytvořit chat se sebou samým, vrátit null
+		if (a === b) {
+			console.warn('⚠️ Nelze vytvořit chat se sebou samým');
+			return null;
+		}
+		
 		const chatId = [a, b].sort().join('_');
 		const { doc, getDoc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 		const ref = doc(window.firebaseDb, 'chats', chatId);
 		const snap = await getDoc(ref);
+		
 		if (!snap.exists()) {
+			console.log('📝 Vytvářím nový chat:', chatId);
 			await setDoc(ref, {
 				participants: [a, b],
 				lastMessage: '',
@@ -326,11 +363,16 @@ async function igEnsureChatWith(peerUid, listingId, listingTitle) {
 				createdAt: serverTimestamp(),
 				listingId: listingId || null,
 				listingTitle: listingTitle || null
-			}, { merge: true });
+			});
+			console.log('✅ Chat vytvořen:', chatId);
+		} else {
+			console.log('✅ Chat již existuje:', chatId);
 		}
 		return chatId;
 	} catch (e) {
-		console.warn('igEnsureChatWith failed', e);
+		console.error('❌ igEnsureChatWith failed:', e);
+		console.error('❌ Error code:', e?.code);
+		console.error('❌ Error message:', e?.message);
 		igExplainFirestoreBlock(e);
 		return null;
 	}
@@ -729,19 +771,38 @@ async function igStartMessagesListener(chatId) {
 // Odeslání zprávy do Firestore
 async function igSendMessageToFirestore(chatId, text, files) {
 	if (!igCurrentUser || !window.firebaseDb) return;
-	const { collection, addDoc, doc, updateDoc, serverTimestamp, setDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-	await setDoc(doc(window.firebaseDb, 'chats', chatId), { lastAt: serverTimestamp() }, { merge: true });
-	const msgsRef = collection(window.firebaseDb, 'chats', chatId, 'messages');
-	await addDoc(msgsRef, {
-		fromUid: igCurrentUser.uid,
-		text: text || '',
-		images: [],
-		createdAt: serverTimestamp()
-	});
-	await updateDoc(doc(window.firebaseDb, 'chats', chatId), {
-		lastMessage: text || '📷 Foto',
-		lastAt: serverTimestamp()
-	});
+	try {
+		const { collection, addDoc, doc, updateDoc, serverTimestamp, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+		
+		// Zkontrolovat, zda chat existuje
+		const chatRef = doc(window.firebaseDb, 'chats', chatId);
+		const chatSnap = await getDoc(chatRef);
+		
+		if (!chatSnap.exists()) {
+			console.warn('⚠️ Chat dokument neexistuje:', chatId);
+			igNotify('Chat neexistuje. Zkuste obnovit stránku.', 'error');
+			return;
+		}
+		
+		// Přidat zprávu
+		const msgsRef = collection(window.firebaseDb, 'chats', chatId, 'messages');
+		await addDoc(msgsRef, {
+			fromUid: igCurrentUser.uid,
+			text: text || '',
+			images: [],
+			createdAt: serverTimestamp()
+		});
+		
+		// Aktualizovat chat dokument (lastMessage a lastAt)
+		await updateDoc(chatRef, {
+			lastMessage: text || '📷 Foto',
+			lastAt: serverTimestamp()
+		});
+	} catch (e) {
+		console.error('❌ Chyba při odesílání zprávy:', e);
+		igExplainFirestoreBlock(e);
+		igNotify('Nepodařilo se odeslat zprávu. Zkuste to znovu.', 'error');
+	}
 }
 
 // Export / integrace: voláno z inzerátu (přesměruje na chat s parametry)
