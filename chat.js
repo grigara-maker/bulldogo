@@ -142,11 +142,23 @@ async function loadConversations() {
         const { collection, query, where, orderBy, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         const conversationsRef = collection(window.firebaseDb, 'conversations');
-        const q = query(
-            conversationsRef,
-            where('participants', 'array-contains', currentUser.uid),
-            orderBy('lastMessageAt', 'desc')
-        );
+        
+        // Zkusit query s orderBy, pokud selže, použít bez orderBy
+        let q;
+        try {
+            q = query(
+                conversationsRef,
+                where('participants', 'array-contains', currentUser.uid),
+                orderBy('lastMessageAt', 'desc')
+            );
+        } catch (e) {
+            // Pokud selže (chybí index), použít jednodušší query bez orderBy
+            console.warn('⚠️ Nelze použít orderBy, chybí index. Používám jednodušší query.');
+            q = query(
+                conversationsRef,
+                where('participants', 'array-contains', currentUser.uid)
+            );
+        }
         
         if (conversationsUnsubscribe) {
             conversationsUnsubscribe();
@@ -196,6 +208,13 @@ async function loadConversations() {
                 });
             }
             
+            // Seřadit podle lastMessageAt (pokud není orderBy v query)
+            conversations.sort((a, b) => {
+                const timeA = a.lastMessageAt?.toDate?.() || a.lastMessageAt || new Date(0);
+                const timeB = b.lastMessageAt?.toDate?.() || b.lastMessageAt || new Date(0);
+                return timeB - timeA;
+            });
+            
             renderConversations();
             
             // Pokud je v URL conversationId, otevřít ho
@@ -209,7 +228,15 @@ async function loadConversations() {
             if (error.code === 'permission-denied') {
                 showError('Chybí oprávnění Firestore. Zkontrolujte publikované Firestore Rules ve Firebase Console.');
             } else if (error.code === 'failed-precondition') {
-                showError('Pro chat je potřeba vytvořit Firestore index. Zkontrolujte konzoli pro odkaz.');
+                const indexUrl = error.message?.match(/https:\/\/console\.firebase\.google\.com[^\s]+/)?.[0];
+                if (indexUrl) {
+                    console.error('📋 Vytvořte index na tomto odkazu:', indexUrl);
+                    showError(`Pro chat je potřeba vytvořit Firestore index. Otevřete konzoli pro odkaz.`);
+                } else {
+                    showError('Pro chat je potřeba vytvořit Firestore index. Firebase Console → Firestore → Indexes → Create Index pro conversations s poli: participants (Array), lastMessageAt (Timestamp).');
+                }
+            } else {
+                showError('Nepodařilo se načíst konverzace.');
             }
         });
     } catch (error) {
@@ -537,13 +564,26 @@ window.contactSeller = async function(listingId, sellerUid, listingTitle) {
 // ============================================
 async function loadLatestAds() {
     const container = q('igRightAds');
-    if (!container || !window.firebaseDb) return;
+    if (!container || !window.firebaseDb) {
+        console.warn('⚠️ Nelze načíst inzeráty: chybí container nebo firebaseDb');
+        return;
+    }
     
     try {
         const { collectionGroup, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
-        const q = query(inzeratyRef, orderBy('createdAt', 'desc'), limit(3));
+        
+        // Zkusit query s orderBy, pokud selže, použít bez orderBy
+        let q;
+        try {
+            q = query(inzeratyRef, orderBy('createdAt', 'desc'), limit(3));
+        } catch (e) {
+            // Pokud selže (chybí index), použít jednodušší query bez orderBy
+            console.warn('⚠️ Nelze použít orderBy pro inzeráty, chybí index. Používám jednodušší query.');
+            q = query(inzeratyRef, limit(3));
+        }
+        
         const snapshot = await getDocs(q);
         
         if (snapshot.empty) {
@@ -554,7 +594,7 @@ async function loadLatestAds() {
         const ads = [];
         snapshot.forEach(doc => {
             const data = doc.data();
-            const userId = doc.ref.parent.parent.id;
+            const userId = doc.ref.parent?.parent?.id || data.userId || '';
             ads.push({
                 id: doc.id,
                 userId: userId,
@@ -562,11 +602,22 @@ async function loadLatestAds() {
                 location: data.location || 'Neuvedeno',
                 category: data.category || '',
                 price: data.price || '',
-                isTop: data.isTop || false
+                isTop: data.isTop || false,
+                createdAt: data.createdAt
             });
         });
         
-        container.innerHTML = ads.map(ad => {
+        // Seřadit podle createdAt (pokud není orderBy v query)
+        ads.sort((a, b) => {
+            const timeA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+            const timeB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+            return timeB - timeA;
+        });
+        
+        // Omezit na 3 nejnovější
+        const latestAds = ads.slice(0, 3);
+        
+        container.innerHTML = latestAds.map(ad => {
             const topBadge = ad.isTop ? `
                 <span style="
                     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
@@ -602,8 +653,18 @@ async function loadLatestAds() {
             `;
         }).join('');
     } catch (error) {
-        console.warn('⚠️ Nepodařilo se načíst inzeráty:', error);
-        container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Nepodařilo se načíst inzeráty</div>';
+        console.error('❌ Chyba při načítání inzerátů:', error);
+        if (error.code === 'permission-denied') {
+            container.innerHTML = '<div style="padding: 12px; color: #f77c00;">Chybí oprávnění pro načtení inzerátů</div>';
+        } else if (error.code === 'failed-precondition') {
+            const indexUrl = error.message?.match(/https:\/\/console\.firebase\.google\.com[^\s]+/)?.[0];
+            if (indexUrl) {
+                console.error('📋 Vytvořte index pro inzeráty na tomto odkazu:', indexUrl);
+            }
+            container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Pro zobrazení inzerátů je potřeba vytvořit Firestore index</div>';
+        } else {
+            container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Nepodařilo se načíst inzeráty</div>';
+        }
     }
 }
 
@@ -685,4 +746,5 @@ if (document.readyState === 'loading') {
 
 // Export pro globální použití
 window.openConversation = openConversation;
+
 
