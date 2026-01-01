@@ -21,6 +21,16 @@
     <link rel="icon" type="image/png" href="fotky/bulldogo-logo.png">
     <link rel="apple-touch-icon" href="fotky/bulldogo-logo.png">
     <link rel="manifest" href="/site.webmanifest">
+    <script>
+        // Registrace Service Worker pro caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(() => console.log('✅ Service Worker registrován'))
+                    .catch((err) => console.log('⚠️ Service Worker registrace selhala:', err));
+            });
+        }
+    </script>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="BULLDOGO">
     <meta property="og:title" content="BULLDOGO – inzerce služeb pro každého">
@@ -33,7 +43,8 @@
     <meta name="twitter:image" content="https://bulldogo.cz/fotky/bulldogo-logo.png">
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/electric-border.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'" crossorigin="anonymous">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
     <style>
         /* Skryje spodní popis (tagy) u kartiček kategorií na hlavní stránce */
         #services-categories .carousel-tags { display: none !important; }
