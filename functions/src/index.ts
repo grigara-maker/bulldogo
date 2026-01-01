@@ -2530,15 +2530,15 @@ function generateWelcomeEmailHTML(userName: string): string {
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #374151; font-weight: 500;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
-                <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
-                <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
-                <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
+              <p style="margin: 0 0 20px 0; font-size: 13px; color: #1a1a2e;">
+                <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none; font-weight: 600;">bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none; font-weight: 600;">support@bulldogo.cz</a> &nbsp;|&nbsp;
+                <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none; font-weight: 600;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+              <p style="margin: 0; font-size: 12px; color: #4b5563;">
                 © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
