@@ -867,6 +867,9 @@ function getCategoryName(category) {
 // Získání názvu lokace s diakritikou
 function getLocationName(location) {
     const locations = {
+        'Kdekoliv': 'Kdekoliv',
+        'CelaCeskaRepublika': 'Celá Česká republika',
+        'CelaSlovenskaRepublika': 'Celá Slovenská republika',
         'Praha': 'Hlavní město Praha',
         'Stredocesky': 'Středočeský kraj',
         'Jihocesky': 'Jihočeský kraj',
