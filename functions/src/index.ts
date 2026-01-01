@@ -3023,7 +3023,9 @@ export const sendProfileChangeEmail = functions
       const otherChanges: string[] = [];
       
       for (const key of allKeys) {
+        // Ignorovat všechny ignorovaná pole (včetně updatedAt)
         if (ignoredFields.includes(key)) continue;
+        // Ignorovat foto-related pole
         if (photoRelatedFields.includes(key)) continue;
         
         const oldVal = beforeData[key];
@@ -3035,7 +3037,7 @@ export const sendProfileChangeEmail = functions
         
         if (oldVal && typeof oldVal === 'object' && 'toDate' in oldVal) {
           oldNormalized = oldVal.toDate().getTime();
-        } else if (oldVal === null || oldVal === undefined) {
+        } else if (oldVal === null || oldVal === undefined || oldVal === "") {
           oldNormalized = "";
         } else {
           oldNormalized = String(oldVal);
@@ -3043,7 +3045,7 @@ export const sendProfileChangeEmail = functions
         
         if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
           newNormalized = newVal.toDate().getTime();
-        } else if (newVal === null || newVal === undefined) {
+        } else if (newVal === null || newVal === undefined || newVal === "") {
           newNormalized = "";
         } else {
           newNormalized = String(newVal);
@@ -3056,13 +3058,20 @@ export const sendProfileChangeEmail = functions
         }
       }
       
-      // Pokud se mění pouze foto-related pole, neposílat email
+      // Pokud se mění pouze foto-related pole (a možná updatedAt, který je ignorován), neposílat email
       if (!hasOtherChanges) {
         functions.logger.info("Změna pouze profilové fotky, email se neposílá", { 
           userId,
           photoChanges,
           beforeKeys: Object.keys(beforeData),
-          afterKeys: Object.keys(afterData)
+          afterKeys: Object.keys(afterData),
+          allChangedKeys: Array.from(allKeys).filter(k => {
+            const oldVal = beforeData[k];
+            const newVal = afterData[k];
+            if (oldVal === undefined && newVal === undefined) return false;
+            if (oldVal === undefined || newVal === undefined) return true;
+            return JSON.stringify(oldVal) !== JSON.stringify(newVal);
+          })
         });
         return null;
       } else {

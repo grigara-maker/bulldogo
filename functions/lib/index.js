@@ -2848,7 +2848,7 @@ exports.sendProfileChangeEmail = functions
             });
         }
     }
-    // Získej změněná pole
+    // Získej změněná pole (ale ignoruj foto-related pole)
     const changes = getChangedFields(beforeData, afterData);
     // Pokud nejsou žádné relevantní změny, neposílej email
     if (changes.length === 0) {
