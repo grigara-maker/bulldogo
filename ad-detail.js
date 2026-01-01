@@ -971,13 +971,28 @@ function formatDate(date) {
     }
     
     const now = new Date();
-    const diffTime = Math.abs(now - serviceDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const serviceDay = new Date(serviceDate.getFullYear(), serviceDate.getMonth(), serviceDate.getDate());
     
-    if (diffDays === 1) return 'Včera';
-    if (diffDays < 7) return `Před ${diffDays} dny`;
-    if (diffDays < 30) return `Před ${Math.ceil(diffDays / 7)} týdny`;
-    return serviceDate.toLocaleDateString('cs-CZ');
+    // Compare dates (without time)
+    if (serviceDay.getTime() === today.getTime()) {
+        return 'Dnes';
+    } else if (serviceDay.getTime() === yesterday.getTime()) {
+        return 'Včera';
+    } else {
+        const diffTime = today.getTime() - serviceDay.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 7) {
+            return `Před ${diffDays} dny`;
+        } else if (diffDays < 30) {
+            return `Před ${Math.ceil(diffDays / 7)} týdny`;
+        } else {
+            return serviceDate.toLocaleDateString('cs-CZ');
+        }
+    }
 }
 
 // Show error (deduplicated)

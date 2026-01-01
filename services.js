@@ -940,15 +940,53 @@ function getRegionCode(input) {
 function formatDate(date) {
     if (!date) return 'Neznámé datum';
     
-    const now = new Date();
-    const serviceDate = date instanceof Date ? date : new Date(date);
-    const diffTime = Math.abs(now - serviceDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    let serviceDate;
     
-    if (diffDays === 1) return 'Včera';
-    if (diffDays < 7) return `Před ${diffDays} dny`;
-    if (diffDays < 30) return `Před ${Math.ceil(diffDays / 7)} týdny`;
-    return serviceDate.toLocaleDateString('cs-CZ');
+    // Handle Firebase Timestamp
+    if (date.toDate && typeof date.toDate === 'function') {
+        serviceDate = date.toDate();
+    }
+    // Handle Firebase Timestamp with seconds/nanoseconds
+    else if (date.seconds) {
+        serviceDate = new Date(date.seconds * 1000);
+    }
+    // Handle regular Date object
+    else if (date instanceof Date) {
+        serviceDate = date;
+    }
+    // Handle string or number
+    else {
+        serviceDate = new Date(date);
+    }
+    
+    // Check if date is valid
+    if (isNaN(serviceDate.getTime())) {
+        return 'Neznámé datum';
+    }
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const serviceDay = new Date(serviceDate.getFullYear(), serviceDate.getMonth(), serviceDate.getDate());
+    
+    // Compare dates (without time)
+    if (serviceDay.getTime() === today.getTime()) {
+        return 'Dnes';
+    } else if (serviceDay.getTime() === yesterday.getTime()) {
+        return 'Včera';
+    } else {
+        const diffTime = today.getTime() - serviceDay.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 7) {
+            return `Před ${diffDays} dny`;
+        } else if (diffDays < 30) {
+            return `Před ${Math.ceil(diffDays / 7)} týdny`;
+        } else {
+            return serviceDate.toLocaleDateString('cs-CZ');
+        }
+    }
 }
 
 // Aktualizace statistik
