@@ -924,9 +924,15 @@
     text-align: left; /* Zarovnání vlevo */
 }
 .ad-price {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     text-align: left; /* Zarovnání vlevo */
 }
 .ad-location {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     text-align: left; /* Zarovnání vlevo */
 }
 
