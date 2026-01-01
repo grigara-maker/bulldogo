@@ -2602,6 +2602,9 @@ const ignoredFields = [
   "firstName",
   "lastName",
   "birthDate",
+  "photoURL",
+  "avatarUrl",
+  "avatar",
 ];
 
 /**
