@@ -787,7 +787,7 @@ async function login(email, password) {
         const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
         // Firebase Auth modul načten - logy odstraněny
         
-        console.log('🔑 Volám signInWithEmailAndPassword...');
+        // Volám signInWithEmailAndPassword - logy odstraněny
         const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
         console.log('✅ Přihlášení úspěšné:', userCredential.user);
         
