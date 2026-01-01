@@ -3488,6 +3488,31 @@ export const deleteUserAuth = functions.region("europe-west1").https.onRequest(a
       const db = admin.firestore();
       const auth = admin.auth();
       
+      // Zkontrolovat autentifikaci z Authorization headeru
+      const authHeader = req.headers.authorization;
+      let verifiedAdminUid = null;
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const idToken = authHeader.split('Bearer ')[1];
+          const decodedToken = await auth.verifyIdToken(idToken);
+          verifiedAdminUid = decodedToken.uid;
+          
+          // Ověřit, že token UID odpovídá adminUid z body
+          if (verifiedAdminUid !== adminUid) {
+            res.status(403).json({ error: "Token UID does not match adminUid" });
+            return;
+          }
+        } catch (error: any) {
+          functions.logger.error("❌ Chyba při ověřování tokenu", { error: error?.message });
+          res.status(401).json({ error: "Invalid or expired token" });
+          return;
+        }
+      } else {
+        // Pokud není token, stále zkontrolovat admin status (pro zpětnou kompatibilitu)
+        functions.logger.warn("⚠️ No Authorization token provided, checking admin status only");
+      }
+      
       // Zkontrolovat, jestli volající je admin
       try {
         const adminProfileDoc = await db.doc(`users/${adminUid}/profile/profile`).get();
