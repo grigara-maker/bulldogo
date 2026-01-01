@@ -571,7 +571,11 @@
 }
 
 /* Ads Grid */
+/* Anti-AdBlock: Zajistit zobrazení sekce služeb */
 .ads-section {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     padding: 56px 0 72px;
     background: #ffffff;
     text-align: center; /* Vycentrovat obsah */
@@ -796,8 +800,30 @@
     .cta-title { font-size: 1.8rem; }
 }
 
+/* Anti-AdBlock: Zajistit zobrazení elementů s "ad" v názvu */
+.ads-section,
+.ads-grid,
+.ad-card,
+.ad-body,
+.ad-thumb,
+.ad-title,
+.ad-price,
+.ad-location,
+.ad-meta,
+.ad-actions,
+.ad-badge-top,
+.ad-flames,
+[class*="ad-"],
+[id*="ad-"],
+[class*="ads-"],
+[id*="ads-"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .ads-grid {
-    display: grid;
+    display: grid !important;
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
     max-width: 1600px; /* Maximální šířka gridu */
@@ -821,7 +847,7 @@
 }
 
 .ad-card {
-    background: white;
+    background: white !important;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     overflow: hidden;
@@ -829,8 +855,11 @@
     border: 1px solid #f0f0f0;
     min-height: 320px;
     position: relative;
-    width: 100%; /* Zajistit, aby karty měly stejnou šířku */
-    max-width: 100%; /* Zajistit, aby karty nepřesahovaly */
+    width: 100% !important; /* Zajistit, aby karty měly stejnou šířku */
+    max-width: 100% !important; /* Zajistit, aby karty nepřesahovaly */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .ad-card:hover {
@@ -850,16 +879,28 @@
     box-shadow: 0 8px 28px rgba(255, 138, 0, 0.6), 0 0 0 2px rgba(255, 138, 0, 0.4), inset 0 0 0 1px rgba(255, 138, 0, 0.1) !important;
 }
 
-.ad-thumb { width: 100%; height: 200px; background: white; }
+.ad-thumb { 
+    width: 100% !important; 
+    height: 200px !important; 
+    background: white !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
 .ad-thumb img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-    display: block; 
+    width: 100% !important; 
+    height: 100% !important; 
+    object-fit: cover !important; 
+    display: block !important; 
+    visibility: visible !important;
+    opacity: 1 !important;
     border-radius: 0; /* Odstranit zaoblené rohy pro mobilní zařízení */
 }
 
-.ad-body { 
+.ad-body {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important; 
     padding: 12px 14px 90px !important; 
     position: relative;
     min-height: 160px !important;
