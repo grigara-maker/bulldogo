@@ -599,12 +599,31 @@
                     }
                 }
                 
+                // Normalizace telefonu do formátu E.164 (bez mezer) pro uložení do databáze
+                let normalizedPhone = '';
+                if (phoneRaw && phoneRaw !== '+420') {
+                    // Odstranit mezery a normalizovat do formátu +420XXXXXXXXX
+                    const cleaned = phoneRaw.replace(/\s+/g, '').trim();
+                    if (cleaned.startsWith('+420')) {
+                        normalizedPhone = cleaned;
+                    } else if (cleaned.startsWith('420')) {
+                        normalizedPhone = '+' + cleaned;
+                    } else if (cleaned.startsWith('00')) {
+                        normalizedPhone = '+' + cleaned.slice(2);
+                    } else if (cleaned.startsWith('+')) {
+                        normalizedPhone = cleaned;
+                    } else {
+                        // Pokud začíná číslem, předpokládáme české číslo
+                        normalizedPhone = '+420' + cleaned.replace(/\D/g, '');
+                    }
+                }
+                
                 const personalData = {
                     firstName: firstName,
                     lastName: lastName,
                     name: `${firstName} ${lastName}`.trim(), // Zachovat i složené jméno pro kompatibilitu
-                    email: emailRaw,
-                    phone: phoneRaw === '+420' ? '' : phoneRaw,
+                    email: emailRaw, // Email se vždy ukládá do profilu
+                    phone: normalizedPhone || null, // Telefon se ukládá ve formátu E.164
                     city: cityEl ? cityEl.value : '',
                     bio: bioText,
                     updatedAt: new Date()
@@ -1561,14 +1580,28 @@ Prosím kontaktujte podporu.
             applyUserTypeToSettingsUI(resolvedType);
             
             // Osobní informace - vždy prefilled
+            // Email se vždy bere z profilu (pokud není, pak z auth jako fallback)
             const authEmail = (window.firebaseAuth?.currentUser?.email || '').toString().trim();
             const profileEmail = (userProfile?.email || '').toString().trim();
             const emailValue = profileEmail || authEmail || '';
+            
+            // Telefon se vždy bere z profilu a formátuje se pro zobrazení
+            let phoneValue = userProfile?.phone || '+420';
+            // Pokud je telefon ve formátu +420123456789, přidat mezery pro lepší čitelnost
+            if (phoneValue && phoneValue.startsWith('+420') && phoneValue.length > 4) {
+                const digits = phoneValue.slice(4).replace(/\D/g, '');
+                if (digits.length >= 9) {
+                    // Formátovat jako +420 XXX XXX XXX
+                    const formatted = `+420 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`.trim();
+                    phoneValue = formatted;
+                }
+            }
+            
             const personalFields = {
                 'firstName': userProfile?.firstName || '',
                 'lastName': userProfile?.lastName || '',
                 'email': emailValue,
-                'phone': userProfile?.phone || '+420',
+                'phone': phoneValue,
                 'city': userProfile?.city || '',
                 'bio': userProfile?.bio || ''
             };
