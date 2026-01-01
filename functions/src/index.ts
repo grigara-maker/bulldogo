@@ -2511,7 +2511,7 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <!-- Pozdrav -->
                 <tr>
                   <td align="center" style="padding: 0 40px 20px 40px;">
-                    <h1 class="email-title" style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
+                    <h1 class="email-title" style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e !important; line-height: 1.3;">
                       Ahoj, ${userName}! 👋
                     </h1>
                   </td>
@@ -2520,11 +2520,11 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <!-- Hlavní text -->
                 <tr>
                   <td align="center" style="padding: 0 40px 30px 40px;">
-                    <p class="email-text-dark" style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #1a1a2e;">
-                      <strong style="color: #ff6a00;">Děkujeme za registraci</strong> na portálu <strong class="email-text-dark" style="color: #1a1a2e;">Bulldogo.cz</strong>!
+                    <p class="email-text-dark" style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #1a1a2e !important;">
+                      <strong style="color: #ff6a00;">Děkujeme za registraci</strong> na portálu <strong class="email-text-dark" style="color: #1a1a2e !important;">Bulldogo.cz</strong>!
                     </p>
-                    <p class="email-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #2d3748;">
-                      Jsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – <strong class="email-text-dark" style="color: #1a1a2e;">vytvářet inzeráty</strong>, <strong class="email-text-dark" style="color: #1a1a2e;">hledat služby</strong> a <strong class="email-text-dark" style="color: #1a1a2e;">spojovat se s profesionály</strong> po celé České republice.
+                    <p class="email-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #2d3748 !important;">
+                      Jsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – <strong class="email-text-dark" style="color: #1a1a2e !important;">vytvářet inzeráty</strong>, <strong class="email-text-dark" style="color: #1a1a2e !important;">hledat služby</strong> a <strong class="email-text-dark" style="color: #1a1a2e !important;">spojovat se s profesionály</strong> po celé České republice.
                     </p>
                   </td>
                 </tr>
