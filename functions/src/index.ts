@@ -2458,11 +2458,11 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <!-- Hlavní text -->
                 <tr>
                   <td align="center" style="padding: 0 40px 30px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
-                      <strong style="color: #ff6a00;">Děkujeme za registraci</strong> na portálu <strong>Bulldogo.cz</strong>!
+                    <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #1a1a2e;">
+                      <strong style="color: #ff6a00;">Děkujeme za registraci</strong> na portálu <strong style="color: #1a1a2e;">Bulldogo.cz</strong>!
                     </p>
-                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
-                      Jsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – <strong>vytvářet inzeráty</strong>, <strong>hledat služby</strong> a <strong>spojovat se s profesionály</strong> po celé České republice.
+                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #2d3748;">
+                      Jsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – <strong style="color: #1a1a2e;">vytvářet inzeráty</strong>, <strong style="color: #1a1a2e;">hledat služby</strong> a <strong style="color: #1a1a2e;">spojovat se s profesionály</strong> po celé České republice.
                     </p>
                   </td>
                 </tr>
@@ -2480,25 +2480,25 @@ function generateWelcomeEmailHTML(userName: string): string {
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #4a5568; font-size: 15px;">Snadné vytváření inzerátů</span>
+                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Snadné vytváření inzerátů</span>
                               </td>
                             </tr>
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #4a5568; font-size: 15px;">Ověření firemních profilu</span>
+                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Ověření firemních profilu</span>
                               </td>
                             </tr>
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #4a5568; font-size: 15px;">Integrovaný chat se zákazníky</span>
+                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Integrovaný chat se zákazníky</span>
                               </td>
                             </tr>
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #4a5568; font-size: 15px;">Systém hodnocení a recenzí</span>
+                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Systém hodnocení a recenzí</span>
                               </td>
                             </tr>
                           </table>
