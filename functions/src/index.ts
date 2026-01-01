@@ -284,7 +284,7 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #fffbeb; border-radius: 12px; border: 1px solid #fde68a;">
                       <tr>
                         <td style="padding: 20px;">
-                          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #92400e;">
+                          <p class="email-text-dark" style="margin: 0; font-size: 15px; line-height: 1.6; color: #92400e;">
                             <strong>⚠️ Tato akce je nevratná!</strong><br>
                             Po smazání budou trvale odstraněny všechny vaše údaje včetně profilu, inzerátů, recenzí a zpráv.
                           </p>
@@ -300,10 +300,10 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 16px; border: 1px solid #a7f3d0;">
                       <tr>
                         <td style="padding: 20px;">
-                          <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px;">
+                          <p class="email-text-dark" style="margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px;">
                             ✅ Jak zabránit smazání?
                           </p>
-                          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #047857;">
+                          <p class="email-text" style="margin: 0; font-size: 15px; line-height: 1.6; color: #047857;">
                             <strong>Stačí se přihlásit</strong> do svého účtu před datem smazání a váš účet zůstane aktivní. 
                             Žádné další kroky nejsou potřeba.
                           </p>
@@ -331,7 +331,7 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                 <!-- Podpora -->
                 <tr>
                   <td align="center" style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                    <p class="email-text" style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
                       Máte otázky? Kontaktujte naši podporu na 
                       <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none; font-weight: 600;">support@bulldogo.cz</a>
                       nebo zavolejte na <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none; font-weight: 600;">+420 605 121 023</a>.
@@ -2951,10 +2951,10 @@ function generateNewMessageEmailHTML(
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fff8eb 0%, #fff3e0 100%); border-radius: 12px; border: 1px solid #ffe0b2;">
           <tr>
             <td style="padding: 15px;">
-              <p style="margin: 0; font-size: 13px; color: #92400e; font-weight: 600;">
+                          <p style="margin: 0; font-size: 13px; color: #92400e; font-weight: 600;">
                 <span style="margin-right: 8px;">📋</span> K inzerátu:
               </p>
-              <p style="margin: 8px 0 0 0; font-size: 16px; color: #1a1a2e; font-weight: 700;">
+              <p class="email-text-dark" style="margin: 8px 0 0 0; font-size: 16px; color: #1a1a2e; font-weight: 700;">
                 ${listingTitle}
               </p>
             </td>
@@ -3050,11 +3050,11 @@ function generateNewMessageEmailHTML(
                 <!-- Hlavní text -->
                 <tr>
                   <td align="center" style="padding: 0 40px 25px 40px;">
-                    <p style="margin: 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
+                    <p class="email-text" style="margin: 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
                       Ahoj, <strong style="color: #ff6a00;">${recipientName}</strong>!
                     </p>
-                    <p style="margin: 10px 0 0 0; font-size: 16px; line-height: 1.7; color: #718096;">
-                      Uživatel <strong style="color: #1a1a2e;">${senderName}</strong> ti poslal novou zprávu.
+                    <p class="email-text" style="margin: 10px 0 0 0; font-size: 16px; line-height: 1.7; color: #718096;">
+                      Uživatel <strong class="email-text-dark" style="color: #1a1a2e;">${senderName}</strong> ti poslal novou zprávu.
                     </p>
                   </td>
                 </tr>
@@ -3065,13 +3065,13 @@ function generateNewMessageEmailHTML(
                 <!-- Zpráva -->
                 <tr>
                   <td style="padding: 0 40px 30px 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #f8f9fa; border-radius: 16px; border: 1px solid #e5e7eb;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-bg-light email-border" style="background: #f8f9fa; border-radius: 16px; border: 1px solid #e5e7eb;">
                       <tr>
                         <td style="padding: 20px;">
-                          <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">
+                          <p class="email-text-light" style="margin: 0 0 10px 0; font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">
                             Zpráva:
                           </p>
-                          <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #1a1a2e; white-space: pre-wrap;">
+                          <p class="email-text-dark" style="margin: 0; font-size: 16px; line-height: 1.7; color: #1a1a2e; white-space: pre-wrap;">
                             ${truncatedMessage}
                           </p>
                         </td>
