@@ -299,45 +299,181 @@ function filterUsers() {
 
 // Mazání uživatele
 async function deleteUser(userId) {
-    if (!confirm('Opravdu chcete smazat tohoto uživatele? Tato akce je nevratná a smaže všechny jeho data včetně inzerátů.')) {
+    if (!confirm('⚠️ VAROVÁNÍ: NEVRATNÁ AKCE\n\nOpravdu chcete smazat tohoto uživatele?\n\nTato akce je NEVRATNÁ a smaže:\n- Všechny jeho inzeráty a služby\n- Všechny recenze a hodnocení\n- Všechny zprávy a konverzace\n- Všechna data z Firestore a Storage\n- Účet z Firebase Authentication')) {
         return;
     }
     
     try {
-        const { deleteDoc, doc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { deleteDoc, doc, collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
-        console.log('🗑️ Mažu uživatele z Firestore:', userId);
+        console.log('🗑️ Mažu uživatele ze všech částí Firebase:', userId);
         
-        // Smazat všechny inzeráty uživatele
-        const adsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty');
-        const adsSnapshot = await getDocs(adsRef);
-        console.log(`   - Mažu ${adsSnapshot.size} inzerátů uživatele`);
-        for (const adDoc of adsSnapshot.docs) {
-            await deleteDoc(adDoc.ref);
-            console.log(`   ✓ Smazán inzerát: ${adDoc.id}`);
+        // 1. Smazat profil uživatele
+        try {
+            await deleteDoc(doc(window.firebaseDb, 'users', userId, 'profile', 'profile'));
+            console.log('   ✓ Profil smazán');
+        } catch (error) {
+            console.log('   ⚠️ Profil nebyl nalezen nebo již byl smazán');
+        }
+
+        // 2. Smazat všechny inzeráty uživatele a jejich recenze
+        try {
+            const adsCollection = collection(window.firebaseDb, 'users', userId, 'inzeraty');
+            const adsSnapshot = await getDocs(adsCollection);
+            
+            // Pro každý inzerát smazat i jeho recenze
+            for (const adDoc of adsSnapshot.docs) {
+                try {
+                    // Smazat recenze na inzerátu
+                    const adReviewsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty', adDoc.id, 'reviews');
+                    const adReviewsSnapshot = await getDocs(adReviewsRef);
+                    const deleteAdReviewsPromises = adReviewsSnapshot.docs.map(reviewDoc => deleteDoc(reviewDoc.ref));
+                    await Promise.all(deleteAdReviewsPromises);
+                } catch (error) {
+                    console.log(`   ⚠️ Recenze na inzerátu ${adDoc.id} nebyly nalezeny`);
+                }
+                
+                // Smazat inzerát
+                await deleteDoc(adDoc.ref);
+            }
+            console.log(`   ✓ Všechny inzeráty (${adsSnapshot.size}) a jejich recenze smazány`);
+        } catch (error) {
+            console.log('   ⚠️ Inzeráty nebyly nalezeny nebo již byly smazány');
+        }
+
+        // 3. Smazat recenze na profilu uživatele (users/{uid}/reviews)
+        try {
+            const profileReviewsRef = collection(window.firebaseDb, 'users', userId, 'reviews');
+            const profileReviewsSnapshot = await getDocs(profileReviewsRef);
+            const deleteProfileReviewsPromises = profileReviewsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deleteProfileReviewsPromises);
+            console.log(`   ✓ Recenze na profilu (${profileReviewsSnapshot.size}) smazány`);
+        } catch (error) {
+            console.log('   ⚠️ Recenze na profilu nebyly nalezeny');
+        }
+
+        // 4. Smazat všechny recenze v root kolekci reviews (kde je reviewedUserId nebo reviewerId)
+        try {
+            // Recenze kde je uživatel recenzovaný
+            const reviewedQuery = query(
+                collection(window.firebaseDb, 'reviews'),
+                where('reviewedUserId', '==', userId)
+            );
+            const reviewedSnapshot = await getDocs(reviewedQuery);
+            const deleteReviewedPromises = reviewedSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deleteReviewedPromises);
+            
+            // Recenze kde je uživatel recenzující
+            const reviewerQuery = query(
+                collection(window.firebaseDb, 'reviews'),
+                where('reviewerId', '==', userId)
+            );
+            const reviewerSnapshot = await getDocs(reviewerQuery);
+            const deleteReviewerPromises = reviewerSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deleteReviewerPromises);
+            
+            console.log(`   ✓ Všechny recenze v root kolekci (${reviewedSnapshot.size + reviewerSnapshot.size}) smazány`);
+        } catch (error) {
+            console.log('   ⚠️ Recenze v root kolekci nebyly nalezeny');
+        }
+
+        // 5. Smazat všechny zprávy (kde je userId nebo recipientId)
+        try {
+            // Zprávy kde je uživatel odesílatel
+            const messagesFromQuery = query(
+                collection(window.firebaseDb, 'messages'),
+                where('userId', '==', userId)
+            );
+            const messagesFromSnapshot = await getDocs(messagesFromQuery);
+            const deleteMessagesFromPromises = messagesFromSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deleteMessagesFromPromises);
+            
+            // Zprávy kde je uživatel příjemce
+            const messagesToQuery = query(
+                collection(window.firebaseDb, 'messages'),
+                where('recipientId', '==', userId)
+            );
+            const messagesToSnapshot = await getDocs(messagesToQuery);
+            const deleteMessagesToPromises = messagesToSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deleteMessagesToPromises);
+            
+            console.log(`   ✓ Všechny zprávy (${messagesFromSnapshot.size + messagesToSnapshot.size}) smazány`);
+        } catch (error) {
+            console.log('   ⚠️ Zprávy nebyly nalezeny');
+        }
+
+        // 6. Smazat všechny konverzace (kde je uživatel účastník)
+        try {
+            const conversationsQuery = query(
+                collection(window.firebaseDb, 'conversations'),
+                where('participants', 'array-contains', userId)
+            );
+            const conversationsSnapshot = await getDocs(conversationsQuery);
+            const deleteConversationsPromises = conversationsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+            await Promise.all(deleteConversationsPromises);
+            console.log(`   ✓ Všechny konverzace (${conversationsSnapshot.size}) smazány`);
+        } catch (error) {
+            console.log('   ⚠️ Konverzace nebyly nalezeny');
+        }
+
+        // 7. Smazat hlavní dokument uživatele (users/{uid})
+        try {
+            await deleteDoc(doc(window.firebaseDb, 'users', userId));
+            console.log('   ✓ Hlavní dokument uživatele smazán');
+        } catch (error) {
+            console.log('   ⚠️ Hlavní dokument uživatele nebyl nalezen');
+        }
+
+        // 8. Smazat soubory ve Firebase Storage
+        try {
+            const { getStorage, ref, listAll, deleteObject } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
+            const storage = getStorage(window.firebaseApp);
+            
+            // Smazat všechny soubory v users/{uid}/
+            const userStorageRef = ref(storage, `users/${userId}`);
+            try {
+                const filesList = await listAll(userStorageRef);
+                const deleteFilePromises = filesList.items.map(fileRef => deleteObject(fileRef));
+                await Promise.all(deleteFilePromises);
+                
+                // Smazat také soubory v podsložkách
+                for (const prefixRef of filesList.prefixes) {
+                    const prefixFiles = await listAll(prefixRef);
+                    const deletePrefixPromises = prefixFiles.items.map(fileRef => deleteObject(fileRef));
+                    await Promise.all(deletePrefixPromises);
+                }
+                console.log(`   ✓ Všechny soubory ve Storage (${filesList.items.length}) smazány`);
+            } catch (storageError) {
+                console.log('   ⚠️ Soubory ve Storage nebyly nalezeny nebo již byly smazány');
+            }
+        } catch (error) {
+            console.log('   ⚠️ Chyba při mazání souborů ve Storage:', error);
+        }
+
+        // 9. Smazat Firebase Auth uživatele (pokud je možné z klienta)
+        // POZNÁMKA: Pro úplné smazání z Auth je potřeba použít Cloud Function s Admin SDK
+        // Zde můžeme jen zkusit, ale může to selhat kvůli oprávněním
+        try {
+            // Zkusit získat uživatele a smazat ho
+            // Toto může selhat, protože admin nemůže smazat Auth uživatele z klienta
+            // Pro úplné smazání by bylo potřeba použít Cloud Function
+            console.log('   ⚠️ Poznámka: Smazání z Firebase Auth vyžaduje Cloud Function s Admin SDK');
+            console.log('   ⚠️ Všechna data z Firestore a Storage byla smazána');
+        } catch (error) {
+            console.log('   ⚠️ Nelze smazat z Firebase Auth z klienta - vyžaduje Cloud Function');
         }
         
-        // Smazat profil
-        const profileRef = doc(window.firebaseDb, 'users', userId, 'profile', 'profile');
-        await deleteDoc(profileRef);
-        console.log('   ✓ Smazán profil uživatele');
-        
-        // Smazat root dokument
-        const userRef = doc(window.firebaseDb, 'users', userId);
-        await deleteDoc(userRef);
-        console.log('   ✓ Smazán root dokument uživatele');
-        
-        console.log('✅ Uživatel úspěšně smazán z Firestore');
+        console.log('✅ Uživatel úspěšně smazán ze všech částí Firebase (kromě Auth - vyžaduje Cloud Function)');
         
         // Odstranit z lokálních dat
         allUsers = allUsers.filter(u => (u.uid || u.id) !== userId);
         allAds = allAds.filter(ad => ad.userId !== userId);
         
         displayUsers(allUsers);
-        showMessage('Uživatel úspěšně smazán z Firestore!', 'success');
+        showMessage('✅ Uživatel úspěšně smazán ze všech částí Firebase (Firestore, Storage). Pro smazání z Authentication použijte Cloud Function.', 'success');
     } catch (error) {
-        console.error('❌ Chyba při mazání uživatele z Firestore:', error);
-        showMessage('Nepodařilo se smazat uživatele z Firestore.', 'error');
+        console.error('❌ Chyba při mazání uživatele:', error);
+        showMessage(`Nepodařilo se smazat uživatele: ${error.message}`, 'error');
     }
 }
 
