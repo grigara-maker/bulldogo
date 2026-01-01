@@ -3402,8 +3402,32 @@ body.chat-page .ig-chat {
     grid-template-columns: 320px 1fr 320px !important;
     width: 100% !important;
 }
+
+/* Zajistit viditelnost všech tří sloupců na desktopu */
+@media (min-width: 901px) {
+    body.chat-page .ig-sidebar {
+        display: flex !important;
+    }
+    body.chat-page .ig-main {
+        display: flex !important;
+    }
+    body.chat-page .ig-sidebar-right {
+        display: flex !important;
+    }
+}
+
 @media (max-width: 900px) {
-  body.chat-page .ig-chat { height: 100vh; height: 100dvh; }
+  body.chat-page .ig-chat { 
+      grid-template-columns: 1fr !important;
+      height: 100vh; 
+      height: 100dvh; 
+  }
+  body.chat-page .ig-sidebar { 
+      display: none !important; 
+  }
+  body.chat-page .ig-sidebar-right { 
+      display: none !important; 
+  }
 }
 body.chat-page .instagram-chat-container { height: 100vh; width: 100%; position: relative; display: flex; }
 body.chat-page .chat-main,
