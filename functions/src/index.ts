@@ -2981,6 +2981,43 @@ export const sendProfileChangeEmail = functions
     const afterData = change.after.data() as AnyObj;
     const userId = context.params.userId;
     
+    // Nejdříve zkontrolovat, zda se mění pouze foto-related pole
+    const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
+    const hasPhotoChanges = photoRelatedFields.some(field => {
+      const oldVal = beforeData[field];
+      const newVal = afterData[field];
+      const oldStr = JSON.stringify(oldVal || "");
+      const newStr = JSON.stringify(newVal || "");
+      return oldStr !== newStr;
+    });
+    
+    // Pokud se mění foto-related pole, zkontrolovat, zda se mění i něco jiného
+    if (hasPhotoChanges) {
+      const allKeys = new Set([...Object.keys(beforeData), ...Object.keys(afterData)]);
+      let hasOtherChanges = false;
+      
+      for (const key of allKeys) {
+        if (ignoredFields.includes(key)) continue;
+        if (photoRelatedFields.includes(key)) continue;
+        
+        const oldVal = beforeData[key];
+        const newVal = afterData[key];
+        const oldStr = JSON.stringify(oldVal || "");
+        const newStr = JSON.stringify(newVal || "");
+        
+        if (oldStr !== newStr) {
+          hasOtherChanges = true;
+          break;
+        }
+      }
+      
+      // Pokud se mění pouze foto-related pole, neposílat email
+      if (!hasOtherChanges) {
+        functions.logger.debug("Změna pouze profilové fotky, email se neposílá", { userId });
+        return null;
+      }
+    }
+    
     // Získej změněná pole
     const changes = getChangedFields(beforeData, afterData);
     
