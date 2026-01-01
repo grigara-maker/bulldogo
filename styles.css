@@ -3662,8 +3662,52 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4);
 }
 
-/* Tlačítko btn-create-ad v no-services-actions - identický design jako v hero sekci */
-/* Používá se základní .btn-create-ad třída bez dalších úprav */
+/* Tlačítko btn-create-ad v no-services-actions - moderní design bez ikony */
+.no-services-actions .btn-create-ad {
+    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2.5rem;
+    color: #111827;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+}
+
+.no-services-actions .btn-create-ad::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px 60px at 20% 10%, rgba(255,255,255,0.25), rgba(255,255,255,0) 55%);
+    pointer-events: none;
+}
+
+.no-services-actions .btn-create-ad:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4);
+    filter: brightness(1.05);
+}
+
+.no-services-actions .btn-create-ad:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .no-services-actions .btn-create-ad {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+}
 
 /* Bulldog Image */
 .bulldog-image {
