@@ -2698,7 +2698,7 @@ function formatValue(value: any): string {
 function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any }> {
   const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
   
-  // Nejdříve zkontrolovat, zda se mění pouze foto-related pole
+  // Zkontrolovat, zda se mění nějaké foto-related pole
   const hasPhotoChanges = photoRelatedFields.some(field => {
     const oldPhotoVal = before[field];
     const newPhotoVal = after[field];
@@ -2708,26 +2708,31 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
   });
   
   // Zkontrolovat, zda se mění nějaké jiné pole (kromě ignorovaných a foto-related)
-  const hasOtherChanges = Object.keys(after).some(key => {
-    if (ignoredFields.includes(key)) return false;
-    if (photoRelatedFields.includes(key)) return false;
+  let hasOtherChanges = false;
+  const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  
+  for (const key of allKeys) {
+    if (ignoredFields.includes(key)) continue;
+    if (photoRelatedFields.includes(key)) continue;
     
     const oldVal = before[key];
     const newVal = after[key];
     const oldStr = JSON.stringify(oldVal || "");
     const newStr = JSON.stringify(newVal || "");
-    return oldStr !== newStr;
-  });
+    
+    if (oldStr !== newStr) {
+      hasOtherChanges = true;
+      break;
+    }
+  }
   
   // Pokud se mění pouze foto-related pole a žádné jiné, vrátit prázdné pole
   if (hasPhotoChanges && !hasOtherChanges) {
     return [];
   }
   
-  // Jinak pokračovat normálně
+  // Jinak pokračovat normálně a shromáždit všechny změny
   const changes: Array<{ field: string; label: string; oldValue: any; newValue: any }> = [];
-  
-  const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
   
   for (const key of allKeys) {
     if (ignoredFields.includes(key)) continue;
