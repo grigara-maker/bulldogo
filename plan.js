@@ -204,21 +204,24 @@ async function openStripeCustomerPortal() {
 			overlay = document.createElement('div');
 			overlay.id = 'stripePortalLoading';
 			overlay.style.cssText = `
-				position: fixed;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				width: 100%;
-				height: 100%;
-				background: rgba(17, 24, 39, 0.55);
-				backdrop-filter: blur(4px);
-				z-index: 99999;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				padding: 24px;
-				box-sizing: border-box;
+				position: fixed !important;
+				top: 0 !important;
+				left: 0 !important;
+				right: 0 !important;
+				bottom: 0 !important;
+				width: 100vw !important;
+				height: 100vh !important;
+				min-width: 100vw !important;
+				min-height: 100vh !important;
+				background: rgba(17, 24, 39, 0.55) !important;
+				backdrop-filter: blur(4px) !important;
+				z-index: 99999 !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				padding: 24px !important;
+				box-sizing: border-box !important;
+				margin: 0 !important;
 			`;
 			overlay.innerHTML = `
 				<div style="background:#fff; border-radius:16px; padding:22px 20px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.25); text-align:center; margin: auto;">
@@ -231,13 +234,26 @@ async function openStripeCustomerPortal() {
 			`;
 			document.body.appendChild(overlay);
 		} else {
-			overlay.style.display = 'flex';
-			overlay.style.top = '0';
-			overlay.style.left = '0';
-			overlay.style.right = '0';
-			overlay.style.bottom = '0';
-			overlay.style.width = '100%';
-			overlay.style.height = '100%';
+			overlay.style.cssText = `
+				position: fixed !important;
+				top: 0 !important;
+				left: 0 !important;
+				right: 0 !important;
+				bottom: 0 !important;
+				width: 100vw !important;
+				height: 100vh !important;
+				min-width: 100vw !important;
+				min-height: 100vh !important;
+				background: rgba(17, 24, 39, 0.55) !important;
+				backdrop-filter: blur(4px) !important;
+				z-index: 99999 !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				padding: 24px !important;
+				box-sizing: border-box !important;
+				margin: 0 !important;
+			`;
 		}
 
 		const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
