@@ -1,8 +1,7 @@
 // Auth.js - Firebase Authentication funkcionality
 
 // Debug: Zkontrolovat, jestli se auth.js načítá
-console.log('🔧 Auth.js: Soubor se načítá na stránce:', window.location.pathname);
-console.log('🔧 Auth.js: Čas načtení:', new Date().toLocaleTimeString());
+// Auth.js se načítá - logy odstraněny
 
 // Globální proměnné
 let authCurrentUser = null;
@@ -170,7 +169,7 @@ function initializeAuthWithFirebase() {
 
 // Inicializace po načtení Firebase
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🔧 Auth.js: DOMContentLoaded spuštěn');
+    // DOMContentLoaded - logy odstraněny
     
     // Okamžitě zkusit získat Firebase
     if (initializeAuthWithFirebase()) {
@@ -362,10 +361,7 @@ function initAuth() {
         }
         // Sledování stavu přihlášení
         onAuthStateChanged(firebaseAuth, (user) => {
-            console.log('👤 Auth state changed:', user ? `Přihlášen: ${user.email}` : 'Odhlášen');
-            console.log('👤 Auth state changed na stránce:', window.location.pathname);
-            console.log('👤 Auth state changed v čase:', new Date().toLocaleTimeString());
-            console.log('👤 afterLoginCallback dostupný:', typeof window.afterLoginCallback);
+            // Auth state changed - logy odstraněny
             authCurrentUser = user;
             updateUI(user);
             
@@ -886,27 +882,16 @@ async function checkAdminStatus(user) {
 
 // Aktualizace UI podle stavu přihlášení
 async function updateUI(user) {
-    console.log('🔄 Aktualizuji UI pro uživatele:', user ? user.email : 'Odhlášen');
-    console.log('🔄 updateUI volána na stránce:', window.location.pathname);
-    console.log('🔄 updateUI volána v čase:', new Date().toLocaleTimeString());
+    // Aktualizace UI - logy odstraněny
     
     const authSection = document.querySelector('.auth-section');
     const userProfileSection = document.querySelector('.user-profile-section');
     const adminSection = document.getElementById('adminSection');
     
-    console.log('🔍 UI elementy:', { 
-        authSection: !!authSection, 
-        userProfileSection: !!userProfileSection,
-        adminSection: !!adminSection,
-        authSectionDisplay: authSection ? authSection.style.display : 'N/A',
-        userProfileSectionDisplay: userProfileSection ? userProfileSection.style.display : 'N/A'
-    });
-    
     // Debug: Zkontrolovat všechny možné elementy
     const allAuthElements = document.querySelectorAll('[class*="auth"]');
     const allUserElements = document.querySelectorAll('[class*="user"]');
-    console.log('🔍 Všechny auth elementy:', allAuthElements.length);
-    console.log('🔍 Všechny user elementy:', allUserElements.length);
+    // Elementy nalezeny - logy odstraněny
     
     if (user) {
         // Uživatel je přihlášen
@@ -2163,7 +2148,6 @@ function setupEventListeners() {
         // Přidat listener pouze jednou
         // Použít capture phase pro zachycení eventu dříve než ostatní listenery
         cleanAuthForm.addEventListener('submit', async (e) => {
-            console.log('📝 Auth formulář submit event zachycen');
             e.preventDefault();
             e.stopPropagation(); // Zastavit propagaci eventu
             e.stopImmediatePropagation(); // Zastavit všechny další listenery
@@ -2171,7 +2155,6 @@ function setupEventListeners() {
             // Zamezit vícenásobnému odesílání
             const submitBtn = cleanAuthForm.querySelector('button[type="submit"]');
             if (submitBtn && submitBtn.disabled) {
-                console.log('⚠️ Formulář se již odesílá, ignoruji další pokus');
                 return false;
             }
             
@@ -2181,28 +2164,19 @@ function setupEventListeners() {
                 submitBtn.textContent = 'Zpracovávám...';
             }
             
-            console.log('📝 Auth formulář odeslán');
-            
             const formData = new FormData(cleanAuthForm);
             const email = formData.get('email');
             const password = formData.get('password');
             
-            console.log('📧 Formulář data:', { email, password: password ? '***' : 'prázdné' });
-            
             const modalEl = document.getElementById('authModal');
             const mode = modalEl?.getAttribute('data-mode') || '';
             const isLogin = mode === 'login';
-            console.log('🔍 Typ akce:', { 
-                mode, isLogin 
-            });
             
             try {
                 if (isLogin) {
-                    console.log('🔐 Volám login funkci');
                     await login(email, password);
                 } else {
                     // U registrace submit už nevolá registraci; používáme tlačítko pro telefonní ověření
-                    console.log('ℹ️ Ignoruji submit u registrace, použijte tlačítko pro odeslání SMS.');
                 }
             } catch (error) {
                 console.error('❌ Chyba při zpracování formuláře:', error);
@@ -3045,12 +3019,7 @@ window.setupImagePreviews = setupImagePreviews;
 window.removeImage = removeImage;
 window.openImageViewer = openImageViewer;
 
-// Debug: Zkontrolovat, zda jsou funkce dostupné
-console.log('🔧 Auth.js: Exportované funkce:', {
-    showAuthModal: typeof window.showAuthModal,
-    closeAuthModal: typeof window.closeAuthModal,
-    showAddServiceModal: typeof window.showAddServiceModal
-});
+// Exportované funkce - logy odstraněny
 
 // Fallback pro tlačítka - pokud se funkce nenačtou, zobrazit chybu
 document.addEventListener('DOMContentLoaded', () => {

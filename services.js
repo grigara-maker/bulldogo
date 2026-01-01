@@ -6,23 +6,18 @@ const itemsPerPage = 40; // 40 inzerátů na stránku
 let servicesFirebaseAuth = null;
 let servicesFirebaseDb = null;
 
-// Debug: Zkontrolovat, jestli se skript načítá
-console.log('🔧 services.js se načítá...');
+// services.js se načítá - logy odstraněny
 
 // Funkce pro inicializaci služeb
 function initializeServices() {
-    console.log('🚀 Inicializuji služby...');
-    console.log('Window Firebase Auth:', window.firebaseAuth);
-    console.log('Window Firebase DB:', window.firebaseDb);
+    // Inicializace služeb - logy odstraněny
     
     // Počkat na inicializaci Firebase
     const checkFirebase = setInterval(() => {
         if (window.firebaseAuth && window.firebaseDb) {
             servicesFirebaseAuth = window.firebaseAuth;
             servicesFirebaseDb = window.firebaseDb;
-            console.log('✅ Firebase nalezen, inicializuji služby...');
-            console.log('Firebase Auth:', servicesFirebaseAuth);
-            console.log('Firebase DB:', servicesFirebaseDb);
+            // Firebase nalezen - logy odstraněny
             initServices();
             clearInterval(checkFirebase);
         } else {
@@ -51,17 +46,16 @@ function initializeServices() {
 
 // Inicializace po načtení DOM
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM loaded, spouštím inicializaci služeb...');
+    // DOM loaded - logy odstraněny
     initializeServices();
 });
 
 // Alternativní inicializace - pokud už je DOM načtený
 if (document.readyState === 'loading') {
     // DOM se stále načítá, čekáme na DOMContentLoaded
-    console.log('⏳ DOM se stále načítá, čekám na DOMContentLoaded...');
-} else {
-    // DOM je už načtený, můžeme spustit hned
-    console.log('✅ DOM je už načtený, spouštím inicializaci hned...');
+        // DOM se stále načítá - logy odstraněny
+    } else {
+        // DOM je už načtený - logy odstraněny
     initializeServices();
 }
 
@@ -399,7 +393,7 @@ async function checkAndExpireTopAdsInServices() {
 // Alternativní metoda načítání inzerátů bez collectionGroup
 async function tryAlternativeLoadMethod() {
     try {
-        console.log('🔄 Alternativní metoda: Načítám inzeráty přes users kolekci...');
+        // Alternativní metoda - logy odstraněny
         const { collection, getDocs, query, limit, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         // Funkce pro načtení všech inzerátů
@@ -467,14 +461,14 @@ async function tryAlternativeLoadMethod() {
         filterServices();
         updateStats();
         updateConnectionStatus(true);
-        console.log(`✅ Po filtrování zobrazeno: ${filteredServices.length} z ${allServices.length} inzerátů`);
+        // Filtrování dokončeno - logy odstraněny
         
         // Nastavit periodické obnovování (každých 30 sekund, protože nemáme real-time listener)
         setInterval(async () => {
             try {
                 const newServices = await loadAllAds();
                 if (newServices.length !== allServices.length) {
-                    console.log('🔄 Detekována změna v inzerátech, aktualizuji...');
+                    // Detekována změna - logy odstraněny
                     allServices = newServices;
                     filterServices();
                     updateStats();
