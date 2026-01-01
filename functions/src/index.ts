@@ -2983,17 +2983,37 @@ export const sendProfileChangeEmail = functions
     
     // Nejdříve zkontrolovat, zda se mění pouze foto-related pole
     const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
-    const hasPhotoChanges = photoRelatedFields.some(field => {
+    
+    // Zkontrolovat, zda se mění nějaké foto-related pole
+    const photoChanges: string[] = [];
+    for (const field of photoRelatedFields) {
       const oldVal = beforeData[field];
       const newVal = afterData[field];
-      // Normalizovat hodnoty pro porovnání (prázdný string, null, undefined jsou stejné)
-      const oldNormalized = oldVal === null || oldVal === undefined || oldVal === "" ? "" : String(oldVal);
-      const newNormalized = newVal === null || newVal === undefined || newVal === "" ? "" : String(newVal);
-      return oldNormalized !== newNormalized;
-    });
+      
+      // Normalizovat hodnoty pro porovnání
+      let oldNormalized: any = oldVal;
+      let newNormalized: any = newVal;
+      
+      // Pro Timestamp objekty použít toDate()
+      if (oldVal && typeof oldVal === 'object' && 'toDate' in oldVal) {
+        oldNormalized = oldVal.toDate().getTime();
+      } else if (oldVal === null || oldVal === undefined || oldVal === "") {
+        oldNormalized = "";
+      }
+      
+      if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
+        newNormalized = newVal.toDate().getTime();
+      } else if (newVal === null || newVal === undefined || newVal === "") {
+        newNormalized = "";
+      }
+      
+      if (JSON.stringify(oldNormalized) !== JSON.stringify(newNormalized)) {
+        photoChanges.push(field);
+      }
+    }
     
     // Pokud se mění foto-related pole, zkontrolovat, zda se mění i něco jiného
-    if (hasPhotoChanges) {
+    if (photoChanges.length > 0) {
       const allKeys = new Set([...Object.keys(beforeData), ...Object.keys(afterData)]);
       let hasOtherChanges = false;
       
@@ -3003,11 +3023,24 @@ export const sendProfileChangeEmail = functions
         
         const oldVal = beforeData[key];
         const newVal = afterData[key];
-        // Normalizovat hodnoty pro porovnání
-        const oldNormalized = oldVal === null || oldVal === undefined ? "" : String(oldVal);
-        const newNormalized = newVal === null || newVal === undefined ? "" : String(newVal);
         
-        if (oldNormalized !== newNormalized) {
+        // Normalizovat hodnoty pro porovnání (Timestamp objekty)
+        let oldNormalized: any = oldVal;
+        let newNormalized: any = newVal;
+        
+        if (oldVal && typeof oldVal === 'object' && 'toDate' in oldVal) {
+          oldNormalized = oldVal.toDate().getTime();
+        } else if (oldVal === null || oldVal === undefined) {
+          oldNormalized = "";
+        }
+        
+        if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
+          newNormalized = newVal.toDate().getTime();
+        } else if (newVal === null || newVal === undefined) {
+          newNormalized = "";
+        }
+        
+        if (JSON.stringify(oldNormalized) !== JSON.stringify(newNormalized)) {
           hasOtherChanges = true;
           break;
         }
@@ -3017,13 +3050,7 @@ export const sendProfileChangeEmail = functions
       if (!hasOtherChanges) {
         functions.logger.info("Změna pouze profilové fotky, email se neposílá", { 
           userId,
-          photoChanges: photoRelatedFields.filter(f => {
-            const oldVal = beforeData[f];
-            const newVal = afterData[f];
-            const oldNormalized = oldVal === null || oldVal === undefined || oldVal === "" ? "" : String(oldVal);
-            const newNormalized = newVal === null || newVal === undefined || newVal === "" ? "" : String(newVal);
-            return oldNormalized !== newNormalized;
-          })
+          photoChanges
         });
         return null;
       }
