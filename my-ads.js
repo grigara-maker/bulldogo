@@ -1019,6 +1019,46 @@ async function toggleAdStatus(adId, targetStatus) {
         // targetStatus je buď 'paused' nebo 'active'
         const newStatus = targetStatus === 'paused' ? 'inactive' : 'active';
         
+        // Pokud se deaktivuje inzerát, zkontrolovat topování a předplatné
+        if (newStatus === 'inactive') {
+            // Načíst aktuální inzerát
+            const adRef = doc(window.firebaseDb, 'users', window.firebaseAuth.currentUser.uid, 'inzeraty', adId);
+            const adSnap = await getDoc(adRef);
+            
+            if (adSnap.exists()) {
+                const adData = adSnap.data();
+                const isTop = adData.isTop === true;
+                
+                // Pokud má inzerát zapnuté topování, zkontrolovat předplatné
+                if (isTop) {
+                    const profileRef = doc(window.firebaseDb, 'users', window.firebaseAuth.currentUser.uid, 'profile', 'profile');
+                    const profileSnap = await getDoc(profileRef);
+                    
+                    let hasActivePlan = false;
+                    if (profileSnap.exists()) {
+                        const profile = profileSnap.data();
+                        const plan = profile.plan;
+                        
+                        if (plan && (plan === 'hobby' || plan === 'business')) {
+                            const planPeriodEnd = profile.planPeriodEnd;
+                            if (planPeriodEnd) {
+                                const endDate = planPeriodEnd.toDate ? planPeriodEnd.toDate() : new Date(planPeriodEnd);
+                                if (endDate >= new Date()) {
+                                    hasActivePlan = true;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Pokud má aktivní předplatné a topování, zobrazit varování
+                    if (hasActivePlan) {
+                        showTopWarningModal(adId, targetStatus);
+                        return;
+                    }
+                }
+            }
+        }
+        
         // Pokud se aktivuje inzerát, zkontrolovat předplatné
         if (newStatus === 'active') {
             // Zkontrolovat aktivní předplatné
@@ -1059,6 +1099,20 @@ async function toggleAdStatus(adId, targetStatus) {
             }
         }
         
+        // Provedení deaktivace/aktivace
+        await executeAdStatusChange(adId, newStatus);
+        
+    } catch (error) {
+        console.error('Chyba při změně stavu inzerátu:', error);
+        showMessage('Nepodařilo se změnit stav inzerátu.', 'error');
+    }
+}
+
+// Provedení změny stavu inzerátu
+async function executeAdStatusChange(adId, newStatus) {
+    try {
+        const { updateDoc, doc, deleteField } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        
         // Připravit data pro aktualizaci
         const updateData = {
             status: newStatus,
@@ -1067,7 +1121,6 @@ async function toggleAdStatus(adId, targetStatus) {
         
         // Při aktivaci vymazat inactiveReason a inactiveAt
         if (newStatus === 'active') {
-            const { deleteField } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             updateData.inactiveReason = deleteField();
             updateData.inactiveAt = deleteField();
         }
@@ -1076,11 +1129,71 @@ async function toggleAdStatus(adId, targetStatus) {
         
         showMessage(`Inzerát byl ${newStatus === 'active' ? 'aktivován' : 'pozastaven'}!`, 'success');
         loadUserAds(); // Obnovit seznam
-        
     } catch (error) {
         console.error('Chyba při změně stavu inzerátu:', error);
         showMessage('Nepodařilo se změnit stav inzerátu.', 'error');
     }
+}
+
+// Zobrazení varovného modalu pro topování
+function showTopWarningModal(adId, targetStatus) {
+    // Odstranit existující modal, pokud existuje
+    const existingModal = document.getElementById('topWarningModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Vytvořit modal
+    const modal = document.createElement('div');
+    modal.id = 'topWarningModal';
+    modal.className = 'modal-top-warning';
+    modal.innerHTML = `
+        <div class="modal-top-warning-overlay"></div>
+        <div class="modal-top-warning-content">
+            <div class="modal-top-warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="modal-top-warning-title">Varování: Topování pokračuje</h2>
+            <p class="modal-top-warning-message">
+                Váš inzerát má aktivní topování. I když inzerát deaktivujete, topování bude stále ubíhat a spotřebovávat se.
+            </p>
+            <div class="modal-top-warning-actions">
+                <button class="btn btn-secondary" onclick="closeTopWarningModal()">
+                    Zrušit
+                </button>
+                <button class="btn btn-primary" onclick="confirmDeactivateWithTop('${adId}', '${targetStatus}')">
+                    Deaktivovat i přesto
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Zobrazit modal s animací
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Zavřít při kliknutí na overlay
+    modal.querySelector('.modal-top-warning-overlay').addEventListener('click', closeTopWarningModal);
+}
+
+// Zavření varovného modalu
+function closeTopWarningModal() {
+    const modal = document.getElementById('topWarningModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Potvrzení deaktivace i s topováním
+async function confirmDeactivateWithTop(adId, targetStatus) {
+    closeTopWarningModal();
+    await executeAdStatusChange(adId, 'inactive');
 }
 
 // Smazání inzerátu
