@@ -306,10 +306,67 @@ async function openConversation(conversationId) {
         return;
     }
     
-    const conversation = conversations.find(c => c.id === conversationId);
+    // Pokud konverzace ještě není načtená, načíst ji přímo z Firestore
+    let conversation = conversations.find(c => c.id === conversationId);
     if (!conversation) {
-        showError('Konverzace nenalezena');
-        return;
+        // Zkusit načíst konverzaci přímo z Firestore
+        try {
+            const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const conversationRef = doc(window.firebaseDb, 'conversations', conversationId);
+            const conversationSnap = await getDoc(conversationRef);
+            
+            if (!conversationSnap.exists()) {
+                showError('Konverzace nenalezena');
+                return;
+            }
+            
+            const data = conversationSnap.data();
+            // Zkontrolovat, jestli je uživatel účastníkem
+            if (!data.participants || !data.participants.includes(currentUser.uid)) {
+                showError('Nemáte přístup k této konverzaci');
+                return;
+            }
+            
+            // Načíst informace o druhém účastníkovi
+            const otherParticipantId = data.participants.find(uid => uid !== currentUser.uid);
+            let otherParticipantName = 'Neznámý uživatel';
+            let otherParticipantAvatar = '';
+            let otherParticipantPhone = '';
+            
+            if (otherParticipantId) {
+                try {
+                    const profileRef = doc(window.firebaseDb, 'users', otherParticipantId, 'profile', 'profile');
+                    const profileSnap = await getDoc(profileRef);
+                    if (profileSnap.exists()) {
+                        const profileData = profileSnap.data();
+                        otherParticipantName = profileData.displayName || profileData.name || profileData.email || 'Neznámý uživatel';
+                        otherParticipantAvatar = profileData.photoURL || profileData.avatarUrl || '';
+                        otherParticipantPhone = profileData.phoneNumber || profileData.phone || '';
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Nepodařilo se načíst profil druhého účastníka:', e);
+                }
+            }
+            
+            // Vytvořit objekt konverzace
+            conversation = {
+                id: conversationId,
+                participants: data.participants,
+                otherParticipantId: otherParticipantId,
+                otherParticipantName: otherParticipantName,
+                otherParticipantAvatar: otherParticipantAvatar,
+                otherParticipantPhone: otherParticipantPhone,
+                listingId: data.listingId || null,
+                listingTitle: data.listingTitle || null,
+                lastMessage: data.lastMessage || '',
+                lastMessageAt: data.lastMessageAt || data.createdAt,
+                createdAt: data.createdAt
+            };
+        } catch (error) {
+            console.error('❌ Chyba při načítání konverzace:', error);
+            showError('Nepodařilo se načíst konverzaci');
+            return;
+        }
     }
     
     currentConversationId = conversationId;
