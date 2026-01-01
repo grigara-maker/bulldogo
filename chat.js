@@ -653,34 +653,78 @@ async function loadLatestAds() {
     }
     
     try {
-        const { collectionGroup, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { collectionGroup, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
-        // Použít stejnou metodu jako na services stránce - bez orderBy, veřejné čtení
-        const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
-        const snapshot = await getDocs(inzeratyRef);
+        let snapshot = null;
+        let ads = [];
         
-        console.log('📊 Načteno inzerátů:', snapshot.size);
+        // Zkusit collectionGroup pro users/{uid}/inzeraty
+        try {
+            console.log('🔄 Zkouším načíst inzeráty přes collectionGroup...');
+            const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
+            snapshot = await getDocs(inzeratyRef);
+            console.log('📊 CollectionGroup výsledek:', snapshot.size, 'dokumentů');
+            
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data() || {};
+                const userIdFromPath = docSnap.ref.parent && docSnap.ref.parent.parent ? docSnap.ref.parent.parent.id : undefined;
+                if (!data.userId && userIdFromPath) data.userId = userIdFromPath;
+                ads.push({
+                    id: docSnap.id,
+                    userId: data.userId || userIdFromPath,
+                    title: data.title || 'Bez názvu',
+                    location: data.location || 'Neuvedeno',
+                    category: data.category || '',
+                    price: data.price || '',
+                    isTop: data.isTop || false,
+                    createdAt: data.createdAt,
+                    images: data.images || [],
+                    image: data.image,
+                    photo: data.photo
+                });
+            });
+            
+            console.log('✅ Načteno inzerátů z collectionGroup:', ads.length);
+        } catch (cgError) {
+            console.warn('⚠️ Chyba při načítání přes collectionGroup:', cgError.message);
+        }
         
-        if (snapshot.empty) {
+        // Fallback: zkusit starou kolekci 'services'
+        if (ads.length === 0) {
+            try {
+                console.log('🔄 Zkouším načíst inzeráty ze staré kolekce services...');
+                const servicesRef = collection(window.firebaseDb, 'services');
+                snapshot = await getDocs(servicesRef);
+                console.log('📊 Services kolekce výsledek:', snapshot.size, 'dokumentů');
+                
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data() || {};
+                    ads.push({
+                        id: docSnap.id,
+                        userId: data.userId || '',
+                        title: data.title || 'Bez názvu',
+                        location: data.location || 'Neuvedeno',
+                        category: data.category || '',
+                        price: data.price || '',
+                        isTop: data.isTop || false,
+                        createdAt: data.createdAt,
+                        images: data.images || [],
+                        image: data.image,
+                        photo: data.photo
+                    });
+                });
+                
+                console.log('✅ Načteno inzerátů z services:', ads.length);
+            } catch (servicesError) {
+                console.warn('⚠️ Chyba při načítání z kolekce services:', servicesError.message);
+            }
+        }
+        
+        if (ads.length === 0) {
+            console.warn('⚠️ Nenašly se žádné inzeráty');
             container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Zatím žádné inzeráty</div>';
             return;
         }
-        
-        const ads = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const userId = doc.ref.parent?.parent?.id || data.userId || '';
-            ads.push({
-                id: doc.id,
-                userId: userId,
-                title: data.title || 'Bez názvu',
-                location: data.location || 'Neuvedeno',
-                category: data.category || '',
-                price: data.price || '',
-                isTop: data.isTop || false,
-                createdAt: data.createdAt
-            });
-        });
         
         // Seřadit podle createdAt (nejnovější první)
         ads.sort((a, b) => {
@@ -692,7 +736,30 @@ async function loadLatestAds() {
         // Omezit na 3 nejnovější
         const latestAds = ads.slice(0, 3);
         
+        console.log('🎯 Zobrazuji', latestAds.length, 'nejnovějších inzerátů');
+        
         container.innerHTML = latestAds.map(ad => {
+            // Najít obrázek - podobně jako v services.js
+            let imageUrl = './fotky/vychozi-inzerat.png';
+            if (ad.images && ad.images.length > 0) {
+                if (ad.images[0].url) {
+                    imageUrl = ad.images[0].url;
+                } else if (typeof ad.images[0] === 'string') {
+                    imageUrl = ad.images[0];
+                }
+            } else if (ad.image) {
+                if (ad.image.url) {
+                    imageUrl = ad.image.url;
+                } else if (typeof ad.image === 'string') {
+                    imageUrl = ad.image;
+                }
+            } else if (ad.photo) {
+                if (ad.photo.url) {
+                    imageUrl = ad.photo.url;
+                } else if (typeof ad.photo === 'string') {
+                    imageUrl = ad.photo;
+                }
+            }
             const topBadge = ad.isTop ? `
                 <span style="
                     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
@@ -709,21 +776,27 @@ async function loadLatestAds() {
                 <div style="
                     background: white;
                     border-radius: 12px;
-                    padding: 14px;
+                    padding: 0;
                     margin-bottom: 12px;
                     cursor: pointer;
                     border: 1px solid #e5e7eb;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                    overflow: hidden;
                 " onclick="window.location.href='ad-detail.html?id=${ad.id}&userId=${ad.userId}'">
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px;">
-                        <h4 style="font-size: 15px; font-weight: 600; color: #111827; margin: 0; flex: 1;">${ad.title}</h4>
-                        ${topBadge}
+                    <div style="width: 100%; height: 140px; overflow: hidden; background: #f3f4f6;">
+                        <img src="${imageUrl}" alt="${ad.title}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='./fotky/vychozi-inzerat.png'">
                     </div>
-                    <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
-                        <i class="fas fa-map-marker-alt" style="color:#f77c00;"></i> ${ad.location}
-                        ${ad.category ? ` • ${ad.category}` : ''}
+                    <div style="padding: 14px;">
+                        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px;">
+                            <h4 style="font-size: 15px; font-weight: 600; color: #111827; margin: 0; flex: 1; line-height: 1.3;">${ad.title}</h4>
+                            ${topBadge}
+                        </div>
+                        <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
+                            <i class="fas fa-map-marker-alt" style="color:#f77c00;"></i> ${ad.location}
+                            ${ad.category ? ` • ${ad.category}` : ''}
+                        </div>
+                        ${ad.price ? `<div style="font-size: 16px; font-weight: 700; color: #f77c00;">${ad.price}</div>` : ''}
                     </div>
-                    ${ad.price ? `<div style="font-size: 16px; font-weight: 700; color: #f77c00;">${ad.price}</div>` : ''}
                 </div>
             `;
         }).join('');
