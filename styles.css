@@ -8469,7 +8469,7 @@ html {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: auto;
     min-width: auto;
     padding: 12px 24px;
@@ -8479,7 +8479,7 @@ html {
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
-    line-height: 1.4;
+    line-height: 1.5;
     color: #ffffff;
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
     box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3);
@@ -8489,13 +8489,16 @@ html {
 }
 
 #myAdsGrid .btn-start-free i {
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: #ffffff;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     vertical-align: middle;
+    font-weight: 700;
+    width: 1.2em;
+    height: 1.2em;
 }
 
 #myAdsGrid .btn-start-free::after {
@@ -8539,12 +8542,15 @@ html {
         padding: 10px 18px;
     }
     #myAdsGrid .btn-start-free i {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         line-height: 1;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         vertical-align: middle;
+        font-weight: 700;
+        width: 1.2em;
+        height: 1.2em;
     }
     }
 }
