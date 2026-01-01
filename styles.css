@@ -3395,7 +3395,13 @@ body.chat-page .mobile-menu-btn, body.chat-page .sidebar-toggle-btn { display: n
 body.chat-page .main-content { margin-left: 70px; min-height: 100vh; }
 body.chat-page.sidebar-collapsed .main-content { margin-left: 0; }
 /* Chat musí dosáhnout až dolů – nepoužívat odečty (ty dělaly prázdný pás dole) */
-body.chat-page .ig-chat { height: 100vh; height: 100dvh; }
+body.chat-page .ig-chat { 
+    height: 100vh; 
+    height: 100dvh; 
+    display: grid !important;
+    grid-template-columns: 320px 1fr 320px !important;
+    width: 100% !important;
+}
 @media (max-width: 900px) {
   body.chat-page .ig-chat { height: 100vh; height: 100dvh; }
 }
