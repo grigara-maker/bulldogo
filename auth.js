@@ -1753,8 +1753,18 @@ function handleAuthError(error) {
 
 // Překlad běžných chyb phone auth do srozumitelných zpráv
 function humanizePhoneError(error) {
-    const code = error?.code || '';
-    switch (code) {
+    // Extrahovat kód chyby z error.code nebo z error.message
+    let errorCode = error?.code || '';
+    
+    // Pokud nemáme code, zkusit extrahovat z message (např. "Firebase: Error (auth/too-many-requests)")
+    if (!errorCode && error?.message) {
+        const match = error.message.match(/auth\/([^\)\s]+)/);
+        if (match) {
+            errorCode = 'auth/' + match[1];
+        }
+    }
+    
+    switch (errorCode) {
         case 'auth/invalid-phone-number':
             return 'Neplatné telefonní číslo.';
         case 'auth/missing-phone-number':
@@ -1778,7 +1788,20 @@ function humanizePhoneError(error) {
         case 'auth/captcha-check-failed':
             return 'Ověření reCAPTCHA selhalo. Obnovte stránku a zkuste to znovu.';
         default:
-            return error?.message || 'Došlo k chybě. Zkuste to znovu.';
+            // Pokud je to známá chyba s message, použít ji (ale odstranit Firebase prefix)
+            if (error?.message && error.message !== 'Firebase: Error (auth/unknown)') {
+                let cleanMessage = error.message
+                    .replace(/^Firebase:\s*Error\s*\([^\)]+\)\s*/i, '')
+                    .replace(/^auth\/[^:]+:\s*/i, '')
+                    .trim();
+                
+                // Pokud po úpravě není zpráva, použít obecnou zprávu
+                if (!cleanMessage || cleanMessage === error.message) {
+                    cleanMessage = `Chyba při telefonním ověření: ${errorCode || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
+                }
+                return cleanMessage;
+            }
+            return `Chyba při telefonním ověření: ${errorCode || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
     }
 }
 
@@ -2390,10 +2413,9 @@ function setupEventListeners() {
                     phoneConfirmationResult = await signInWithPhoneNumber(firebaseAuth, normalizedPhone, recaptchaVerifier);
                     console.log('✅ SMS úspěšně odeslána, phoneConfirmationResult:', !!phoneConfirmationResult);
                 } catch (smsError) {
-                    console.error('❌ Chyba při odesílání SMS:', smsError);
-                    console.error('❌ Error code:', smsError?.code);
-                    console.error('❌ Error message:', smsError?.message);
-                    console.error('❌ Full error:', JSON.stringify(smsError, null, 2));
+                    // Logovat jen zpracovanou chybu, ne původní Firebase chybu
+                    const humanizedError = humanizePhoneError(smsError);
+                    console.error('❌ Chyba při odesílání SMS:', humanizedError);
                     
                     // Pro auth/invalid-app-credential přidat specifické instrukce
                     if (smsError?.code === 'auth/invalid-app-credential') {
@@ -2420,8 +2442,10 @@ function setupEventListeners() {
                 showMessage('SMS s kódem byla odeslána.', 'success');
             } catch (err) {
                 try { if (recaptchaVerifier) recaptchaVerifier.clear(); recaptchaVerifier = null; } catch (_) {}
-                console.error(err);
-                showMessage(humanizePhoneError(err), 'error');
+                // Logovat jen zpracovanou chybu, ne původní Firebase chybu
+                const humanizedError = humanizePhoneError(err);
+                console.error('❌ Chyba při telefonním ověření:', humanizedError);
+                showMessage(humanizedError, 'error');
             } finally {
                 btnSendPhoneCode.disabled = false;
                 btnSendPhoneCode.textContent = 'Pokračovat na ověření telefonního čísla';
@@ -2525,8 +2549,9 @@ function setupEventListeners() {
                     try { window.afterLoginCallback(); } catch (_) {}
                 }
             } catch (err) {
-                console.error('❌ Dokončení registrace selhalo:', err);
-                showMessage(humanizePhoneError(err), 'error');
+                const humanizedError = humanizePhoneError(err);
+                console.error('❌ Dokončení registrace selhalo:', humanizedError);
+                showMessage(humanizedError, 'error');
             } finally {
                 btnAuthSubmit2.disabled = false;
                 btnAuthSubmit2.textContent = 'Dokončit registraci';
@@ -2712,8 +2737,9 @@ function setupEventListeners() {
                 showMessage('Registrace úspěšná. Telefon ověřen.', 'success');
                 closeAuthModal();
             } catch (err) {
-                console.error(err);
-                showMessage(humanizePhoneError(err), 'error');
+                const humanizedError = humanizePhoneError(err);
+                console.error('❌ Chyba při ověřování kódu:', humanizedError);
+                showMessage(humanizedError, 'error');
             } finally {
                 btnVerifyPhoneCode.disabled = false;
                 btnVerifyPhoneCode.textContent = 'Ověřit kód a dokončit registraci';
