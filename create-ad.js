@@ -386,7 +386,7 @@
                 } else {
                     // použít výchozí logo, neuploadovat do Storage
                     // Výchozí logo pro náhledový obrázek - změňte cestu zde
-                    const DEFAULT_PREVIEW_LOGO = '/fotky/bulldogo-logo.png';
+                    const DEFAULT_PREVIEW_LOGO = '/fotky/vychozi-inzerat.png';
                     data.defaultPreviewUrl = DEFAULT_PREVIEW_LOGO;
                 }
                 if (additionalImages?.files?.length) {

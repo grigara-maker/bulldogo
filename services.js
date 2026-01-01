@@ -855,7 +855,7 @@ function createAdCard(service, showActions = true) {
     return `
         <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle}>
             <div class="ad-thumb">
-                <img src="${service.images && service.images.length > 0 ? service.images[0].url : 'fotky/team.jpg'}" alt="Inzerát" loading="lazy" decoding="async">
+                <img src="${service.images && service.images.length > 0 ? service.images[0].url : '/fotky/vychozi-inzerat.png'}" alt="Inzerát" loading="lazy" decoding="async">
             </div>
             <div class="ad-body" data-location="${getLocationName(service.location || '') || 'Neuvedeno'}">
                 <div class="ad-meta"><span>${getCategoryName(service.category || '')}</span></div>
