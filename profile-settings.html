@@ -1366,6 +1366,12 @@
             `;
             document.body.appendChild(finalModal);
             
+            // Zaměřit input pro heslo při otevření
+            setTimeout(() => {
+                const passwordInput = document.getElementById('finalDeletePassword');
+                if (passwordInput) passwordInput.focus();
+            }, 100);
+            
             // Zavřít při kliknutí na overlay
             finalModal.addEventListener('click', (e) => {
                 if (e.target === finalModal) {
