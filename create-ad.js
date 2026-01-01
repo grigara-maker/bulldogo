@@ -136,7 +136,34 @@
                             // Uživatel není přihlášen – až TEĎ zobrazit login
                             if (typeof window.showAuthModal === 'function') {
                                 window.afterLoginCallback = () => window.location.reload();
+                                
+                                // Sledovat zavření modalu bez přihlášení
+                                const originalCloseAuthModal = window.closeAuthModal;
+                                let modalClosedWithoutLogin = false;
+                                
+                                // Přepsat closeAuthModal pro tuto situaci
+                                window.closeAuthModal = function() {
+                                    modalClosedWithoutLogin = true;
+                                    if (originalCloseAuthModal) {
+                                        originalCloseAuthModal();
+                                    }
+                                    // Pokud se modal zavře bez přihlášení, přesměrovat zpět
+                                    setTimeout(() => {
+                                        if (modalClosedWithoutLogin && !window.firebaseAuth?.currentUser) {
+                                            window.location.href = 'index.html';
+                                        }
+                                    }, 100);
+                                };
+                                
                                 showAuthModal('login');
+                                
+                                // Obnovit původní closeAuthModal po úspěšném přihlášení
+                                const checkLogin = setInterval(() => {
+                                    if (window.firebaseAuth?.currentUser) {
+                                        clearInterval(checkLogin);
+                                        window.closeAuthModal = originalCloseAuthModal;
+                                    }
+                                }, 500);
                             } else {
                                 alert('Pro vytvoření inzerátu se prosím přihlaste.');
                                 window.location.href = 'index.html';
@@ -149,7 +176,34 @@
                     if (!window.firebaseAuth?.currentUser) {
                         if (typeof window.showAuthModal === 'function') {
                             window.afterLoginCallback = () => window.location.reload();
+                            
+                            // Sledovat zavření modalu bez přihlášení
+                            const originalCloseAuthModal = window.closeAuthModal;
+                            let modalClosedWithoutLogin = false;
+                            
+                            // Přepsat closeAuthModal pro tuto situaci
+                            window.closeAuthModal = function() {
+                                modalClosedWithoutLogin = true;
+                                if (originalCloseAuthModal) {
+                                    originalCloseAuthModal();
+                                }
+                                // Pokud se modal zavře bez přihlášení, přesměrovat zpět
+                                setTimeout(() => {
+                                    if (modalClosedWithoutLogin && !window.firebaseAuth?.currentUser) {
+                                        window.location.href = 'index.html';
+                                    }
+                                }, 100);
+                            };
+                            
                             showAuthModal('login');
+                            
+                            // Obnovit původní closeAuthModal po úspěšném přihlášení
+                            const checkLogin = setInterval(() => {
+                                if (window.firebaseAuth?.currentUser) {
+                                    clearInterval(checkLogin);
+                                    window.closeAuthModal = originalCloseAuthModal;
+                                }
+                            }, 500);
                         } else {
                             alert('Pro vytvoření inzerátu se prosím přihlaste.');
                             window.location.href = 'index.html';

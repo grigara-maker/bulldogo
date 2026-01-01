@@ -3025,6 +3025,53 @@ window.setupImagePreviews = setupImagePreviews;
 window.removeImage = removeImage;
 window.openImageViewer = openImageViewer;
 
+// Funkce pro vyžadování přihlášení před přesměrováním na create-ad.html
+window.requireAuthForCreateAd = function() {
+    // Zkontrolovat, zda je Firebase načten
+    if (!window.firebaseAuth) {
+        // Pokud Firebase není načten, počkat a zkusit znovu
+        const checkFirebase = setInterval(() => {
+            if (window.firebaseAuth) {
+                clearInterval(checkFirebase);
+                window.requireAuthForCreateAd();
+            }
+        }, 100);
+        
+        // Po 3 sekundách timeout - zobrazit přihlašovací okno
+        setTimeout(() => {
+            clearInterval(checkFirebase);
+            if (typeof window.showAuthModal === 'function') {
+                window.afterLoginCallback = () => {
+                    window.location.href = 'create-ad.html';
+                };
+                showAuthModal('login');
+            } else {
+                alert('Pro vytvoření inzerátu se prosím přihlaste.');
+            }
+        }, 3000);
+        return;
+    }
+    
+    // Zkontrolovat aktuální stav přihlášení
+    const currentUser = window.firebaseAuth.currentUser;
+    
+    if (currentUser) {
+        // Uživatel je přihlášený - přesměrovat přímo
+        window.location.href = 'create-ad.html';
+    } else {
+        // Uživatel není přihlášený - zobrazit přihlašovací okno
+        if (typeof window.showAuthModal === 'function') {
+            // Nastavit callback, který se zavolá po úspěšném přihlášení
+            window.afterLoginCallback = () => {
+                window.location.href = 'create-ad.html';
+            };
+            showAuthModal('login');
+        } else {
+            alert('Pro vytvoření inzerátu se prosím přihlaste.');
+        }
+    }
+};
+
 // Exportované funkce - logy odstraněny
 
 // Fallback pro tlačítka - pokud se funkce nenačtou, zobrazit chybu

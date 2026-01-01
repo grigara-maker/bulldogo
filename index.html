@@ -257,7 +257,7 @@
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
-                        <button class="btn-create-ad" onclick="window.location.href='create-ad.html'">
+                        <button class="btn-create-ad" onclick="if(typeof requireAuthForCreateAd === 'function') { requireAuthForCreateAd(); } else { window.location.href='create-ad.html'; }">
                             <i class="fas fa-plus"></i>
                             Přidat inzerát
                         </button>
@@ -574,7 +574,7 @@
 							</li>
 						</ul>
 						<div class="promo-cta">
-                            <a class="btn-cta-primary" href="create-ad.html">
+                            <a class="btn-cta-primary" href="#" onclick="event.preventDefault(); if(typeof requireAuthForCreateAd === 'function') { requireAuthForCreateAd(); } else { window.location.href='create-ad.html'; } return false;">
                                 <i class="fas fa-plus"></i>
                                 Vložit inzerát zdarma
                             </a>
