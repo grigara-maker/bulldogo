@@ -2775,13 +2775,19 @@ exports.sendProfileChangeEmail = functions
         else if (oldVal === null || oldVal === undefined || oldVal === "") {
             oldNormalized = "";
         }
+        else {
+            oldNormalized = String(oldVal);
+        }
         if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
             newNormalized = newVal.toDate().getTime();
         }
         else if (newVal === null || newVal === undefined || newVal === "") {
             newNormalized = "";
         }
-        if (JSON.stringify(oldNormalized) !== JSON.stringify(newNormalized)) {
+        else {
+            newNormalized = String(newVal);
+        }
+        if (oldNormalized !== newNormalized) {
             photoChanges.push(field);
         }
     }
@@ -2789,6 +2795,7 @@ exports.sendProfileChangeEmail = functions
     if (photoChanges.length > 0) {
         const allKeys = new Set([...Object.keys(beforeData), ...Object.keys(afterData)]);
         let hasOtherChanges = false;
+        const otherChanges = [];
         for (const key of allKeys) {
             if (ignoredFields.includes(key))
                 continue;
@@ -2805,24 +2812,40 @@ exports.sendProfileChangeEmail = functions
             else if (oldVal === null || oldVal === undefined) {
                 oldNormalized = "";
             }
+            else {
+                oldNormalized = String(oldVal);
+            }
             if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
                 newNormalized = newVal.toDate().getTime();
             }
             else if (newVal === null || newVal === undefined) {
                 newNormalized = "";
             }
-            if (JSON.stringify(oldNormalized) !== JSON.stringify(newNormalized)) {
+            else {
+                newNormalized = String(newVal);
+            }
+            if (oldNormalized !== newNormalized) {
                 hasOtherChanges = true;
-                break;
+                otherChanges.push(key);
+                break; // Stačí najít jednu změnu
             }
         }
         // Pokud se mění pouze foto-related pole, neposílat email
         if (!hasOtherChanges) {
             functions.logger.info("Změna pouze profilové fotky, email se neposílá", {
                 userId,
-                photoChanges
+                photoChanges,
+                beforeKeys: Object.keys(beforeData),
+                afterKeys: Object.keys(afterData)
             });
             return null;
+        }
+        else {
+            functions.logger.info("Změna profilové fotky + další změny, email se posílá", {
+                userId,
+                photoChanges,
+                otherChanges
+            });
         }
     }
     // Získej změněná pole
