@@ -2605,6 +2605,7 @@ const ignoredFields = [
   "photoURL",
   "avatarUrl",
   "avatar",
+  "avatarUpdatedAt",
 ];
 
 /**
