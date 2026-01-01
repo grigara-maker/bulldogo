@@ -1603,11 +1603,26 @@ window.closeAddServiceModal = closeAddServiceModal;
 function handleAuthError(error) {
     let message = 'Došlo k chybě při autentifikaci.';
     
+    // Extrahovat kód chyby z error.code nebo z error.message
+    let errorCode = error.code;
+    
+    // Pokud nemáme code, zkusit extrahovat z message (např. "Firebase: Error (auth/provider-already-linked)")
+    if (!errorCode && error.message) {
+        const match = error.message.match(/auth\/([^\)]+)/);
+        if (match) {
+            errorCode = 'auth/' + match[1];
+        }
+    }
+    
     // Pokud error nemá code, zkusit zprávu přímo
-    if (!error.code && error.message) {
-        message = error.message;
+    if (!errorCode && error.message) {
+        // Odstranit "Firebase: Error" prefix
+        message = error.message.replace(/^Firebase:\s*Error\s*\([^\)]+\)\s*/i, '').trim();
+        if (!message) {
+            message = error.message;
+        }
     } else {
-        switch (error.code) {
+        switch (errorCode) {
             case 'auth/email-already-in-use':
                 message = 'Účet s tímto emailem již existuje. Použijte jiný email nebo se přihlaste.';
                 break;
@@ -1674,18 +1689,54 @@ function handleAuthError(error) {
             case 'auth/requires-recent-login':
                 message = 'Pro tuto operaci je potřeba se znovu přihlásit.';
                 break;
+            case 'auth/provider-already-linked':
+                message = 'Tento účet je již propojen s jiným způsobem přihlášení. Použijte jiný způsob přihlášení nebo kontaktujte podporu.';
+                break;
+            case 'auth/credential-already-in-use':
+                message = 'Tyto přihlašovací údaje jsou již používány jiným účtem. Použijte jiné údaje nebo se přihlaste k existujícímu účtu.';
+                break;
+            case 'auth/account-exists-with-different-credential':
+                message = 'Účet s tímto emailem již existuje, ale je propojen s jiným způsobem přihlášení. Použijte správný způsob přihlášení.';
+                break;
+            case 'auth/popup-closed-by-user':
+                message = 'Přihlášení bylo zrušeno. Zkuste to znovu.';
+                break;
+            case 'auth/popup-blocked':
+                message = 'Vyskakovací okno bylo zablokováno prohlížečem. Povolte vyskakovací okna a zkuste to znovu.';
+                break;
+            case 'auth/cancelled-popup-request':
+                message = 'Přihlášení bylo zrušeno. Zkuste to znovu.';
+                break;
+            case 'auth/invalid-credential':
+                message = 'Neplatné přihlašovací údaje. Zkontrolujte email a heslo.';
+                break;
+            case 'auth/user-disabled':
+                message = 'Tento účet byl deaktivován. Kontaktujte podporu.';
+                break;
+            case 'auth/operation-not-allowed':
+                message = 'Tento způsob přihlášení není povolen. Kontaktujte podporu.';
+                break;
             default:
                 // Pokud je to známá chyba s message, použít ji
                 if (error.message && error.message !== 'Firebase: Error (auth/unknown)') {
-                    message = error.message.replace(/^Firebase:\s*/i, '').replace(/^auth\/[^:]+:\s*/i, '');
+                    // Odstranit "Firebase: Error (auth/...)" prefix a extrahovat čitelnou zprávu
+                    message = error.message
+                        .replace(/^Firebase:\s*Error\s*\([^\)]+\)\s*/i, '')
+                        .replace(/^auth\/[^:]+:\s*/i, '')
+                        .trim();
+                    
+                    // Pokud po úpravě není zpráva, použít obecnou zprávu
+                    if (!message || message === error.message) {
+                        message = `Chyba při autentifikaci: ${errorCode || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
+                    }
                 } else {
-                    message = `Chyba při autentifikaci: ${error.code || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
+                    message = `Chyba při autentifikaci: ${errorCode || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
                 }
                 break;
         }
     }
     
-    console.error('❌ Auth error:', error.code, error.message);
+    console.error('❌ Auth error:', errorCode || error.code, error.message);
     showMessage(message, 'error');
 }
 
