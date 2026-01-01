@@ -907,12 +907,18 @@
     text-align: left; /* Zarovnání textů vlevo */
 }
 .ad-title { 
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     margin: 0 0 6px 0; 
     font-size: 1rem; 
     color: #111827; 
     text-align: left; /* Zarovnání vlevo */
 }
 .ad-meta { 
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     font-size: 0.85rem; 
     color: #6b7280; 
     text-align: left; /* Zarovnání vlevo */
