@@ -3662,7 +3662,7 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4);
 }
 
-/* Tlačítko btn-create-ad v no-services-actions - zachovat přesně stejný styl jako v hero sekci */
+/* Tlačítko btn-create-ad v no-services-actions - moderní design */
 .no-services-actions .btn-create-ad {
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%) !important;
     border: none !important;
@@ -3672,22 +3672,46 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     font-weight: 600 !important;
     font-size: 1.1rem !important;
     cursor: pointer !important;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3) !important;
-    display: flex !important;
+    display: inline-flex !important;
     align-items: center !important;
-    gap: 0.5rem !important;
+    gap: 0.75rem !important;
     justify-content: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.no-services-actions .btn-create-ad::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px 60px at 20% 10%, rgba(255,255,255,0.25), rgba(255,255,255,0) 55%);
+    pointer-events: none;
 }
 
 .no-services-actions .btn-create-ad:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4) !important;
+    filter: brightness(1.05) !important;
+}
+
+.no-services-actions .btn-create-ad:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3) !important;
 }
 
 .no-services-actions .btn-create-ad i {
-    font-size: 1.1rem !important;
+    font-size: 1.2rem !important;
+    color: #ffffff !important;
     line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 1.2em !important;
+    height: 1.2em !important;
+    font-weight: 400 !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) !important;
 }
 
 /* Bulldog Image */
