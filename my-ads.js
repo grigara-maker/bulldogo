@@ -159,21 +159,79 @@ async function loadUserAds() {
             return;
         }
 
-        const { getDocs, collection } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { getDocs, collection, getDoc, doc, updateDoc, writeBatch } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
+        // Nejdříve zkontrolovat, zda má uživatel aktivní předplatné
+        const profileRef = doc(window.firebaseDb, 'users', currentUser.uid, 'profile', 'profile');
+        const profileSnap = await getDoc(profileRef);
         
+        let hasActivePlan = false;
+        if (profileSnap.exists()) {
+            const profile = profileSnap.data();
+            const plan = profile.plan;
+            
+            if (plan && (plan === 'hobby' || plan === 'business')) {
+                const planPeriodEnd = profile.planPeriodEnd;
+                if (planPeriodEnd) {
+                    const endDate = planPeriodEnd.toDate ? planPeriodEnd.toDate() : new Date(planPeriodEnd);
+                    if (endDate >= new Date()) {
+                        hasActivePlan = true;
+                    }
+                }
+            }
+        }
+        
+        // Načíst inzeráty
         const adsCollection = collection(window.firebaseDb, 'users', currentUser.uid, 'inzeraty');
         console.log('Provádím dotaz na Firestore (users/{uid}/inzeraty)...');
         const querySnapshot = await getDocs(adsCollection);
         console.log('Dotaz dokončen, počet dokumentů:', querySnapshot.size);
         
         userAds = [];
+        const activeAdsToDeactivate = [];
         
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            console.log('Načtený inzerát:', doc.id, data);
-            userAds.push({ id: doc.id, ...data });
+        querySnapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            console.log('Načtený inzerát:', docSnap.id, data);
+            userAds.push({ id: docSnap.id, ...data });
+            
+            // Pokud nemá aktivní plán a inzerát je aktivní, označit k deaktivaci
+            if (!hasActivePlan && data.status === 'active') {
+                activeAdsToDeactivate.push({ id: docSnap.id, ref: docSnap.ref });
+            }
         });
+        
+        // Deaktivovat aktivní inzeráty, pokud nemá aktivní předplatné
+        if (activeAdsToDeactivate.length > 0) {
+            console.log(`🚫 Uživatel nemá aktivní předplatné, deaktivuji ${activeAdsToDeactivate.length} aktivních inzerátů`);
+            const batch = writeBatch();
+            const now = new Date();
+            
+            for (const ad of activeAdsToDeactivate) {
+                batch.update(ad.ref, {
+                    status: 'inactive',
+                    inactiveReason: 'plan_expired',
+                    inactiveAt: now,
+                    updatedAt: now
+                });
+            }
+            
+            try {
+                await batch.commit();
+                console.log('✅ Aktivní inzeráty byly deaktivovány');
+                
+                // Aktualizovat lokální kopii inzerátů
+                userAds.forEach(ad => {
+                    if (ad.status === 'active' && activeAdsToDeactivate.find(a => a.id === ad.id)) {
+                        ad.status = 'inactive';
+                        ad.inactiveReason = 'plan_expired';
+                        ad.inactiveAt = now;
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Chyba při deaktivaci inzerátů:', error);
+            }
+        }
         
         // Seřadit podle data vytvoření (nejnovější první)
         userAds.sort((a, b) => {
