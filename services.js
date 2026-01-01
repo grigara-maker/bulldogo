@@ -123,9 +123,6 @@ async function initServices() {
 // Nastavení real-time listeneru pro služby
 async function setupRealtimeListener() {
     try {
-        console.log('🔧 Nastavuji real-time listener...');
-        console.log('Firebase DB pro listener:', servicesFirebaseDb);
-        
         if (!servicesFirebaseDb) {
             throw new Error('Firebase DB není dostupný');
         }
@@ -133,56 +130,37 @@ async function setupRealtimeListener() {
         const { collectionGroup, collection, onSnapshot, getDocs, query, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         // DIAGNOSTIKA: Nejdříve zkusit jednoduchý test - načíst jeden uživatelský dokument
-        console.log('🔍 DIAGNOSTIKA: Testuji základní přístup k Firestore...');
         try {
             // Zkusit načíst users kolekci (pokud existuje)
             const usersRef = collection(servicesFirebaseDb, 'users');
             const usersTest = query(usersRef, limit(1));
             const usersSnapshot = await getDocs(usersTest);
-            console.log('✅ Test přístupu k users kolekci úspěšný! Počet dokumentů:', usersSnapshot.size);
+            // Test úspěšný - logy odstraněny
         } catch (usersTestError) {
-            console.error('❌ TEST PŘÍSTUPU K USERS KOLEKCI SELHAL:', usersTestError);
-            console.error('Error code:', usersTestError.code);
-            console.error('Error message:', usersTestError.message);
+            // Tichý režim - logy odstraněny pro čistší konzoli
             if (usersTestError.code === 'permission-denied') {
-                console.error('🚨 KRITICKÁ CHYBA: Nemáte přístup ani k users kolekci!');
-                console.error('🚨 Pravidla v Firebase Console pravděpodobně nejsou publikována nebo jsou špatně nastavena!');
-                console.error('🚨 Zkontrolujte: Firebase Console → Firestore Database → Rules → Publish');
+                // Pouze error log pro kritické chyby
+                console.error('🚨 KRITICKÁ CHYBA: Nemáte přístup k users kolekci! Zkontrolujte Firebase Rules.');
             }
         }
         
         // Čtení všech inzerátů napříč uživateli přes collectionGroup
         const servicesRef = collectionGroup(servicesFirebaseDb, 'inzeraty');
-        console.log('📁 Services reference (collectionGroup):', servicesRef);
         
         // Nejdříve zkusit jednorázový dotaz pro debug
-        console.log('🔍 Testuji collectionGroup dotaz na inzeráty...');
         try {
             const testSnapshot = await getDocs(servicesRef);
-            console.log('✅ Test collectionGroup dotaz úspěšný! Počet inzerátů:', testSnapshot.docs.length);
-            console.log('Snapshot metadata:', {
-                fromCache: testSnapshot.metadata.fromCache,
-                hasPendingWrites: testSnapshot.metadata.hasPendingWrites
-            });
-            
-            if (testSnapshot.docs.length === 0) {
-                console.warn('⚠️ CollectionGroup dotaz funguje, ale nenašel žádné inzeráty!');
-                console.warn('⚠️ Zkontrolujte, zda existují dokumenty v: users/{uid}/inzeraty/');
-                console.warn('⚠️ Zkuste vytvořit testovací inzerát přes aplikaci');
-            }
+            // Test úspěšný - logy odstraněny
         } catch (testError) {
-            // CollectionGroup nefunguje - použít alternativní metodu (tichý režim, protože alternativní metoda funguje)
-            // Nevyhazovat error, protože alternativní metoda úspěšně načítá inzeráty
+            // CollectionGroup nefunguje - použít alternativní metodu (tichý režim)
             if (testError.code === 'permission-denied') {
-                // Tichý režim - pouze debug log, ne error
-                console.log('ℹ️ CollectionGroup dotaz není dostupný (používám alternativní metodu)');
+                // Tichý režim - logy odstraněny
             } else {
                 // Pro jiné chyby zobrazit warning
                 console.warn('⚠️ CollectionGroup dotaz selhal:', testError.message);
             }
             
             // CollectionGroup nefunguje - použít alternativní metodu
-            console.log('🔄 Používám alternativní metodu načítání inzerátů...');
             await tryAlternativeLoadMethod();
             return; // Ukončit, protože collectionGroup nefunguje
         }
@@ -195,11 +173,7 @@ async function setupRealtimeListener() {
         console.log('👂 Nastavuji onSnapshot listener...');
         
         onSnapshot(servicesRef, async (snapshot) => {
-            console.log('📡 Real-time update:', snapshot.docs.length, 'služeb');
-            console.log('Snapshot metadata:', {
-                fromCache: snapshot.metadata.fromCache,
-                hasPendingWrites: snapshot.metadata.hasPendingWrites
-            });
+            // Real-time update - logy odstraněny pro čistší konzoli
             
             // Aktualizace stavu připojení
             updateConnectionStatus(true);
@@ -296,16 +270,7 @@ async function setupRealtimeListener() {
                 return dateB - dateA;
             });
             
-            console.log('📋 Všechny služby:', allServices);
-            console.log(`📊 Celkem načteno inzerátů: ${allServices.length}`);
-            
-            // Zobrazit statusy všech inzerátů pro debug
-            const statusCount = {};
-            allServices.forEach(service => {
-                const status = service.status || 'active';
-                statusCount[status] = (statusCount[status] || 0) + 1;
-            });
-            console.log('📊 Rozdělení podle statusu:', statusCount);
+            // Služby načteny - logy odstraněny pro čistší konzoli
             
             // Pokud nejsou žádné služby, přidáme testovací            
             if (allServices.length === 0) {
@@ -330,7 +295,7 @@ async function setupRealtimeListener() {
             updateStats();
             
             // Debug - kolik služeb prošlo filtrem
-            console.log(`✅ Po filtrování zobrazeno: ${filteredServices.length} z ${allServices.length} inzerátů`);
+            // Filtrování dokončeno - logy odstraněny
             
         }, (error) => {
             console.error('❌ Chyba v real-time listeneru:', error);
@@ -444,7 +409,7 @@ async function tryAlternativeLoadMethod() {
             const usersQuery = query(usersRef, limit(100));
             const usersSnapshot = await getDocs(usersQuery);
             
-            console.log('📊 Načteno uživatelů:', usersSnapshot.size);
+            // Uživatelé načteni - logy odstraněny
             
             if (usersSnapshot.size === 0) {
                 console.warn('⚠️ Žádní uživatelé nenalezeni - databáze je prázdná');
@@ -490,7 +455,7 @@ async function tryAlternativeLoadMethod() {
         
         // Načíst inzeráty poprvé
         allServices = await loadAllAds();
-        console.log(`✅ Alternativní metoda: Načteno ${allServices.length} inzerátů`);
+        // Alternativní metoda: inzeráty načteny - logy odstraněny
         
         if (allServices.length === 0) {
             console.warn('⚠️ Alternativní metoda nenašla žádné inzeráty');
@@ -1123,8 +1088,7 @@ function filterServices() {
 
     filteredServices = filteredAds;
     
-    // Debug log
-    console.log('🔍 filterServices - filteredAds.length:', filteredAds.length, 'filteredServices.length:', filteredServices.length);
+            // Filtrování dokončeno - logy odstraněny
     
     // Resetovat na první stránku při změně filtru
     currentPage = 1;

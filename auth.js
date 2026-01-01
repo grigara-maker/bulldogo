@@ -404,13 +404,7 @@ function initAuth() {
         const companyForm = document.querySelector('.company-form');
         const typeButtons = document.querySelectorAll('.registration-type-btn');
         
-        console.log('🔍 Debug po načtení DOM:', {
-            personForm: personForm ? 'nalezen' : 'nenalezen',
-            companyForm: companyForm ? 'nalezen' : 'nenalezen',
-            typeButtons: typeButtons.length,
-            personFormDisplay: personForm ? personForm.style.display : 'N/A',
-            companyFormDisplay: companyForm ? companyForm.style.display : 'N/A'
-        });
+        // Debug po načtení DOM - logy odstraněny pro čistší konzoli
     }, 1000);
 }
 
@@ -442,11 +436,11 @@ function setupRegistrationTypeSelection() {
     const personForm = document.querySelector('.person-form');
     const companyForm = document.querySelector('.company-form');
     
-    console.log('🔧 Nastavuji registrační typy:', { typeButtons: typeButtons.length, personForm, companyForm });
+    // Nastavení registračních typů
     
     typeButtons.forEach(button => {
         button.addEventListener('click', () => {
-            console.log('🖱️ Kliknuto na tlačítko:', button.getAttribute('data-type'));
+            // Přepnutí typu registrace
             
             // Odstranit active třídu ze všech tlačítek
             typeButtons.forEach(btn => btn.classList.remove('active'));
@@ -454,10 +448,10 @@ function setupRegistrationTypeSelection() {
             button.classList.add('active');
             
             const type = button.getAttribute('data-type');
-            console.log('📝 Typ registrace:', type);
+            // Typ registrace nastaven
             
             if (type === 'person') {
-                console.log('👤 Zobrazuji formulář pro fyzickou osobu');
+                // Zobrazení formuláře pro fyzickou osobu
                 personForm.style.display = 'block';
                 personForm.classList.remove('hidden');
                 personForm.classList.add('visible');
@@ -473,7 +467,7 @@ function setupRegistrationTypeSelection() {
                 window.__icoVerified = false;
                 window.__icoVerifiedValue = null;
             } else if (type === 'company') {
-                console.log('🏢 Zobrazuji formulář pro firmu');
+                // Zobrazení formuláře pro firmu
                 personForm.style.display = 'none';
                 personForm.classList.add('hidden');
                 personForm.classList.remove('visible');
@@ -490,16 +484,7 @@ function setupRegistrationTypeSelection() {
                 window.__icoVerifiedValue = null;
             }
             
-            console.log('📊 Stav formulářů:', {
-                personForm: {
-                    display: personForm.style.display,
-                    classes: personForm.className
-                },
-                companyForm: {
-                    display: companyForm.style.display,
-                    classes: companyForm.className
-                }
-            });
+            // Stav formulářů - logy odstraněny
         });
     });
 }
@@ -1295,12 +1280,10 @@ function setupAuthModalEvents() {
 
 // Zobrazení auth modalu
 function showAuthModal(type = 'login') {
-    console.log('🔧 showAuthModal volána s typem:', type);
     let modal = document.getElementById('authModal');
     
     // Pokud modal neexistuje, vytvoř ho dynamicky
     if (!modal) {
-        console.log('🔧 Modal neexistuje, vytvářím ho dynamicky');
         modal = createAuthModal();
     }
     
@@ -1311,15 +1294,7 @@ function showAuthModal(type = 'login') {
     const personForm = modal.querySelector('.person-form');
     const companyForm = modal.querySelector('.company-form');
     
-    console.log('🔍 Elementy nalezeny:', {
-        modal: !!modal,
-        modalTitle: !!modalTitle,
-        submitBtn: !!submitBtn,
-        switchBtn: !!switchBtn,
-        registrationType: !!registrationType,
-        personForm: !!personForm,
-        companyForm: !!companyForm
-    });
+    // Elementy modalu připraveny
 
     const btnSendPhoneCode = modal.querySelector('#btnSendPhoneCode');
     const btnAuthSubmit = modal.querySelector('#btnAuthSubmit');
@@ -1394,16 +1369,7 @@ function showAuthModal(type = 'login') {
             authPhone.value = '+420';
         }
 
-        console.log('🎯 Inicializace registrace - výchozí stav:', {
-            personForm: {
-                display: personForm.style.display,
-                classes: personForm.className
-            },
-            companyForm: {
-                display: companyForm.style.display,
-                classes: companyForm.className
-            }
-        });
+        // Inicializace registrace - výchozí stav
         
         // Aktivovat tlačítko pro fyzickou osobu
         const typeButtons = document.querySelectorAll('.registration-type-btn');
@@ -1464,21 +1430,8 @@ function showAuthModal(type = 'login') {
     // Debug: Zkontrolovat formulář po otevření modalu a nastavit event listener
     setTimeout(() => {
         const authFormAfterOpen = modal.querySelector('#authForm');
-        console.log('🔍 AuthForm po otevření modalu:', authFormAfterOpen ? 'NALEZEN' : 'NENALEZEN');
-        console.log('🔍 AuthForm element po otevření:', authFormAfterOpen);
-        if (authFormAfterOpen) {
-            console.log('🔍 AuthForm ID po otevření:', authFormAfterOpen.id);
-            console.log('🔍 AuthForm class po otevření:', authFormAfterOpen.className);
-            
-            // Nastavit event listener na formulář po otevření modalu
-            console.log('🔧 Nastavuji event listener na formulář po otevření modalu');
-            
-            // Debug: Zkontrolovat, jestli už má event listener
-            console.log('🔍 AuthForm má event listener:', authFormAfterOpen.onsubmit !== null);
-            
-            // ODSTRANĚNO: Duplicitní event listener - formulář už má listener v setupEventListeners()
-            // Přidávání dalšího listeneru způsobovalo vícenásobné odesílání formuláře
-        }
+        // ODSTRANĚNO: Duplicitní event listener - formulář už má listener v setupEventListeners()
+        // Přidávání dalšího listeneru způsobovalo vícenásobné odesílání formuláře
     }, 100);
 }
 
@@ -2180,18 +2133,12 @@ async function loadServices() {
 // Event listenery - přesunuto do initAuth funkce
 // POZOR: Tato funkce je specifická pro auth formulář, ne pro obecné event listenery
 function setupEventListeners() {
-    console.log('🔧 Nastavuji event listenery pro auth formulář');
-    
     // Auth formulář - POUZE JEDEN LISTENER (odstraněny duplicity)
     const authForm = document.getElementById('authForm');
-    console.log('🔍 Hledám authForm:', authForm ? 'NALEZEN' : 'NENALEZEN');
-    console.log('🔍 AuthForm element:', authForm);
-    console.log('🔍 AuthForm má už listener:', authForm?.hasAttribute('data-listener-set'));
     
     if (authForm) {
         // Pokud už má listener, neopakovat
         if (authForm.hasAttribute('data-listener-set')) {
-            console.log('⚠️ AuthForm už má listener, neopakuji');
             return;
         }
         
@@ -2208,9 +2155,7 @@ function setupEventListeners() {
 			console.warn('⚠️ Nepodařilo se znovu navázat registration-type listenery:', e?.message || e);
 		}
         
-        console.log('🔧 Auth formulář nalezen, přidávám event listener (bez duplicit)');
-        console.log('🔧 AuthForm ID:', cleanAuthForm.id);
-        console.log('🔧 AuthForm class:', cleanAuthForm.className);
+        // Auth formulář připraven pro event listener
         
         // Označit, že listener je nastaven
         cleanAuthForm.setAttribute('data-listener-set', 'true');
@@ -2381,12 +2326,9 @@ function setupEventListeners() {
                 btnSendPhoneCode.textContent = 'Inicializuji ověření...';
                 if (!devBypass) {
                     try { 
-                        console.log('🔄 Renderování reCAPTCHA...');
+                        // Renderování a ověřování reCAPTCHA
                         await recaptchaVerifier.render();
-                        console.log('✅ reCAPTCHA render dokončen');
-                        console.log('🔄 Ověřování reCAPTCHA (invisible)...');
                         await recaptchaVerifier.verify();
-                        console.log('✅ reCAPTCHA verify dokončeno');
                         await new Promise(resolve => setTimeout(resolve, 300));
                     } catch (renderError) {
                         console.error('❌ Chyba při render/verify reCAPTCHA:', renderError);
@@ -2397,21 +2339,11 @@ function setupEventListeners() {
                     console.log('🧪 Dev bypass aktivní: reCAPTCHA se nerenederuje ani neověřuje (použijte test telefonní čísla).');
                 }
 
-                console.log('📱 Pokus o odeslání SMS na:', normalizedPhone);
-                console.log('🔐 reCAPTCHA verifier:', recaptchaVerifier ? 'existuje' : 'chybí');
-                console.log('🔥 Firebase Auth:', firebaseAuth ? 'existuje' : 'chybí');
-                console.log('📋 Firebase config:', {
-                    projectId: firebaseAuth.app.options.projectId,
-                    apiKey: firebaseAuth.app.options.apiKey ? 'nastaven' : 'chybí'
-                });
-                
                 btnSendPhoneCode.textContent = 'Odesílám SMS...';
 
                 // Odeslat SMS s podrobným error handlingem
                 try {
-                    console.log('📤 Volám signInWithPhoneNumber...');
                     phoneConfirmationResult = await signInWithPhoneNumber(firebaseAuth, normalizedPhone, recaptchaVerifier);
-                    console.log('✅ SMS úspěšně odeslána, phoneConfirmationResult:', !!phoneConfirmationResult);
                 } catch (smsError) {
                     // Logovat jen zpracovanou chybu, ne původní Firebase chybu
                     const humanizedError = humanizePhoneError(smsError);
@@ -3133,7 +3065,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             });
         } else {
-            console.log('✅ showAuthModal je dostupná');
+            // showAuthModal je dostupná
         }
     }, 1000);
 });
