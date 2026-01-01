@@ -7398,8 +7398,15 @@ html {
     }
 }
 
-/* Rezerva nahoře kvůli „opřenému“ buldokovi */
+/* Rezerva nahoře kvůli „opřenému" buldokovi */
 .modal-content.auth-with-hero { padding-top: 4.6rem; }
+
+/* Zúžení auth modalu na desktopu */
+@media (min-width: 769px) {
+    .modal-content.auth-with-hero {
+        max-width: 450px;
+    }
+}
 
 /* Buldok „opřený“ o kartu */
 .auth-dog-lean {
