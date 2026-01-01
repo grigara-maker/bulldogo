@@ -6798,7 +6798,7 @@ body.profile-plan-page .plan-info {
     .ad-card .ad-price {
         font-size: initial !important;
         font-weight: initial !important;
-        color: initial !important;
+        color: #f77c00 !important;
         margin-bottom: 0 !important;
         order: initial !important;
     }
@@ -12368,10 +12368,7 @@ html body .ad-actions {
 .ad-detail-price {
     font-size: 1.5rem;
     font-weight: 600;
-    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #6b7280;
 }
 
 .ad-meta-section {
