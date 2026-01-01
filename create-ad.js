@@ -415,7 +415,8 @@
                     // negotiable
                     // no inputs required
                 }
-                updatePreview();
+                // Aktualizovat náhled po změně typu ceny
+                setTimeout(() => updatePreview(), 50);
             }
             if (unitSel) unitSel.style.display = sel?.value === 'negotiable' ? 'none' : 'flex';
         }
@@ -429,10 +430,17 @@
             updatePreview();
         }
         document.querySelectorAll('input[name=\"priceUnit\"]').forEach(r => r.addEventListener('change', updatePlaceholders));
-        ;['input','change'].forEach(evt=>{
-            p?.addEventListener(evt, updatePreview);
-            pf?.addEventListener(evt, updatePreview);
-            pt?.addEventListener(evt, updatePreview);
+        // Přidat event listenery pro všechna pole ceny - zajistit, že se aktualizuje náhled
+        ;['input','change','keyup','paste'].forEach(evt=>{
+            p?.addEventListener(evt, () => {
+                setTimeout(() => updatePreview(), 10);
+            });
+            pf?.addEventListener(evt, () => {
+                setTimeout(() => updatePreview(), 10);
+            });
+            pt?.addEventListener(evt, () => {
+                setTimeout(() => updatePreview(), 10);
+            });
         });
 
         // Náhledy obrázků – použít existující helper, když je k dispozici
