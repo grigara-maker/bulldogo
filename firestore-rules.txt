@@ -90,27 +90,30 @@ service cloud.firestore {
         return request.auth != null;
       }
       
-      // Helper funkce pro kontrolu účastníka
-      function isParticipant(participants) {
-        return isSignedIn() && request.auth.uid in participants;
+      // Helper funkce pro kontrolu účastníka (pro existující dokument)
+      function isParticipant() {
+        return isSignedIn() && 
+               resource.data.participants != null &&
+               request.auth.uid in resource.data.participants;
       }
       
-      // Čtení a zápis: povoleno pouze účastníkům
-      allow read, write: if isParticipant(resource.data.participants);
+      // Čtení: povoleno pouze účastníkům
+      allow read: if isParticipant();
       
       // Vytvoření: povoleno přihlášeným uživatelům, kteří jsou v participants
       allow create: if isSignedIn() && 
                       request.resource.data.participants != null &&
+                      request.resource.data.participants.size() == 2 &&
                       request.auth.uid in request.resource.data.participants;
       
       // Aktualizace: povoleno účastníkům (např. pro lastMessage, lastMessageAt)
-      allow update: if isParticipant(resource.data.participants) &&
+      allow update: if isParticipant() &&
                       // Participants se nesmí měnit
                       (!('participants' in request.resource.data) ||
                        request.resource.data.participants == resource.data.participants);
       
       // Smazání: povoleno účastníkům
-      allow delete: if isParticipant(resource.data.participants);
+      allow delete: if isParticipant();
       
       // Zprávy v konverzaci
       match /messages/{messageId} {
