@@ -311,13 +311,13 @@
                         <div class="form-group">
                             <label for="businessIco">IČ (Identifikační číslo)</label>
                             <div style="display:flex; gap:8px; align-items:center;">
-                                <input type="text" id="businessIco" value="" class="form-input" placeholder="Zadejte IČ firmy" style="flex:1;">
-                                <button type="button" id="btnVerifyICOSettings" class="btn-save" style="white-space:nowrap;">
+                                <input type="text" id="businessIco" value="" class="form-input" placeholder="Zadejte IČ firmy" style="flex:1;" disabled>
+                                <button type="button" id="btnVerifyICOSettings" class="btn-save" style="white-space:nowrap; display:none;">
                                     <i class="fas fa-check-circle"></i>
                                     Ověřit
                                 </button>
                             </div>
-                            <div id="icoStatusSettings" style="font-size:13px; margin-top:6px; color:#6b7280;"></div>
+                            <div id="icoStatusSettings" style="font-size:13px; margin-top:6px; color:#6b7280; display:none;"></div>
                         </div>
                         <div class="form-group">
                             <label for="businessDic">DIČ (Daňové identifikační číslo)</label>
@@ -633,16 +633,9 @@
                     businessDescription: !!businessDescriptionEl
                 });
                 
-                // Ověření IČO – pokud je vyplněno, musí být úspěšně ověřeno tlačítkem
+                // IČO je zablokované - nelze měnit, není potřeba ověřovat
                 const icoRaw = businessIcoEl ? businessIcoEl.value : '';
                 const normalizedIco = normalizeICO(icoRaw);
-                if (normalizedIco) {
-                    const verifiedFlag = window.__icoVerified === true && window.__icoVerifiedValue === normalizedIco;
-                    if (!verifiedFlag) {
-                        showMessage('Nejdříve ověřte IČO tlačítkem Ověřit.', 'error');
-                        return;
-                    }
-                }
 
                 const businessDescriptionText = businessDescriptionEl ? businessDescriptionEl.value : '';
                 
