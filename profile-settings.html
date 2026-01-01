@@ -1326,7 +1326,7 @@
             // Zavřít první modal a zobrazit finální potvrzení
             closeDeleteModal();
             
-            // Vytvořit finální potvrzovací modal
+            // Vytvořit finální potvrzovací modal s heslem
             const finalModal = document.createElement('div');
             finalModal.className = 'modal';
             finalModal.id = 'finalDeleteModal';
@@ -1341,12 +1341,18 @@
                         <p style="font-size: clamp(1rem, 3vw, 1.1rem); font-weight: 600; color: #1a1a2e; margin-bottom: 1rem; line-height: 1.6;">
                             Opravdu chcete trvale smazat svůj účet?
                         </p>
-                        <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #EF4444; font-weight: 700; margin-bottom: 1.5rem;">
+                        <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #EF4444; font-weight: 700; margin-bottom: 1rem;">
                             Tato akce je NEVRATNÁ!
                         </p>
                         <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #374151; margin-bottom: 1.5rem; line-height: 1.6;">
                             Všechna vaše data budou navždy ztracena!
                         </p>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="finalDeletePassword" style="display: block; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                                Pro potvrzení zadejte vaše heslo:
+                            </label>
+                            <input type="password" id="finalDeletePassword" class="form-input" placeholder="Zadejte vaše heslo" style="width: 100%; padding: 12px; font-size: clamp(0.9rem, 2.5vw, 1rem); border: 2px solid #e5e7eb; border-radius: 8px;">
+                        </div>
                         <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
                             <button onclick="closeFinalDeleteModal()" class="btn-save" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; cursor: pointer; transition: all 0.2s;">
                                 Zrušit
@@ -1391,6 +1397,58 @@
         // Funkce pro skutečné smazání účtu
         async function executeDeleteAccount() {
             try {
+                const currentUser = window.firebaseAuth.currentUser;
+                if (!currentUser) {
+                    showMessage('❌ Uživatel není přihlášen.', 'error');
+                    return;
+                }
+
+                // Získat heslo z finálního modalu
+                const passwordInput = document.getElementById('finalDeletePassword');
+                const password = passwordInput ? passwordInput.value : '';
+                
+                if (!password) {
+                    showMessage('❌ Pro smazání účtu musíte zadat vaše heslo.', 'error');
+                    if (passwordInput) {
+                        passwordInput.style.borderColor = '#EF4444';
+                        passwordInput.focus();
+                        setTimeout(() => {
+                            passwordInput.style.borderColor = '#e5e7eb';
+                        }, 2000);
+                    }
+                    return;
+                }
+
+                // Re-autentifikace před smazáním účtu (vyžaduje Firebase)
+                try {
+                    const { reauthenticateWithCredential, EmailAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    
+                    if (!currentUser.email) {
+                        showMessage('❌ Nelze provést re-autentifikaci - chybí email.', 'error');
+                        return;
+                    }
+                    
+                    const credential = EmailAuthProvider.credential(currentUser.email, password);
+                    await reauthenticateWithCredential(currentUser, credential);
+                    console.log('✅ Re-autentifikace úspěšná');
+                } catch (reauthError) {
+                    console.error('❌ Chyba při re-autentifikaci:', reauthError);
+                    let errorMessage = 'Nesprávné heslo. Zkuste to znovu.';
+                    if (reauthError?.code === 'auth/wrong-password') {
+                        errorMessage = 'Nesprávné heslo. Zkuste to znovu.';
+                    } else if (reauthError?.code === 'auth/invalid-credential') {
+                        errorMessage = 'Neplatné přihlašovací údaje. Zkuste to znovu.';
+                    } else if (reauthError?.code === 'auth/user-mismatch') {
+                        errorMessage = 'Chyba při ověření identity. Zkuste to znovu.';
+                    }
+                    showMessage(errorMessage, 'error');
+                    if (passwordInput) {
+                        passwordInput.value = '';
+                        passwordInput.focus();
+                    }
+                    return;
+                }
+
                 // Zavřít modal a zobrazit loading
                 closeFinalDeleteModal();
                 
@@ -1415,13 +1473,6 @@
                     </div>
                 `;
                 document.body.appendChild(loadingModal);
-                
-                const currentUser = window.firebaseAuth.currentUser;
-                if (!currentUser) {
-                    loadingModal.remove();
-                    showMessage('❌ Uživatel není přihlášen.', 'error');
-                    return;
-                }
 
                 // Import Firebase functions
                 const { 
