@@ -449,83 +449,145 @@ function updateProfileInfo() {
         profileBioEl.innerHTML = escapedText.replace(/\n/g, '<br>');
     }
     
-    // Update contact info
-    const profileDisplayNameEl = document.getElementById('profileDisplayName');
-    const profileDisplayEmailEl = document.getElementById('profileDisplayEmail');
-    const profileDisplayPhoneEl = document.getElementById('profileDisplayPhone');
-    
-    console.log('🖼️ Contact elements found:', {
-        profileDisplayName: !!profileDisplayNameEl,
-        profileDisplayEmail: !!profileDisplayEmailEl,
-        profileDisplayPhone: !!profileDisplayPhoneEl
-    });
-    
-    if (profileDisplayNameEl) profileDisplayNameEl.textContent = displayName;
-    
-    // Kontaktní údaje s blur efektem pro nepřihlášené
-    const fullEmail = userProfile.email || currentProfileUser.email || '';
-    const fullPhone = userProfile.phone || currentProfileUser.phone || 'Telefon neuveden';
+    // Update contact info - dynamicky zobrazit všechny vyplněné údaje
+    const contactInfoContainer = document.getElementById('profileContactInfo');
     const viewer = window.firebaseAuth?.currentUser;
+    const isCompany = userProfile?.userType === 'company' || userProfile?.type === 'company';
     
-    if (profileDisplayEmailEl) {
-        profileDisplayEmailEl.textContent = fullEmail;
-        if (!viewer) {
-            profileDisplayEmailEl.classList.add('blurred-contact');
-            profileDisplayEmailEl.onclick = () => {
-                if (typeof window.showAuthModal === 'function') {
-                    window.showAuthModal('login');
-                }
-            };
-            profileDisplayEmailEl.style.cursor = 'pointer';
+    if (contactInfoContainer) {
+        // Vyčistit existující obsah
+        contactInfoContainer.innerHTML = '';
+        
+        // Pomocná funkce pro přidání kontaktního údaje
+        const addContactItem = (icon, label, value, isBlurred = false, isLink = false) => {
+            if (!value || value.trim() === '') return; // Zobrazit jen vyplněné údaje
             
-            // Zabránit kopírování zablurovaného kontaktu
-            profileDisplayEmailEl.addEventListener('copy', (e) => {
-                e.preventDefault();
-                return false;
-            });
-            profileDisplayEmailEl.addEventListener('cut', (e) => {
-                e.preventDefault();
-                return false;
-            });
-            profileDisplayEmailEl.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                return false;
-            });
-        } else {
-            profileDisplayEmailEl.classList.remove('blurred-contact');
-            profileDisplayEmailEl.onclick = null;
-            profileDisplayEmailEl.style.cursor = 'default';
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            
+            const iconEl = document.createElement('i');
+            iconEl.className = icon;
+            
+            const labelEl = document.createElement('span');
+            labelEl.style.fontWeight = '600';
+            labelEl.style.marginRight = '8px';
+            labelEl.textContent = label + ':';
+            
+            const valueEl = document.createElement('span');
+            
+            if (isLink) {
+                const link = document.createElement('a');
+                link.href = value.startsWith('http') ? value : `https://${value}`;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = value.replace(/^https?:\/\//, '');
+                link.style.color = '#f77c00';
+                link.style.textDecoration = 'none';
+                valueEl.appendChild(link);
+            } else {
+                valueEl.textContent = value;
+            }
+            
+            if (isBlurred && !viewer) {
+                valueEl.classList.add('blurred-contact');
+                valueEl.style.cursor = 'pointer';
+                valueEl.onclick = () => {
+                    if (typeof window.showAuthModal === 'function') {
+                        window.showAuthModal('login');
+                    }
+                };
+                
+                // Zabránit kopírování zablurovaného kontaktu
+                valueEl.addEventListener('copy', (e) => {
+                    e.preventDefault();
+                    return false;
+                });
+                valueEl.addEventListener('cut', (e) => {
+                    e.preventDefault();
+                    return false;
+                });
+                valueEl.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+            
+            item.appendChild(iconEl);
+            item.appendChild(labelEl);
+            item.appendChild(valueEl);
+            contactInfoContainer.appendChild(item);
+        };
+        
+        // Jméno/Název firmy (vždy zobrazit)
+        addContactItem('fas fa-user', 'Jméno', displayName);
+        
+        // Email (pokud je vyplněn)
+        const email = userProfile.email || currentProfileUser.email || '';
+        if (email) {
+            addContactItem('fas fa-envelope', 'Email', email, true);
         }
-    }
-    
-    if (profileDisplayPhoneEl) {
-        profileDisplayPhoneEl.textContent = fullPhone;
-        if (!viewer) {
-            profileDisplayPhoneEl.classList.add('blurred-contact');
-            profileDisplayPhoneEl.onclick = () => {
-                if (typeof window.showAuthModal === 'function') {
-                    window.showAuthModal('login');
+        
+        // Telefon (pokud je vyplněn)
+        const phone = userProfile.phone || currentProfileUser.phone || '';
+        if (phone && phone !== 'Telefon neuveden') {
+            // Formátovat telefon pro zobrazení
+            let formattedPhone = phone;
+            if (phone.startsWith('+420') && phone.length > 4) {
+                const digits = phone.slice(4).replace(/\D/g, '');
+                if (digits.length >= 9) {
+                    formattedPhone = `+420 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`.trim();
                 }
-            };
-            profileDisplayPhoneEl.style.cursor = 'pointer';
+            }
+            addContactItem('fas fa-phone', 'Telefon', formattedPhone, true);
+        }
+        
+        // Pro firmy zobrazit další údaje
+        if (isCompany) {
+            // IČ (pokud je vyplněno)
+            const ico = userProfile.businessIco || userProfile.company?.ico || '';
+            if (ico) {
+                addContactItem('fas fa-id-card', 'IČ', ico);
+            }
             
-            // Zabránit kopírování zablurovaného kontaktu
-            profileDisplayPhoneEl.addEventListener('copy', (e) => {
-                e.preventDefault();
-                return false;
-            });
-            profileDisplayPhoneEl.addEventListener('cut', (e) => {
-                e.preventDefault();
-                return false;
-            });
-            profileDisplayPhoneEl.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                return false;
-            });
+            // DIČ (pokud je vyplněno)
+            const dic = userProfile.businessDic || userProfile.company?.dic || '';
+            if (dic) {
+                addContactItem('fas fa-file-invoice', 'DIČ', dic);
+            }
+            
+            // Typ podnikání (pokud je vyplněn)
+            const businessType = userProfile.businessType || '';
+            if (businessType) {
+                const typeLabels = {
+                    'individual': 'OSVČ',
+                    'company': 'Společnost',
+                    'freelancer': 'Freelancer',
+                    'other': 'Jiné'
+                };
+                addContactItem('fas fa-briefcase', 'Typ podnikání', typeLabels[businessType] || businessType);
+            }
+            
+            // Webová stránka (pokud je vyplněna)
+            const website = userProfile.businessWebsite || userProfile.company?.website || '';
+            if (website) {
+                addContactItem('fas fa-globe', 'Webová stránka', website, false, true);
+            }
         } else {
-            profileDisplayPhoneEl.classList.remove('blurred-contact');
-            profileDisplayPhoneEl.onclick = null;
-            profileDisplayPhoneEl.style.cursor = 'default';
+            // Pro fyzické osoby zobrazit město (pokud je vyplněno)
+            const city = userProfile.city || '';
+            if (city) {
+                addContactItem('fas fa-map-marker-alt', 'Město', city);
+            }
+        }
+        
+        // Pokud nejsou žádné kontaktní údaje (kromě jména)
+        if (contactInfoContainer.children.length <= 1) {
+            const noInfo = document.createElement('div');
+            noInfo.className = 'contact-item';
+            noInfo.style.color = '#6b7280';
+            noInfo.style.fontStyle = 'italic';
+            noInfo.textContent = 'Uživatel nezadal žádné další kontaktní údaje.';
+            contactInfoContainer.appendChild(noInfo);
         }
     }
     
