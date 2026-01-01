@@ -2658,6 +2658,29 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
     const oldVal = before[key];
     const newVal = after[key];
     
+    // Ignorovat změny související s profilovou fotkou
+    // Pokud se mění pouze photoURL, avatarUrl, avatar nebo avatarUpdatedAt, ignorovat
+    const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
+    if (photoRelatedFields.includes(key)) {
+      // Ignorovat změny těchto polí úplně
+      continue;
+    }
+    
+    // Pokud se mění jiné pole, ale současně se mění i photoURL nebo avatarUpdatedAt,
+    // a žádné jiné pole se nemění, ignorovat celou změnu
+    const isOnlyPhotoChange = photoRelatedFields.some(field => {
+      const oldPhotoVal = before[field];
+      const newPhotoVal = after[field];
+      const oldPhotoStr = JSON.stringify(oldPhotoVal);
+      const newPhotoStr = JSON.stringify(newPhotoVal);
+      return oldPhotoStr !== newPhotoStr;
+    });
+    
+    if (isOnlyPhotoChange) {
+      // Pokud se mění pouze foto-related pole, ignorovat všechny změny
+      continue;
+    }
+    
     // Porovnání hodnot
     const oldStr = JSON.stringify(oldVal);
     const newStr = JSON.stringify(newVal);
@@ -2670,6 +2693,19 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
         newValue: newVal,
       });
     }
+  }
+  
+  // Pokud se mění pouze foto-related pole, vrátit prázdné pole
+  const hasPhotoChanges = photoRelatedFields.some(field => {
+    const oldPhotoVal = before[field];
+    const newPhotoVal = after[field];
+    const oldPhotoStr = JSON.stringify(oldPhotoVal);
+    const newPhotoStr = JSON.stringify(newPhotoVal);
+    return oldPhotoStr !== newPhotoStr;
+  });
+  
+  if (hasPhotoChanges && changes.length === 0) {
+    return [];
   }
   
   return changes;
