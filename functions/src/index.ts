@@ -2648,42 +2648,49 @@ function formatValue(value: any): string {
  * Porovná dva objekty a vrátí změněná pole
  */
 function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any }> {
+  const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
+  
+  // Nejdříve zkontrolovat, zda se mění pouze foto-related pole
+  const hasPhotoChanges = photoRelatedFields.some(field => {
+    const oldPhotoVal = before[field];
+    const newPhotoVal = after[field];
+    const oldPhotoStr = JSON.stringify(oldPhotoVal || "");
+    const newPhotoStr = JSON.stringify(newPhotoVal || "");
+    return oldPhotoStr !== newPhotoStr;
+  });
+  
+  // Zkontrolovat, zda se mění nějaké jiné pole (kromě ignorovaných a foto-related)
+  const hasOtherChanges = Object.keys(after).some(key => {
+    if (ignoredFields.includes(key)) return false;
+    if (photoRelatedFields.includes(key)) return false;
+    
+    const oldVal = before[key];
+    const newVal = after[key];
+    const oldStr = JSON.stringify(oldVal || "");
+    const newStr = JSON.stringify(newVal || "");
+    return oldStr !== newStr;
+  });
+  
+  // Pokud se mění pouze foto-related pole a žádné jiné, vrátit prázdné pole
+  if (hasPhotoChanges && !hasOtherChanges) {
+    return [];
+  }
+  
+  // Jinak pokračovat normálně
   const changes: Array<{ field: string; label: string; oldValue: any; newValue: any }> = [];
   
   const allKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
   
   for (const key of allKeys) {
     if (ignoredFields.includes(key)) continue;
+    if (photoRelatedFields.includes(key)) continue; // Ignorovat foto-related pole úplně
     
     const oldVal = before[key];
     const newVal = after[key];
     
-    // Ignorovat změny související s profilovou fotkou
-    // Pokud se mění pouze photoURL, avatarUrl, avatar nebo avatarUpdatedAt, ignorovat
-    const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
-    if (photoRelatedFields.includes(key)) {
-      // Ignorovat změny těchto polí úplně
-      continue;
-    }
-    
-    // Pokud se mění jiné pole, ale současně se mění i photoURL nebo avatarUpdatedAt,
-    // a žádné jiné pole se nemění, ignorovat celou změnu
-    const isOnlyPhotoChange = photoRelatedFields.some(field => {
-      const oldPhotoVal = before[field];
-      const newPhotoVal = after[field];
-      const oldPhotoStr = JSON.stringify(oldPhotoVal);
-      const newPhotoStr = JSON.stringify(newPhotoVal);
-      return oldPhotoStr !== newPhotoStr;
-    });
-    
-    if (isOnlyPhotoChange) {
-      // Pokud se mění pouze foto-related pole, ignorovat všechny změny
-      continue;
-    }
-    
     // Porovnání hodnot
-    const oldStr = JSON.stringify(oldVal);
-    const newStr = JSON.stringify(newVal);
+    const oldStr = JSON.stringify(oldVal || "");
+    const newStr = JSON.stringify(newVal || "");
     
     if (oldStr !== newStr) {
       changes.push({
@@ -2693,19 +2700,6 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
         newValue: newVal,
       });
     }
-  }
-  
-  // Pokud se mění pouze foto-related pole, vrátit prázdné pole
-  const hasPhotoChanges = photoRelatedFields.some(field => {
-    const oldPhotoVal = before[field];
-    const newPhotoVal = after[field];
-    const oldPhotoStr = JSON.stringify(oldPhotoVal);
-    const newPhotoStr = JSON.stringify(newPhotoVal);
-    return oldPhotoStr !== newPhotoStr;
-  });
-  
-  if (hasPhotoChanges && changes.length === 0) {
-    return [];
   }
   
   return changes;
@@ -2736,7 +2730,13 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Změna údajů - Bulldogo.cz</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table { background-color: #ffffff !important; }
+  </style>
+  <![endif]-->
   <style>
     @media (prefers-color-scheme: dark) {
       .email-body { background-color: #1a1a1a !important; }
@@ -2751,10 +2751,21 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
       .email-table { background-color: #2d2d2d !important; border-color: #404040 !important; }
       .email-table-header { background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
     }
+    [data-ogsc] .email-body { background-color: #1a1a1a !important; }
+    [data-ogsc] .email-container { background-color: #1a1a1a !important; }
+    [data-ogsc] .email-card { background: linear-gradient(180deg, #2d2d2d 0%, #1f1f1f 100%) !important; }
+    [data-ogsc] .email-text { color: #e5e5e5 !important; }
+    [data-ogsc] .email-text-light { color: #b0b0b0 !important; }
+    [data-ogsc] .email-text-dark { color: #ffffff !important; }
+    [data-ogsc] .email-title { color: #ffffff !important; }
+    [data-ogsc] .email-border { border-color: #404040 !important; }
+    [data-ogsc] .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+    [data-ogsc] .email-table { background-color: #2d2d2d !important; border-color: #404040 !important; }
+    [data-ogsc] .email-table-header { background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
   </style>
 </head>
-<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background: #ffffff;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background-color: #ffffff; background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
@@ -3012,7 +3023,13 @@ function generateNewMessageEmailHTML(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Nová zpráva - Bulldogo.cz</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table { background-color: #ffffff !important; }
+  </style>
+  <![endif]-->
   <style>
     @media (prefers-color-scheme: dark) {
       .email-body { background-color: #1a1a1a !important; }
@@ -3027,10 +3044,21 @@ function generateNewMessageEmailHTML(
       .email-table { background-color: #2d2d2d !important; border-color: #404040 !important; }
       .email-table-header { background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
     }
+    [data-ogsc] .email-body { background-color: #1a1a1a !important; }
+    [data-ogsc] .email-container { background-color: #1a1a1a !important; }
+    [data-ogsc] .email-card { background: linear-gradient(180deg, #2d2d2d 0%, #1f1f1f 100%) !important; }
+    [data-ogsc] .email-text { color: #e5e5e5 !important; }
+    [data-ogsc] .email-text-light { color: #b0b0b0 !important; }
+    [data-ogsc] .email-text-dark { color: #ffffff !important; }
+    [data-ogsc] .email-title { color: #ffffff !important; }
+    [data-ogsc] .email-border { border-color: #404040 !important; }
+    [data-ogsc] .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+    [data-ogsc] .email-table { background-color: #2d2d2d !important; border-color: #404040 !important; }
+    [data-ogsc] .email-table-header { background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
   </style>
 </head>
-<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background: #ffffff;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background-color: #ffffff; background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
