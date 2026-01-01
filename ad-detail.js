@@ -195,8 +195,20 @@ function displayAdDetail() {
     console.log('📅 Formatted date:', formatDate(currentAd.createdAt));
     document.getElementById('adDate').textContent = formatDate(currentAd.createdAt);
     
-    // Description
-    document.getElementById('adDescription').textContent = currentAd.description || 'Bez popisu';
+    // Description - zachovat odřádkování
+    const descriptionEl = document.getElementById('adDescription');
+    if (descriptionEl) {
+        const description = currentAd.description || 'Bez popisu';
+        // Převést \n na <br> pro zachování odřádkování
+        const formattedDescription = description
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/\n/g, '<br>');
+        descriptionEl.innerHTML = formattedDescription;
+    }
     
     // Contact information
     if (adOwner) {
