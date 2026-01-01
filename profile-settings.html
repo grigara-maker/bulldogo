@@ -273,14 +273,6 @@
                             <input type="text" id="lastName" value="" class="form-input" placeholder="Zadejte vaše příjmení">
                         </div>
                         <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" value="" class="form-input" placeholder="Zadejte váš email">
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Telefon</label>
-                            <input type="tel" id="phone" value="+420" class="form-input" placeholder="Zadejte váš telefon">
-                        </div>
-                        <div class="form-group">
                             <label for="city">Město</label>
                             <input type="text" id="city" value="" class="form-input" placeholder="Zadejte vaše město">
                         </div>
@@ -380,10 +372,27 @@
                     </h3>
                     <div class="settings-form">
                         <div class="form-group" style="margin-bottom: 6px;">
-                            <label style="font-weight:700;">Změnit email</label>
+                            <label style="font-weight:700;">Změna emailu a telefonního čísla</label>
                             <div style="font-size:13px; color:#6b7280; margin-top:4px;">
-                                Změní přihlašovací email (Firebase Auth). Pro potvrzení je potřeba současné heslo.
+                                Pro změnu emailu nebo telefonního čísla je potřeba současné heslo. Změny se projeví i v databázi.
                             </div>
+                        </div>
+                        
+                        <!-- Aktuální hodnoty -->
+                        <div class="form-group" style="background: #f3f4f6; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-weight: 600; color: #6b7280; font-size: 13px;">Aktuální email:</label>
+                                <div id="currentEmailDisplay" style="color: #1a1a2e; font-weight: 500; margin-top: 4px;">-</div>
+                            </div>
+                            <div>
+                                <label style="font-weight: 600; color: #6b7280; font-size: 13px;">Aktuální telefonní číslo:</label>
+                                <div id="currentPhoneDisplay" style="color: #1a1a2e; font-weight: 500; margin-top: 4px;">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Změna emailu -->
+                        <div class="form-group" style="margin-bottom: 6px;">
+                            <label style="font-weight:600;">Změnit email</label>
                         </div>
                         <div class="form-group">
                             <label for="newEmail">Nový email</label>
@@ -393,13 +402,25 @@
                             <label for="confirmEmail">Potvrdit nový email</label>
                             <input type="email" id="confirmEmail" class="form-input" placeholder="Zadejte nový email znovu">
                         </div>
-                        <div class="form-group">
-                            <label for="currentPasswordForEmail">Současné heslo</label>
-                            <input type="password" id="currentPasswordForEmail" class="form-input" placeholder="Zadejte současné heslo">
+
+                        <!-- Změna telefonu -->
+                        <div class="form-group" style="margin-top: 20px; margin-bottom: 6px;">
+                            <label style="font-weight:600;">Změnit telefonní číslo</label>
                         </div>
-                        <button class="btn-save" onclick="changeEmail()">
-                            <i class="fas fa-envelope"></i>
-                            Změnit email
+                        <div class="form-group">
+                            <label for="newPhone">Nové telefonní číslo</label>
+                            <input type="tel" id="newPhone" value="+420" class="form-input" placeholder="Zadejte nové telefonní číslo">
+                        </div>
+
+                        <!-- Heslo pro obě změny -->
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="currentPasswordForChange">Současné heslo (povinné pro změnu)</label>
+                            <input type="password" id="currentPasswordForChange" class="form-input" placeholder="Zadejte současné heslo">
+                        </div>
+
+                        <button class="btn-save" onclick="changeEmailAndPhone()">
+                            <i class="fas fa-save"></i>
+                            Uložit změny
                         </button>
 
                         <hr style="margin: 18px 0; border:0; border-top:1px solid #e5e7eb;">
@@ -512,83 +533,15 @@
                     return;
                 }
 
-                // Získat hodnoty z formuláře
+                // Získat hodnoty z formuláře (email a telefon se už neukládají zde)
                 const firstNameEl = document.getElementById('firstName');
                 const lastNameEl = document.getElementById('lastName');
-                const emailEl = document.getElementById('email');
-                const phoneEl = document.getElementById('phone');
                 const cityEl = document.getElementById('city');
                 const bioEl = document.getElementById('bio');
                 
-                console.log('🔍 Elementy formuláře:', {
-                    firstName: !!firstNameEl,
-                    lastName: !!lastNameEl,
-                    email: !!emailEl,
-                    phone: !!phoneEl,
-                    city: !!cityEl,
-                    bio: !!bioEl
-                });
-                
                 const firstName = firstNameEl ? firstNameEl.value : '';
                 const lastName = lastNameEl ? lastNameEl.value : '';
-                
-                const phoneRaw = phoneEl ? phoneEl.value.trim() : '';
-                const emailRaw = emailEl ? emailEl.value.trim() : '';
                 const bioText = bioEl ? bioEl.value : '';
-                
-                // Validace telefonu - musí obsahovat čísla (kromě předvolby)
-                if (phoneRaw) {
-                    // Odstranit předvolbu a mezeru, zkontrolovat zda zbývají čísla
-                    const phoneWithoutPrefix = phoneRaw.replace(/^\+420\s*/, '').replace(/^420\s*/, '').replace(/\s+/g, '');
-                    const hasNumbers = /\d/.test(phoneWithoutPrefix);
-                    
-                    if (!hasNumbers || phoneWithoutPrefix.length === 0) {
-                        showMessage('⚠️ Telefon musí obsahovat telefonní číslo. Nelze uložit pouze předvolbu.', 'error');
-                        if (phoneEl) phoneEl.focus();
-                        return;
-                    }
-                    
-                    // Kontrola, zda obsahuje alespoň 9 číslic ZA PŘEDVOLBOU (předvolba se nepočítá)
-                    const digitsAfterPrefix = phoneWithoutPrefix.replace(/\D/g, '');
-                    if (digitsAfterPrefix.length < 9) {
-                        showMessage('⚠️ Telefonní číslo musí obsahovat alespoň 9 číslic za předvolbou.', 'error');
-                        if (phoneEl) phoneEl.focus();
-                        return;
-                    }
-                }
-                
-                // Validace emailu - musí obsahovat text před @ a po @, musí obsahovat zavináč
-                if (emailRaw) {
-                    const emailParts = emailRaw.split('@');
-                    if (emailParts.length !== 2) {
-                        showMessage('⚠️ Email musí obsahovat zavináč (@).', 'error');
-                        if (emailEl) emailEl.focus();
-                        return;
-                    }
-                    
-                    const beforeAt = emailParts[0].trim();
-                    const afterAt = emailParts[1].trim();
-                    
-                    if (!beforeAt || beforeAt.length === 0) {
-                        showMessage('⚠️ Email musí obsahovat text před zavináčem.', 'error');
-                        if (emailEl) emailEl.focus();
-                        return;
-                    }
-                    
-                    if (!afterAt || afterAt.length === 0) {
-                        showMessage('⚠️ Email musí obsahovat text po zavináči.', 'error');
-                        if (emailEl) emailEl.focus();
-                        return;
-                    }
-                    
-                    // Základní kontrola formátu emailu
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(emailRaw)) {
-                        showMessage('⚠️ Email není ve správném formátu (např. jmeno@domena.cz).', 'error');
-                        if (emailEl) emailEl.focus();
-                        return;
-                    }
-                }
                 
                 // Kontrola zakázaných slov
                 if (window.ProfanityFilter && bioText) {
@@ -599,31 +552,11 @@
                     }
                 }
                 
-                // Normalizace telefonu do formátu E.164 (bez mezer) pro uložení do databáze
-                let normalizedPhone = '';
-                if (phoneRaw && phoneRaw !== '+420') {
-                    // Odstranit mezery a normalizovat do formátu +420XXXXXXXXX
-                    const cleaned = phoneRaw.replace(/\s+/g, '').trim();
-                    if (cleaned.startsWith('+420')) {
-                        normalizedPhone = cleaned;
-                    } else if (cleaned.startsWith('420')) {
-                        normalizedPhone = '+' + cleaned;
-                    } else if (cleaned.startsWith('00')) {
-                        normalizedPhone = '+' + cleaned.slice(2);
-                    } else if (cleaned.startsWith('+')) {
-                        normalizedPhone = cleaned;
-                    } else {
-                        // Pokud začíná číslem, předpokládáme české číslo
-                        normalizedPhone = '+420' + cleaned.replace(/\D/g, '');
-                    }
-                }
-                
                 const personalData = {
                     firstName: firstName,
                     lastName: lastName,
                     name: `${firstName} ${lastName}`.trim(), // Zachovat i složené jméno pro kompatibilitu
-                    email: emailRaw, // Email se vždy ukládá do profilu
-                    phone: normalizedPhone || null, // Telefon se ukládá ve formátu E.164
+                    // Email a telefon se už neukládají zde - mění se v sekci "Změna emailu a telefonního čísla" s heslem
                     city: cityEl ? cityEl.value : '',
                     bio: bioText,
                     updatedAt: new Date()
@@ -908,7 +841,148 @@
             }
         }
 
-        // Změna emailu - DEFINICE HNED
+        // Změna emailu a telefonu - DEFINICE HNED
+        async function changeEmailAndPhone() {
+            try {
+                const currentUser = window.firebaseAuth.currentUser;
+                if (!currentUser) {
+                    showMessage('Musíte být přihlášeni!', 'error');
+                    return;
+                }
+
+                const newEmail = (document.getElementById('newEmail')?.value || '').toString().trim();
+                const confirmEmail = (document.getElementById('confirmEmail')?.value || '').toString().trim();
+                const newPhone = (document.getElementById('newPhone')?.value || '').toString().trim();
+                const currentPassword = (document.getElementById('currentPasswordForChange')?.value || '').toString();
+
+                // Kontrola, zda je alespoň jedna změna
+                if (!newEmail && !newPhone) {
+                    showMessage('Zadejte nový email nebo telefonní číslo!', 'error');
+                    return;
+                }
+
+                // Heslo je povinné
+                if (!currentPassword) {
+                    showMessage('Pro změnu emailu nebo telefonu je potřeba současné heslo!', 'error');
+                    return;
+                }
+
+                // Validace emailu (pokud je vyplněn)
+                if (newEmail) {
+                    if (newEmail !== confirmEmail) {
+                        showMessage('Emaily se neshodují!', 'error');
+                        return;
+                    }
+
+                    const emailParts = newEmail.split('@');
+                    if (emailParts.length !== 2) {
+                        showMessage('⚠️ Email musí obsahovat zavináč (@).', 'error');
+                        return;
+                    }
+
+                    const beforeAt = emailParts[0].trim();
+                    const afterAt = emailParts[1].trim();
+
+                    if (!beforeAt || beforeAt.length === 0) {
+                        showMessage('⚠️ Email musí obsahovat text před zavináčem.', 'error');
+                        return;
+                    }
+
+                    if (!afterAt || afterAt.length === 0) {
+                        showMessage('⚠️ Email musí obsahovat text po zavináči.', 'error');
+                        return;
+                    }
+
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(newEmail)) {
+                        showMessage('⚠️ Email není ve správném formátu (např. jmeno@domena.cz).', 'error');
+                        return;
+                    }
+                }
+
+                // Validace telefonu (pokud je vyplněn)
+                let normalizedPhone = null;
+                if (newPhone && newPhone !== '+420') {
+                    const phoneWithoutPrefix = newPhone.replace(/^\+420\s*/, '').replace(/^420\s*/, '').replace(/\s+/g, '');
+                    const digitsAfterPrefix = phoneWithoutPrefix.replace(/\D/g, '');
+                    
+                    if (digitsAfterPrefix.length < 9) {
+                        showMessage('⚠️ Telefonní číslo musí obsahovat alespoň 9 číslic za předvolbou.', 'error');
+                        return;
+                    }
+
+                    // Normalizace telefonu
+                    const cleaned = newPhone.replace(/\s+/g, '').trim();
+                    if (cleaned.startsWith('+420')) {
+                        normalizedPhone = cleaned;
+                    } else if (cleaned.startsWith('420')) {
+                        normalizedPhone = '+' + cleaned;
+                    } else if (cleaned.startsWith('00')) {
+                        normalizedPhone = '+' + cleaned.slice(2);
+                    } else if (cleaned.startsWith('+')) {
+                        normalizedPhone = cleaned;
+                    } else {
+                        normalizedPhone = '+420' + cleaned.replace(/\D/g, '');
+                    }
+                }
+
+                // Re-autentifikace s heslem
+                const { reauthenticateWithCredential, EmailAuthProvider } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+                await reauthenticateWithCredential(currentUser, credential);
+
+                // Změna emailu v Auth (pokud je vyplněn)
+                if (newEmail) {
+                    const { updateEmail, sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    await updateEmail(currentUser, newEmail);
+                    try { await sendEmailVerification(currentUser); } catch (e) { /* noop */ }
+                }
+
+                // Aktualizace v databázi
+                const { setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const uid = currentUser.uid;
+                const updateData = { updatedAt: new Date() };
+                
+                if (newEmail) {
+                    updateData.email = newEmail;
+                }
+                if (normalizedPhone) {
+                    updateData.phone = normalizedPhone;
+                }
+
+                // Aktualizace v root users dokumentu
+                await setDoc(doc(window.firebaseDb, 'users', uid), updateData, { merge: true });
+                
+                // Aktualizace v profilu
+                await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), updateData, { merge: true });
+
+                // Vyčistit formulář
+                document.getElementById('newEmail').value = '';
+                document.getElementById('confirmEmail').value = '';
+                document.getElementById('newPhone').value = '+420';
+                document.getElementById('currentPasswordForChange').value = '';
+
+                // Aktualizovat zobrazení aktuálních hodnot
+                await updateFormFields(await loadUserProfile());
+
+                showMessage('✅ Změny byly úspěšně uloženy!', 'success');
+            } catch (error) {
+                console.error('❌ Chyba při změně emailu/telefonu:', error);
+                let errorMessage = 'Nepodařilo se změnit údaje';
+                if (error?.code === 'auth/wrong-password') {
+                    errorMessage = 'Současné heslo je nesprávné';
+                } else if (error?.code === 'auth/invalid-email') {
+                    errorMessage = 'Neplatný email';
+                } else if (error?.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Tento email už je používán jiným účtem';
+                } else if (error?.code === 'auth/requires-recent-login') {
+                    errorMessage = 'Pro změnu údajů se musíte znovu přihlásit';
+                }
+                showMessage(errorMessage, 'error');
+            }
+        }
+
+        // Změna emailu - DEFINICE HNED (zachována pro kompatibilitu, ale nepoužívá se)
         async function changeEmail() {
             try {
                 const currentUser = window.firebaseAuth.currentUser;
@@ -1276,6 +1350,7 @@ Prosím kontaktujte podporu.
         window.saveBusinessInfo = saveBusinessInfo;
         window.savePreferences = savePreferences;
         window.changeEmail = changeEmail;
+        window.changeEmailAndPhone = changeEmailAndPhone;
         window.changePassword = changePassword;
         window.deleteAccount = deleteAccount;
         window.showMessage = showMessage;
@@ -1579,29 +1654,10 @@ Prosím kontaktujte podporu.
             window.__profileUserType = resolvedType;
             applyUserTypeToSettingsUI(resolvedType);
             
-            // Osobní informace - vždy prefilled
-            // Email se vždy bere z profilu (pokud není, pak z auth jako fallback)
-            const authEmail = (window.firebaseAuth?.currentUser?.email || '').toString().trim();
-            const profileEmail = (userProfile?.email || '').toString().trim();
-            const emailValue = profileEmail || authEmail || '';
-            
-            // Telefon se vždy bere z profilu a formátuje se pro zobrazení
-            let phoneValue = userProfile?.phone || '+420';
-            // Pokud je telefon ve formátu +420123456789, přidat mezery pro lepší čitelnost
-            if (phoneValue && phoneValue.startsWith('+420') && phoneValue.length > 4) {
-                const digits = phoneValue.slice(4).replace(/\D/g, '');
-                if (digits.length >= 9) {
-                    // Formátovat jako +420 XXX XXX XXX
-                    const formatted = `+420 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`.trim();
-                    phoneValue = formatted;
-                }
-            }
-            
+            // Osobní informace - vždy prefilled (bez emailu a telefonu)
             const personalFields = {
                 'firstName': userProfile?.firstName || '',
                 'lastName': userProfile?.lastName || '',
-                'email': emailValue,
-                'phone': phoneValue,
                 'city': userProfile?.city || '',
                 'bio': userProfile?.bio || ''
             };
@@ -1613,6 +1669,32 @@ Prosím kontaktujte podporu.
                     element.placeholder = value ? `Aktuální: ${value}` : 'Zadejte hodnotu';
                 }
             });
+
+            // Zobrazit aktuální email a telefon v sekci "Změna emailu a telefonního čísla"
+            const authEmail = (window.firebaseAuth?.currentUser?.email || '').toString().trim();
+            const profileEmail = (userProfile?.email || '').toString().trim();
+            const emailValue = profileEmail || authEmail || '';
+            
+            // Telefon se bere z profilu a formátuje se pro zobrazení
+            let phoneValue = userProfile?.phone || '';
+            if (phoneValue && phoneValue.startsWith('+420') && phoneValue.length > 4) {
+                const digits = phoneValue.slice(4).replace(/\D/g, '');
+                if (digits.length >= 9) {
+                    // Formátovat jako +420 XXX XXX XXX
+                    const formatted = `+420 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`.trim();
+                    phoneValue = formatted;
+                }
+            }
+            
+            // Aktualizovat zobrazení aktuálních hodnot
+            const currentEmailDisplay = document.getElementById('currentEmailDisplay');
+            const currentPhoneDisplay = document.getElementById('currentPhoneDisplay');
+            if (currentEmailDisplay) {
+                currentEmailDisplay.textContent = emailValue || 'Není nastaven';
+            }
+            if (currentPhoneDisplay) {
+                currentPhoneDisplay.textContent = phoneValue || 'Není nastaven';
+            }
             
             // Profilová fotka – náhled
             try {
