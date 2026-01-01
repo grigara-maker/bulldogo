@@ -629,8 +629,26 @@ window.contactSeller = async function(listingId, sellerUid, listingTitle) {
 // ============================================
 async function loadLatestAds() {
     const container = q('igRightAds');
-    if (!container || !window.firebaseDb) {
-        console.warn('⚠️ Nelze načíst inzeráty: chybí container nebo firebaseDb');
+    if (!container) {
+        console.warn('⚠️ Nelze načíst inzeráty: chybí container');
+        return;
+    }
+    
+    // Zobrazit loading stav
+    container.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: #6b7280;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px; display: block;"></i><div style="font-size: 14px;">Načítám inzeráty...</div></div>';
+    
+    // Počkat na Firebase
+    if (!window.firebaseDb) {
+        let tries = 0;
+        while (!window.firebaseDb && tries < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            tries++;
+        }
+    }
+    
+    if (!window.firebaseDb) {
+        console.warn('⚠️ Nelze načíst inzeráty: firebaseDb není inicializován');
+        container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Nelze načíst inzeráty</div>';
         return;
     }
     
@@ -640,6 +658,8 @@ async function loadLatestAds() {
         // Použít stejnou metodu jako na services stránce - bez orderBy, veřejné čtení
         const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
         const snapshot = await getDocs(inzeratyRef);
+        
+        console.log('📊 Načteno inzerátů:', snapshot.size);
         
         if (snapshot.empty) {
             container.innerHTML = '<div style="padding: 12px; color: #6b7280;">Zatím žádné inzeráty</div>';
@@ -753,6 +773,9 @@ async function init() {
         return;
     }
     
+    // Načíst nejnovější inzeráty (veřejné, nezávisle na přihlášení)
+    await loadLatestAds();
+    
     // Kontrola přihlášení
     const isAuthenticated = await checkAuth();
     if (!isAuthenticated) {
@@ -778,9 +801,6 @@ async function init() {
     
     // Načíst konverzace
     await loadConversations();
-    
-    // Načíst nejnovější inzeráty
-    await loadLatestAds();
     
     // Zpracovat URL parametry
     const urlParams = new URLSearchParams(window.location.search);
