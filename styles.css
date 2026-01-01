@@ -68,7 +68,7 @@
 /* ===== Instagram-like chat (desktop layout, responsive) ===== */
 .ig-chat { display: grid; grid-template-columns: 320px 1fr 320px; height: calc(100vh - 40px); background: #fff; border-radius: 16px; box-shadow: 0 20px 40px rgba(17,24,39,0.08); overflow: hidden; }
 .ig-sidebar { border-right: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; min-width: 0; }
-.ig-sidebar-right { border-right: 0; border-left: 1px solid rgba(0,0,0,0.06); }
+.ig-sidebar-right { border-right: 0; border-left: 1px solid rgba(0,0,0,0.06); display: flex; flex-direction: column; min-width: 0; }
 .ig-sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; }
 .ig-icon-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #fff8eb; color: #f77c00; border: 1px solid #ffe0b2; }
 .ig-icon-btn:hover { background: #fff3de; }
@@ -130,6 +130,17 @@
 .ig-input-row input[type="text"]:focus { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,.15); }
 .ig-attach { display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center; background: #fff8eb; border-radius: 10px; color: #f77c00; cursor: pointer; border: 1px solid #ffe0b2; }
 .ig-attach:hover { background: #fff3de; }
+.ig-input-row .btn-cta-primary { 
+    width: 38px; 
+    height: 38px; 
+    padding: 0; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 10px; 
+    min-width: 38px;
+}
+.ig-input-row .btn-cta-primary i { margin: 0; }
 
 .ig-login-prompt { display: flex; align-items: center; gap: 10px; justify-content: center; border-top: 1px solid rgba(0,0,0,0.06); background: #fff8eb; padding: 12px; }
 .ig-login-actions { display: flex; gap: 8px; }
