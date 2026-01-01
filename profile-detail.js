@@ -449,17 +449,115 @@ function updateProfileInfo() {
         profileBioEl.innerHTML = escapedText.replace(/\n/g, '<br>');
     }
     
-    // Update contact info - dynamicky zobrazit všechny vyplněné údaje
-    const contactInfoContainer = document.getElementById('profileContactInfo');
+    // Update additional info (ICO, DIČ, Typ podnikání, Web, Město, Lokace) - vlevo u profilovky
+    const additionalInfoContainer = document.getElementById('profileAdditionalInfo');
     const viewer = window.firebaseAuth?.currentUser;
     const isCompany = userProfile?.userType === 'company' || userProfile?.type === 'company';
+    
+    if (additionalInfoContainer) {
+        // Vyčistit existující obsah
+        additionalInfoContainer.innerHTML = '';
+        
+        // Pomocná funkce pro přidání dalšího údaje
+        const addAdditionalItem = (icon, label, value, isLink = false) => {
+            if (!value || value.trim() === '') return; // Zobrazit jen vyplněné údaje
+            
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            item.style.display = 'flex';
+            item.style.alignItems = 'center';
+            item.style.gap = '8px';
+            item.style.fontSize = '0.9rem';
+            item.style.color = '#6b7280';
+            
+            const iconEl = document.createElement('i');
+            iconEl.className = icon;
+            iconEl.style.color = '#f77c00';
+            iconEl.style.width = '16px';
+            
+            const labelEl = document.createElement('span');
+            labelEl.style.fontWeight = '600';
+            labelEl.style.color = '#374151';
+            labelEl.textContent = label + ':';
+            
+            const valueEl = document.createElement('span');
+            
+            if (isLink) {
+                const link = document.createElement('a');
+                link.href = value.startsWith('http') ? value : `https://${value}`;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = value.replace(/^https?:\/\//, '');
+                link.style.color = '#f77c00';
+                link.style.textDecoration = 'none';
+                link.style.fontWeight = '500';
+                valueEl.appendChild(link);
+            } else {
+                valueEl.textContent = value;
+                valueEl.style.color = '#6b7280';
+            }
+            
+            item.appendChild(iconEl);
+            item.appendChild(labelEl);
+            item.appendChild(valueEl);
+            additionalInfoContainer.appendChild(item);
+        };
+        
+        // Pro firmy zobrazit další údaje
+        if (isCompany) {
+            // IČ (pokud je vyplněno)
+            const ico = userProfile.businessIco || userProfile.company?.ico || '';
+            if (ico) {
+                addAdditionalItem('fas fa-id-card', 'IČ', ico);
+            }
+            
+            // DIČ (pokud je vyplněno)
+            const dic = userProfile.businessDic || userProfile.company?.dic || '';
+            if (dic) {
+                addAdditionalItem('fas fa-file-invoice', 'DIČ', dic);
+            }
+            
+            // Typ podnikání (pokud je vyplněn)
+            const businessType = userProfile.businessType || '';
+            if (businessType) {
+                const typeLabels = {
+                    'individual': 'OSVČ',
+                    'company': 'Společnost',
+                    'freelancer': 'Freelancer',
+                    'other': 'Jiné'
+                };
+                addAdditionalItem('fas fa-briefcase', 'Typ podnikání', typeLabels[businessType] || businessType);
+            }
+            
+            // Webová stránka (pokud je vyplněna)
+            const website = userProfile.businessWebsite || userProfile.company?.website || '';
+            if (website) {
+                addAdditionalItem('fas fa-globe', 'Webová stránka', website, true);
+            }
+            
+            // Lokace (businessAddress)
+            const location = userProfile.businessAddress || userProfile.location || '';
+            if (location) {
+                addAdditionalItem('fas fa-map-marker-alt', 'Lokace', location);
+            }
+        } else {
+            // Pro fyzické osoby zobrazit město (pokud je vyplněno)
+            const city = userProfile.city || '';
+            if (city) {
+                addAdditionalItem('fas fa-map-marker-alt', 'Město', city);
+            }
+        }
+    }
+    
+    // Update contact info - pouze jméno, email, telefon
+    const contactInfoContainer = document.getElementById('profileContactInfo');
     
     if (contactInfoContainer) {
         // Vyčistit existující obsah
         contactInfoContainer.innerHTML = '';
         
         // Pomocná funkce pro přidání kontaktního údaje
-        const addContactItem = (icon, label, value, isBlurred = false, isLink = false) => {
+        const addContactItem = (icon, label, value, isBlurred = false) => {
             if (!value || value.trim() === '') return; // Zobrazit jen vyplněné údaje
             
             const item = document.createElement('div');
@@ -474,19 +572,7 @@ function updateProfileInfo() {
             labelEl.textContent = label + ':';
             
             const valueEl = document.createElement('span');
-            
-            if (isLink) {
-                const link = document.createElement('a');
-                link.href = value.startsWith('http') ? value : `https://${value}`;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.textContent = value.replace(/^https?:\/\//, '');
-                link.style.color = '#f77c00';
-                link.style.textDecoration = 'none';
-                valueEl.appendChild(link);
-            } else {
-                valueEl.textContent = value;
-            }
+            valueEl.textContent = value;
             
             if (isBlurred && !viewer) {
                 valueEl.classList.add('blurred-contact');
@@ -539,45 +625,6 @@ function updateProfileInfo() {
                 }
             }
             addContactItem('fas fa-phone', 'Telefon', formattedPhone, true);
-        }
-        
-        // Pro firmy zobrazit další údaje
-        if (isCompany) {
-            // IČ (pokud je vyplněno)
-            const ico = userProfile.businessIco || userProfile.company?.ico || '';
-            if (ico) {
-                addContactItem('fas fa-id-card', 'IČ', ico);
-            }
-            
-            // DIČ (pokud je vyplněno)
-            const dic = userProfile.businessDic || userProfile.company?.dic || '';
-            if (dic) {
-                addContactItem('fas fa-file-invoice', 'DIČ', dic);
-            }
-            
-            // Typ podnikání (pokud je vyplněn)
-            const businessType = userProfile.businessType || '';
-            if (businessType) {
-                const typeLabels = {
-                    'individual': 'OSVČ',
-                    'company': 'Společnost',
-                    'freelancer': 'Freelancer',
-                    'other': 'Jiné'
-                };
-                addContactItem('fas fa-briefcase', 'Typ podnikání', typeLabels[businessType] || businessType);
-            }
-            
-            // Webová stránka (pokud je vyplněna)
-            const website = userProfile.businessWebsite || userProfile.company?.website || '';
-            if (website) {
-                addContactItem('fas fa-globe', 'Webová stránka', website, false, true);
-            }
-        } else {
-            // Pro fyzické osoby zobrazit město (pokud je vyplněno)
-            const city = userProfile.city || '';
-            if (city) {
-                addContactItem('fas fa-map-marker-alt', 'Město', city);
-            }
         }
         
         // Pokud nejsou žádné kontaktní údaje (kromě jména)
