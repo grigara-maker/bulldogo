@@ -2986,9 +2986,10 @@ export const sendProfileChangeEmail = functions
     const hasPhotoChanges = photoRelatedFields.some(field => {
       const oldVal = beforeData[field];
       const newVal = afterData[field];
-      const oldStr = JSON.stringify(oldVal || "");
-      const newStr = JSON.stringify(newVal || "");
-      return oldStr !== newStr;
+      // Normalizovat hodnoty pro porovnání (prázdný string, null, undefined jsou stejné)
+      const oldNormalized = oldVal === null || oldVal === undefined || oldVal === "" ? "" : String(oldVal);
+      const newNormalized = newVal === null || newVal === undefined || newVal === "" ? "" : String(newVal);
+      return oldNormalized !== newNormalized;
     });
     
     // Pokud se mění foto-related pole, zkontrolovat, zda se mění i něco jiného
@@ -3002,10 +3003,11 @@ export const sendProfileChangeEmail = functions
         
         const oldVal = beforeData[key];
         const newVal = afterData[key];
-        const oldStr = JSON.stringify(oldVal || "");
-        const newStr = JSON.stringify(newVal || "");
+        // Normalizovat hodnoty pro porovnání
+        const oldNormalized = oldVal === null || oldVal === undefined ? "" : String(oldVal);
+        const newNormalized = newVal === null || newVal === undefined ? "" : String(newVal);
         
-        if (oldStr !== newStr) {
+        if (oldNormalized !== newNormalized) {
           hasOtherChanges = true;
           break;
         }
@@ -3013,7 +3015,16 @@ export const sendProfileChangeEmail = functions
       
       // Pokud se mění pouze foto-related pole, neposílat email
       if (!hasOtherChanges) {
-        functions.logger.debug("Změna pouze profilové fotky, email se neposílá", { userId });
+        functions.logger.info("Změna pouze profilové fotky, email se neposílá", { 
+          userId,
+          photoChanges: photoRelatedFields.filter(f => {
+            const oldVal = beforeData[f];
+            const newVal = afterData[f];
+            const oldNormalized = oldVal === null || oldVal === undefined || oldVal === "" ? "" : String(oldVal);
+            const newNormalized = newVal === null || newVal === undefined || newVal === "" ? "" : String(newVal);
+            return oldNormalized !== newNormalized;
+          })
+        });
         return null;
       }
     }
