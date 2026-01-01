@@ -205,7 +205,12 @@ async function openStripeCustomerPortal() {
 			overlay.id = 'stripePortalLoading';
 			overlay.style.cssText = `
 				position: fixed;
-				inset: 0;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				width: 100%;
+				height: 100%;
 				background: rgba(17, 24, 39, 0.55);
 				backdrop-filter: blur(4px);
 				z-index: 99999;
@@ -213,9 +218,10 @@ async function openStripeCustomerPortal() {
 				align-items: center;
 				justify-content: center;
 				padding: 24px;
+				box-sizing: border-box;
 			`;
 			overlay.innerHTML = `
-				<div style="background:#fff; border-radius:16px; padding:22px 20px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.25); text-align:center;">
+				<div style="background:#fff; border-radius:16px; padding:22px 20px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,.25); text-align:center; margin: auto;">
 					<div style="font-size:28px; color:#f77c00; margin-bottom:12px;">
 						<i class="fas fa-spinner fa-spin"></i>
 					</div>
@@ -226,6 +232,12 @@ async function openStripeCustomerPortal() {
 			document.body.appendChild(overlay);
 		} else {
 			overlay.style.display = 'flex';
+			overlay.style.top = '0';
+			overlay.style.left = '0';
+			overlay.style.right = '0';
+			overlay.style.bottom = '0';
+			overlay.style.width = '100%';
+			overlay.style.height = '100%';
 		}
 
 		const { getFunctions, httpsCallable } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js');
