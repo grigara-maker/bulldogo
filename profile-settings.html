@@ -548,10 +548,10 @@
                         return;
                     }
                     
-                    // Kontrola, zda obsahuje alespoň 9 číslic (s předvolbou) nebo 9 číslic bez předvolby
-                    const allDigits = phoneRaw.replace(/\D/g, '');
-                    if (allDigits.length < 9) {
-                        showMessage('⚠️ Telefonní číslo musí obsahovat alespoň 9 číslic.', 'error');
+                    // Kontrola, zda obsahuje alespoň 9 číslic ZA PŘEDVOLBOU (předvolba se nepočítá)
+                    const digitsAfterPrefix = phoneWithoutPrefix.replace(/\D/g, '');
+                    if (digitsAfterPrefix.length < 9) {
+                        showMessage('⚠️ Telefonní číslo musí obsahovat alespoň 9 číslic za předvolbou.', 'error');
                         if (phoneEl) phoneEl.focus();
                         return;
                     }
