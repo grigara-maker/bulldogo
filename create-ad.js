@@ -306,11 +306,49 @@
             metaCat.textContent = catEl?.options?.[catEl.selectedIndex || 0]?.text || 'Kategorie';
             metaLoc.textContent = locEl?.options?.[locEl.selectedIndex || 0]?.text || 'Kraj';
             // cenu vypočítáme stejně jako při submitu
-            pricePreview.textContent = computePriceText();
+            const priceText = computePriceText();
+            pricePreview.textContent = priceText || '';
+            // Zajistit, že cena je viditelná i když je prázdná (pro "Dohodou")
+            if (priceText) {
+                pricePreview.style.display = 'block';
+                pricePreview.style.visibility = 'visible';
+                pricePreview.style.opacity = '1';
+            } else {
+                // Pokud není cena, zobrazit "Dohodou"
+                pricePreview.textContent = 'Dohodou';
+                pricePreview.style.display = 'block';
+                pricePreview.style.visibility = 'visible';
+                pricePreview.style.opacity = '1';
+            }
         }
         titleEl?.addEventListener('input', updatePreview);
         catEl?.addEventListener('change', updatePreview);
         locEl?.addEventListener('change', updatePreview);
+        
+        // Event listenery pro aktualizaci ceny v náhledu
+        const priceInput = document.getElementById('servicePrice');
+        const priceFromInput = document.getElementById('servicePriceFrom');
+        const priceToInput = document.getElementById('servicePriceTo');
+        const priceTypeRadios = document.querySelectorAll('input[name="priceType"]');
+        const priceUnitRadios = document.querySelectorAll('input[name="priceUnit"]');
+        
+        priceInput?.addEventListener('input', updatePreview);
+        priceInput?.addEventListener('change', updatePreview);
+        priceFromInput?.addEventListener('input', updatePreview);
+        priceFromInput?.addEventListener('change', updatePreview);
+        priceToInput?.addEventListener('input', updatePreview);
+        priceToInput?.addEventListener('change', updatePreview);
+        
+        priceTypeRadios.forEach(radio => {
+            radio.addEventListener('change', updatePreview);
+            radio.addEventListener('click', updatePreview);
+        });
+        
+        priceUnitRadios.forEach(radio => {
+            radio.addEventListener('change', updatePreview);
+            radio.addEventListener('click', updatePreview);
+        });
+        
         updatePreview();
 
         // Náhled obrázku v pravé kartě
