@@ -324,8 +324,12 @@
                             <input type="text" id="businessDic" value="" class="form-input" placeholder="Zadejte DIČ firmy">
                         </div>
                         <div class="form-group">
-                            <label for="businessAddress">Adresa firmy</label>
+                            <label for="businessAddress">Lokace</label>
                             <textarea id="businessAddress" class="form-input" rows="2" placeholder="Ulice, město, PSČ"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="businessWebsite">Webová stránka</label>
+                            <input type="url" id="businessWebsite" class="form-input" placeholder="https://www.example.com">
                         </div>
                         <div class="form-group">
                             <label for="businessDescription">Popis podnikání</label>
@@ -609,6 +613,7 @@
                 const businessIcoEl = document.getElementById('businessIco');
                 const businessDicEl = document.getElementById('businessDic');
                 const businessAddressEl = document.getElementById('businessAddress');
+                const businessWebsiteEl = document.getElementById('businessWebsite');
                 const businessDescriptionEl = document.getElementById('businessDescription');
                 
                 console.log('🔍 Elementy formuláře:', {
@@ -617,6 +622,7 @@
                     businessIco: !!businessIcoEl,
                     businessDic: !!businessDicEl,
                     businessAddress: !!businessAddressEl,
+                    businessWebsite: !!businessWebsiteEl,
                     businessDescription: !!businessDescriptionEl
                 });
                 
@@ -645,12 +651,13 @@
                     }
                 }
                 
-                const                     businessData = {
+                const businessData = {
                         businessName: businessNameEl ? businessNameEl.value : '',
                         businessType: businessTypeEl ? businessTypeEl.value : '',
                         businessIco: normalizedIco || '',
                         businessDic: businessDicEl ? businessDicEl.value : '',
                         businessAddress: businessAddressEl ? businessAddressEl.value : '',
+                        businessWebsite: businessWebsiteEl ? businessWebsiteEl.value.trim() : '',
                         businessDescription: businessDescriptionText,
                         // U firmy se businessAddress ukládá také do location, aby se zobrazovala v profilu
                         location: businessAddressEl ? businessAddressEl.value : null,
@@ -2114,6 +2121,7 @@
                 'businessIco': userProfile?.businessIco || company?.ico || '',
                 'businessDic': userProfile?.businessDic || company?.dic || '',
                 'businessAddress': userProfile?.businessAddress || company?.address || '',
+                'businessWebsite': userProfile?.businessWebsite || company?.website || '',
                 'businessDescription': userProfile?.businessDescription || ''
             };
 

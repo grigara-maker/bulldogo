@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setAdminStatus = exports.sendWelcomeEmail = exports.sendStripeInvoiceOnUpdate = exports.sendTopAdInvoice = exports.sendTopAdInvoiceOnCreate = exports.sendStripeInvoice = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
+exports.setAdminStatus = exports.deleteUserAuth = exports.sendWelcomeEmail = exports.sendStripeInvoiceOnUpdate = exports.sendTopAdInvoice = exports.sendTopAdInvoiceOnCreate = exports.sendStripeInvoice = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const axios_1 = __importDefault(require("axios"));
@@ -1075,10 +1075,18 @@ async function deleteUserData(uid) {
         functions.logger.debug("User reviews subcollection delete failed", { uid, error: err === null || err === void 0 ? void 0 : err.message });
     }
     try {
-        const rootReviewsSnap = await db.collection("reviews").where("reviewedUserId", "==", uid).get();
-        if (!rootReviewsSnap.empty) {
+        // Recenze kde je uživatel recenzovaný
+        const reviewedSnap = await db.collection("reviews").where("reviewedUserId", "==", uid).get();
+        if (!reviewedSnap.empty) {
             const batch = db.batch();
-            rootReviewsSnap.forEach((r) => batch.delete(r.ref));
+            reviewedSnap.forEach((r) => batch.delete(r.ref));
+            await batch.commit();
+        }
+        // Recenze kde je uživatel recenzující
+        const reviewerSnap = await db.collection("reviews").where("reviewerId", "==", uid).get();
+        if (!reviewerSnap.empty) {
+            const batch = db.batch();
+            reviewerSnap.forEach((r) => batch.delete(r.ref));
             await batch.commit();
         }
     }
@@ -1086,15 +1094,35 @@ async function deleteUserData(uid) {
         functions.logger.debug("Root reviews delete failed", { uid, error: err === null || err === void 0 ? void 0 : err.message });
     }
     try {
-        const messagesSnap = await db.collection("messages").where("userId", "==", uid).get();
-        if (!messagesSnap.empty) {
+        // Zprávy kde je uživatel odesílatel
+        const messagesFromSnap = await db.collection("messages").where("userId", "==", uid).get();
+        if (!messagesFromSnap.empty) {
             const batch = db.batch();
-            messagesSnap.forEach((m) => batch.delete(m.ref));
+            messagesFromSnap.forEach((m) => batch.delete(m.ref));
+            await batch.commit();
+        }
+        // Zprávy kde je uživatel příjemce
+        const messagesToSnap = await db.collection("messages").where("recipientId", "==", uid).get();
+        if (!messagesToSnap.empty) {
+            const batch = db.batch();
+            messagesToSnap.forEach((m) => batch.delete(m.ref));
             await batch.commit();
         }
     }
     catch (err) {
         functions.logger.debug("Messages delete failed", { uid, error: err === null || err === void 0 ? void 0 : err.message });
+    }
+    try {
+        // Konverzace kde je uživatel účastník
+        const conversationsSnap = await db.collection("conversations").where("participants", "array-contains", uid).get();
+        if (!conversationsSnap.empty) {
+            const batch = db.batch();
+            conversationsSnap.forEach((c) => batch.delete(c.ref));
+            await batch.commit();
+        }
+    }
+    catch (err) {
+        functions.logger.debug("Conversations delete failed", { uid, error: err === null || err === void 0 ? void 0 : err.message });
     }
     try {
         await db.doc(`users/${uid}`).delete({ exists: true });
@@ -3167,6 +3195,102 @@ exports.sendWelcomeEmail = functions
  * Firebase Function - Nastaví admin status pro uživatele
  * Použití: POST s { uid: "user-uid" } nebo GET s ?uid=user-uid
  */
+// HTTP funkce pro smazání Auth uživatele (volá se z admin panelu)
+exports.deleteUserAuth = functions.region("europe-west1").https.onRequest(async (req, res) => {
+    return corsHandler(req, res, async () => {
+        var _a, _b, _c;
+        try {
+            if (req.method !== "POST") {
+                res.status(405).json({ error: "Method not allowed. Use POST." });
+                return;
+            }
+            const uid = ((_a = req.body) === null || _a === void 0 ? void 0 : _a.uid) || ((_b = req.body) === null || _b === void 0 ? void 0 : _b.userId);
+            const adminUid = (_c = req.body) === null || _c === void 0 ? void 0 : _c.adminUid; // UID admina, který volá funkci
+            if (!uid || typeof uid !== "string") {
+                res.status(400).json({ error: "Missing or invalid uid parameter" });
+                return;
+            }
+            if (!adminUid || typeof adminUid !== "string") {
+                res.status(400).json({ error: "Missing or invalid adminUid parameter" });
+                return;
+            }
+            const db = admin.firestore();
+            const auth = admin.auth();
+            // Zkontrolovat autentifikaci z Authorization headeru
+            const authHeader = req.headers.authorization;
+            let verifiedAdminUid = null;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                try {
+                    const idToken = authHeader.split('Bearer ')[1];
+                    const decodedToken = await auth.verifyIdToken(idToken);
+                    verifiedAdminUid = decodedToken.uid;
+                    // Ověřit, že token UID odpovídá adminUid z body
+                    if (verifiedAdminUid !== adminUid) {
+                        res.status(403).json({ error: "Token UID does not match adminUid" });
+                        return;
+                    }
+                }
+                catch (error) {
+                    functions.logger.error("❌ Chyba při ověřování tokenu", { error: error === null || error === void 0 ? void 0 : error.message });
+                    res.status(401).json({ error: "Invalid or expired token" });
+                    return;
+                }
+            }
+            else {
+                // Pokud není token, stále zkontrolovat admin status (pro zpětnou kompatibilitu)
+                functions.logger.warn("⚠️ No Authorization token provided, checking admin status only");
+            }
+            // Zkontrolovat, jestli volající je admin
+            try {
+                const adminProfileDoc = await db.doc(`users/${adminUid}/profile/profile`).get();
+                const adminProfile = adminProfileDoc.data();
+                const isAdmin = (adminProfile === null || adminProfile === void 0 ? void 0 : adminProfile.isAdmin) === true || (adminProfile === null || adminProfile === void 0 ? void 0 : adminProfile.role) === "admin";
+                if (!isAdmin) {
+                    res.status(403).json({ error: "Forbidden. Only admins can delete users." });
+                    return;
+                }
+            }
+            catch (error) {
+                functions.logger.error("❌ Chyba při kontrole admin statusu", { adminUid, error: error === null || error === void 0 ? void 0 : error.message });
+                res.status(500).json({ error: "Failed to verify admin status" });
+                return;
+            }
+            // Zkontrolovat, jestli uživatel existuje v Auth
+            try {
+                await auth.getUser(uid);
+            }
+            catch (error) {
+                functions.logger.error("❌ Uživatel neexistuje v Auth", { uid, error: error === null || error === void 0 ? void 0 : error.message });
+                res.status(404).json({
+                    error: "User not found in Authentication",
+                    message: "Uživatel s tímto UID neexistuje v Firebase Authentication",
+                });
+                return;
+            }
+            // Smazat Auth uživatele
+            try {
+                await auth.deleteUser(uid);
+                functions.logger.info("✅ Auth uživatel smazán", { uid, deletedBy: adminUid });
+                res.status(200).json({
+                    success: true,
+                    message: "User deleted from Authentication successfully",
+                    uid: uid
+                });
+            }
+            catch (error) {
+                functions.logger.error("❌ Chyba při mazání Auth uživatele", { uid, error: error === null || error === void 0 ? void 0 : error.message });
+                res.status(500).json({
+                    error: "Failed to delete user from Authentication",
+                    message: error === null || error === void 0 ? void 0 : error.message
+                });
+            }
+        }
+        catch (error) {
+            functions.logger.error("❌ Chyba v deleteUserAuth funkci", { error: error === null || error === void 0 ? void 0 : error.message });
+            res.status(500).json({ error: "Internal server error", message: error === null || error === void 0 ? void 0 : error.message });
+        }
+    });
+});
 exports.setAdminStatus = functions.region("europe-west1").https.onRequest(async (req, res) => {
     return corsHandler(req, res, async () => {
         var _a, _b, _c;
