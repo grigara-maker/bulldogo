@@ -475,6 +475,8 @@
         // Globální proměnné pro real-time listener
         let profileListener = null;
         let isInitialized = false;
+        let isUserEditing = false; // Flag pro sledování, zda uživatel právě upravuje formulář
+        let editedFields = new Set(); // Sledování polí, která uživatel upravil
 
         // Export funkcí pro globální použití - OKAMŽITĚ (budou nastaveny po definici)
 
@@ -973,6 +975,10 @@
 
                 // Aktualizovat zobrazení aktuálních hodnot
                 await updateFormFields(await loadUserProfile());
+                
+                // Resetovat flagy po úspěšném uložení
+                isUserEditing = false;
+                editedFields.clear();
 
                 showMessage('✅ Změny byly úspěšně uloženy!', 'success');
             } catch (error) {
@@ -1832,14 +1838,8 @@
                 });
             }
 
-            // Automatické načítání každých 30 sekund (pokud je stránka aktivní)
-            setInterval(() => {
-                if (!document.hidden && isInitialized) {
-                    console.log('🔄 Automatické načítání dat (30s interval)');
-                    loadUserSettings();
-                    loadUserData();
-                }
-            }, 30000);
+            // Automatické načítání každých 30 sekund (pokud je stránka aktivní) - ODSTRANĚNO
+            // setInterval odstraněn, aby se formulář neaktualizoval při psaní
         }
 
         // Počkat na Firebase
@@ -1970,7 +1970,8 @@
                             const activeElement = document.activeElement;
                             const isEditing = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT');
                             
-                            if (!isEditing) {
+                            // Neaktualizovat, pokud uživatel právě upravuje formulář nebo má upravená pole
+                            if (!isEditing && !isUserEditing && editedFields.size === 0) {
                                 updateFormFields(userProfile);
                             }
                         }
@@ -1986,6 +1987,29 @@
 
         // Nastavení event listenerů pro formuláře
         function setupFormListeners() {
+            // Sledovat, kdy uživatel začíná upravovat pole
+            const formElements = document.querySelectorAll('input, textarea, select');
+            formElements.forEach(element => {
+                element.addEventListener('focus', () => {
+                    isUserEditing = true;
+                });
+                
+                element.addEventListener('input', () => {
+                    isUserEditing = true;
+                    editedFields.add(element.id);
+                });
+                
+                element.addEventListener('blur', () => {
+                    // Počkat chvíli, než se resetuje flag (pro případ, že uživatel přepne na jiné pole)
+                    setTimeout(() => {
+                        const activeElement = document.activeElement;
+                        const stillEditing = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT');
+                        if (!stillEditing) {
+                            isUserEditing = false;
+                        }
+                    }, 100);
+                });
+            });
             // Auto-save při změně hodnot (s debounce)
             const inputs = document.querySelectorAll('input, textarea, select');
             inputs.forEach(input => {
@@ -2065,8 +2089,20 @@
             Object.entries(personalFields).forEach(([fieldId, value]) => {
                 const element = document.getElementById(fieldId);
                 if (element) {
-                    element.value = value;
-                    element.placeholder = value ? `Aktuální: ${value}` : 'Zadejte hodnotu';
+                    // Neaktualizovat pole, která uživatel právě upravuje nebo která mají změněnou hodnotu
+                    const isCurrentlyEditing = document.activeElement === element;
+                    const wasEdited = editedFields.has(fieldId);
+                    const currentValue = element.value.trim();
+                    const newValue = (value || '').toString().trim();
+                    
+                    // Aktualizovat pouze pokud pole není právě upravováno a hodnota se změnila
+                    if (!isCurrentlyEditing && !wasEdited && currentValue !== newValue) {
+                        element.value = value;
+                        element.placeholder = value ? `Aktuální: ${value}` : 'Zadejte hodnotu';
+                    } else if (!value && !currentValue) {
+                        // Pokud je pole prázdné a nová hodnota je také prázdná, aktualizovat placeholder
+                        element.placeholder = 'Zadejte hodnotu';
+                    }
                 }
             });
 
@@ -2129,8 +2165,20 @@
             Object.entries(businessFields).forEach(([fieldId, value]) => {
                 const element = document.getElementById(fieldId);
                 if (element) {
-                    element.value = value;
-                    element.placeholder = value ? `Aktuální: ${value}` : 'Zadejte hodnotu';
+                    // Neaktualizovat pole, která uživatel právě upravuje nebo která mají změněnou hodnotu
+                    const isCurrentlyEditing = document.activeElement === element;
+                    const wasEdited = editedFields.has(fieldId);
+                    const currentValue = element.value.trim();
+                    const newValue = (value || '').toString().trim();
+                    
+                    // Aktualizovat pouze pokud pole není právě upravováno a hodnota se změnila
+                    if (!isCurrentlyEditing && !wasEdited && currentValue !== newValue) {
+                        element.value = value;
+                        element.placeholder = value ? `Aktuální: ${value}` : 'Zadejte hodnotu';
+                    } else if (!value && !currentValue) {
+                        // Pokud je pole prázdné a nová hodnota je také prázdná, aktualizovat placeholder
+                        element.placeholder = 'Zadejte hodnotu';
+                    }
                 }
             });
 
