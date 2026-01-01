@@ -241,7 +241,7 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                 <!-- Pozdrav -->
                 <tr>
                   <td align="center" style="padding: 0 40px 20px 40px;">
-                    <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #dc2626; line-height: 1.3;">
+                    <h1 class="email-title" style="margin: 0; font-size: 26px; font-weight: 800; color: #dc2626; line-height: 1.3;">
                       Váš účet bude smazán
                     </h1>
                   </td>
@@ -250,11 +250,11 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                 <!-- Hlavní text -->
                 <tr>
                   <td align="center" style="padding: 0 40px 25px 40px;">
-                    <p style="margin: 0 0 15px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
-                      Ahoj, <strong style="color: #1a1a2e;">${userName}</strong>!
+                    <p class="email-text" style="margin: 0 0 15px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
+                      Ahoj, <strong class="email-text-dark" style="color: #1a1a2e;">${userName}</strong>!
                     </p>
-                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
-                      Všimli jsme si, že jste se na <strong>Bulldogo.cz</strong> dlouho nepřihlásili. 
+                    <p class="email-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
+                      Všimli jsme si, že jste se na <strong class="email-text-dark" style="color: #1a1a2e;">Bulldogo.cz</strong> dlouho nepřihlásili. 
                       Váš účet bude z důvodu neaktivity <strong style="color: #dc2626;">automaticky smazán</strong>.
                     </p>
                   </td>
@@ -263,10 +263,10 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
                 <!-- Datum smazání -->
                 <tr>
                   <td style="padding: 0 40px 25px 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 2px solid #fecaca;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-bg-light email-border" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 2px solid #fecaca;">
                       <tr>
                         <td align="center" style="padding: 25px;">
-                          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #991b1b; text-transform: uppercase; letter-spacing: 1px;">
+                          <p class="email-text-dark" style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #991b1b; text-transform: uppercase; letter-spacing: 1px;">
                             Datum smazání účtu
                           </p>
                           <p style="margin: 0; font-size: 28px; font-weight: 800; color: #dc2626;">
