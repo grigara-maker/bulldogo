@@ -389,7 +389,14 @@ async function loadMessages(conversationId) {
             messagesUnsubscribe();
         }
         
+        console.log('👂 Nastavuji real-time listener pro zprávy v konverzaci:', conversationId);
+        
         messagesUnsubscribe = onSnapshot(q, async (snapshot) => {
+            console.log('📨 Real-time update zpráv:', snapshot.docs.length, 'zpráv');
+            console.log('📨 Snapshot metadata:', {
+                fromCache: snapshot.metadata.fromCache,
+                hasPendingWrites: snapshot.metadata.hasPendingWrites
+            });
             messages = [];
             
             // Načíst zprávy a avatary odesílatelů
@@ -424,8 +431,15 @@ async function loadMessages(conversationId) {
             renderMessages();
         }, (error) => {
             console.error('❌ Chyba při načítání zpráv:', error);
+            console.error('❌ Error details:', {
+                code: error.code,
+                message: error.message,
+                stack: error.stack
+            });
             if (error.code === 'permission-denied') {
-                showError('Chybí oprávnění pro čtení zpráv.');
+                showError('Chybí oprávnění pro čtení zpráv. Zkontrolujte Firestore Rules.');
+            } else {
+                showError('Chyba při načítání zpráv: ' + error.message);
             }
         });
     } catch (error) {
