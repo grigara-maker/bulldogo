@@ -2661,6 +2661,8 @@ function setupEventListeners() {
                     bio: userData.bio || null,
                     businessName: userData.companyName || userData.businessName || null,
                     businessType: userData.businessType || null,
+                    businessIco: null, // Bude nastaveno níže pro firmy
+                    businessDic: null, // Bude nastaveno níže pro firmy
                     businessAddress: userData.companyAddress || userData.businessAddress || null,
                     businessDescription: userData.businessDescription || null,
                     emailNotifications: userData.emailNotifications !== false,
@@ -2683,9 +2685,18 @@ function setupEventListeners() {
                     profileData.name = displayName || `${firstName || ''} ${lastName || ''}`.trim();
                 } else {
                     profileData.name = userData.companyName || 'Firma';
+                    // Uložit obchodní informace i na hlavní úroveň profilu (pro zobrazení v nastavení)
+                    const normalizedIco = normalizeICO(userData.ico || '');
+                    profileData.businessName = userData.companyName || null;
+                    profileData.businessType = userData.businessType || null;
+                    profileData.businessIco = normalizedIco || null;
+                    profileData.businessDic = userData.dic || null;
+                    profileData.businessAddress = userData.companyAddress || null;
+                    profileData.businessDescription = userData.businessDescription || null;
+                    // Také zachovat v company objektu pro kompatibilitu
                     profileData.company = {
                         companyName: userData.companyName || null,
-                        ico: normalizeICO(userData.ico || '') || null,
+                        ico: normalizedIco || null,
                         dic: userData.dic || null,
                         phone: normalizedPhone || null,
                         address: userData.companyAddress || null
