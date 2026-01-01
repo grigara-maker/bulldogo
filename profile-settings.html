@@ -681,6 +681,11 @@
                 await setDoc(profileRef, businessData, { merge: true });
 
                 console.log('✅ Data úspěšně uložena do Firebase');
+                
+                // Resetovat flagy po úspěšném uložení
+                isUserEditing = false;
+                editedFields.clear();
+                
                 showMessage('✅ Obchodní informace byly uloženy!', 'success');
 
             } catch (error) {
