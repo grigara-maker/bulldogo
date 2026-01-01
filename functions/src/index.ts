@@ -2400,7 +2400,13 @@ function generateWelcomeEmailHTML(userName: string): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Vítejte na Bulldogo.cz</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table { background-color: #ffffff !important; }
+  </style>
+  <![endif]-->
   <style>
     @media (prefers-color-scheme: dark) {
       .email-body { background-color: #1a1a1a !important; }
@@ -2413,10 +2419,19 @@ function generateWelcomeEmailHTML(userName: string): string {
       .email-border { border-color: #404040 !important; }
       .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
     }
+    [data-ogsc] .email-body { background-color: #1a1a1a !important; }
+    [data-ogsc] .email-container { background-color: #1a1a1a !important; }
+    [data-ogsc] .email-card { background: linear-gradient(180deg, #2d2d2d 0%, #1f1f1f 100%) !important; }
+    [data-ogsc] .email-text { color: #e5e5e5 !important; }
+    [data-ogsc] .email-text-light { color: #b0b0b0 !important; }
+    [data-ogsc] .email-text-dark { color: #ffffff !important; }
+    [data-ogsc] .email-title { color: #ffffff !important; }
+    [data-ogsc] .email-border { border-color: #404040 !important; }
+    [data-ogsc] .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
   </style>
 </head>
-<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background: #ffffff;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background-color: #ffffff; background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
