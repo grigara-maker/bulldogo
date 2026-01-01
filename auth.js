@@ -685,7 +685,19 @@ async function register(email, password, userData) {
             }
         }
         if (!normalizedPhone) {
-            showMessage('Telefon je povinný a musí být ve formátu +420...', 'error');
+            showMessage('Telefon je povinný a musí být ve formátu +420XXXXXXXXX (např. +420123456789).', 'error');
+            return;
+        }
+        
+        // Kontrola formátu telefonu - musí začínat +420 a mít alespoň 9 číslic za předvolbou
+        if (!normalizedPhone.startsWith('+420')) {
+            showMessage('Telefon musí začínat předvolbou +420 (např. +420123456789).', 'error');
+            return;
+        }
+        
+        const digitsAfterPrefix = normalizedPhone.slice(4).replace(/\D/g, '');
+        if (digitsAfterPrefix.length < 9) {
+            showMessage('Telefonní číslo musí obsahovat alespoň 9 číslic za předvolbou +420 (např. +420123456789).', 'error');
             return;
         }
         const available = await isPhoneAvailable(normalizedPhone);
@@ -1591,27 +1603,89 @@ window.closeAddServiceModal = closeAddServiceModal;
 function handleAuthError(error) {
     let message = 'Došlo k chybě při autentifikaci.';
     
-    switch (error.code) {
-        case 'auth/email-already-in-use':
-            message = 'Tento email je již používán.';
-            break;
-        case 'auth/weak-password':
-            message = 'Heslo je příliš slabé.';
-            break;
-        case 'auth/invalid-email':
-            message = 'Neplatný email.';
-            break;
-        case 'auth/user-not-found':
-            message = 'Uživatel s tímto emailem neexistuje.';
-            break;
-        case 'auth/wrong-password':
-            message = 'Nesprávné heslo.';
-            break;
-        case 'auth/too-many-requests':
-            message = 'Příliš mnoho pokusů. Zkuste to později.';
-            break;
+    // Pokud error nemá code, zkusit zprávu přímo
+    if (!error.code && error.message) {
+        message = error.message;
+    } else {
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                message = 'Účet s tímto emailem již existuje. Použijte jiný email nebo se přihlaste.';
+                break;
+            case 'auth/weak-password':
+                message = 'Heslo je příliš slabé. Heslo musí obsahovat alespoň 6 znaků.';
+                break;
+            case 'auth/invalid-email':
+                message = 'Neplatný formát emailu. Zadejte platný email (např. jmeno@domena.cz).';
+                break;
+            case 'auth/user-not-found':
+                message = 'Uživatel s tímto emailem neexistuje. Zkontrolujte email nebo se zaregistrujte.';
+                break;
+            case 'auth/wrong-password':
+                message = 'Nesprávné heslo. Zkuste to znovu nebo použijte obnovení hesla.';
+                break;
+            case 'auth/too-many-requests':
+                message = 'Příliš mnoho neúspěšných pokusů. Zkuste to znovu později nebo obnovte heslo.';
+                break;
+            case 'auth/operation-not-allowed':
+                message = 'Tento způsob přihlášení není povolen. Kontaktujte podporu.';
+                break;
+            case 'auth/network-request-failed':
+                message = 'Chyba připojení k internetu. Zkontrolujte připojení a zkuste to znovu.';
+                break;
+            case 'auth/invalid-phone-number':
+                message = 'Neplatný formát telefonního čísla. Zadejte telefon ve formátu +420XXXXXXXXX.';
+                break;
+            case 'auth/missing-phone-number':
+                message = 'Telefonní číslo je povinné. Zadejte telefonní číslo.';
+                break;
+            case 'auth/invalid-verification-code':
+                message = 'Neplatný ověřovací kód z SMS. Zkontrolujte kód a zkuste to znovu.';
+                break;
+            case 'auth/code-expired':
+                message = 'Platnost ověřovacího kódu vypršela. Požádejte o nový kód.';
+                break;
+            case 'auth/session-expired':
+                message = 'Vaše relace vypršela. Obnovte stránku a zkuste to znovu.';
+                break;
+            case 'auth/quota-exceeded':
+                message = 'Byl překročen limit pro SMS. Zkuste to později.';
+                break;
+            case 'auth/captcha-check-failed':
+                message = 'Ověření reCAPTCHA selhalo. Obnovte stránku a zkuste to znovu.';
+                break;
+            case 'auth/invalid-app-credential':
+                message = 'Chyba konfigurace telefonního ověření. Kontaktujte podporu.';
+                break;
+            case 'auth/missing-verification-code':
+                message = 'Chybí ověřovací kód. Zadejte kód z SMS.';
+                break;
+            case 'auth/invalid-verification-id':
+                message = 'Neplatné ID ověření. Začněte registraci znovu.';
+                break;
+            case 'auth/missing-continue-uri':
+                message = 'Chybí URL pro pokračování. Kontaktujte podporu.';
+                break;
+            case 'auth/invalid-continue-uri':
+                message = 'Neplatná URL pro pokračování. Kontaktujte podporu.';
+                break;
+            case 'auth/unauthorized-continue-uri':
+                message = 'Neautorizovaná URL. Kontaktujte podporu.';
+                break;
+            case 'auth/requires-recent-login':
+                message = 'Pro tuto operaci je potřeba se znovu přihlásit.';
+                break;
+            default:
+                // Pokud je to známá chyba s message, použít ji
+                if (error.message && error.message !== 'Firebase: Error (auth/unknown)') {
+                    message = error.message.replace(/^Firebase:\s*/i, '').replace(/^auth\/[^:]+:\s*/i, '');
+                } else {
+                    message = `Chyba při autentifikaci: ${error.code || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
+                }
+                break;
+        }
     }
     
+    console.error('❌ Auth error:', error.code, error.message);
     showMessage(message, 'error');
 }
 
@@ -2122,15 +2196,39 @@ function setupEventListeners() {
                 const form = document.getElementById('authForm');
                 const formData = new FormData(form);
 
-                const email = formData.get('email');
-                const password = formData.get('password');
+                const email = (formData.get('email') || '').toString().trim();
+                const password = (formData.get('password') || '').toString();
                 const activeTypeBtn = document.querySelector('.registration-type-btn.active');
                 const userType = activeTypeBtn ? activeTypeBtn.getAttribute('data-type') : 'person';
                 const phone = (formData.get('phone') || '').toString().trim();
                 const ico = (formData.get('ico') || '').toString().trim();
 
-                if (!email || !password || !phone) {
-                    showMessage('Vyplňte e‑mail, heslo a telefon.', 'error');
+                // Validace emailu
+                if (!email) {
+                    showMessage('Email je povinný. Zadejte email.', 'error');
+                    return;
+                }
+                
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showMessage('Neplatný formát emailu. Zadejte platný email (např. jmeno@domena.cz).', 'error');
+                    return;
+                }
+                
+                // Validace hesla
+                if (!password) {
+                    showMessage('Heslo je povinné. Zadejte heslo.', 'error');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showMessage('Heslo musí obsahovat alespoň 6 znaků.', 'error');
+                    return;
+                }
+                
+                // Validace telefonu
+                if (!phone) {
+                    showMessage('Telefon je povinný. Zadejte telefonní číslo.', 'error');
                     return;
                 }
                 // Ověřit IČO pro firemní registraci (musí být již ověřeno před odesláním)
