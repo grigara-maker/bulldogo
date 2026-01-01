@@ -470,6 +470,9 @@ function updateProfileInfo() {
             
             const spanEl = document.createElement('span');
             
+            // Přidat text před hodnotu
+            const labelText = document.createTextNode(label + ' ');
+            
             if (isLink) {
                 const link = document.createElement('a');
                 link.href = value.startsWith('http') ? value : `https://${value}`;
@@ -480,9 +483,11 @@ function updateProfileInfo() {
                 link.style.textDecoration = 'none';
                 link.onmouseover = () => link.style.textDecoration = 'underline';
                 link.onmouseout = () => link.style.textDecoration = 'none';
+                spanEl.appendChild(labelText);
                 spanEl.appendChild(link);
             } else {
-                spanEl.textContent = value;
+                spanEl.appendChild(labelText);
+                spanEl.appendChild(document.createTextNode(value));
             }
             
             item.appendChild(iconEl);
