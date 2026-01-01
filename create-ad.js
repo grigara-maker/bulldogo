@@ -307,7 +307,12 @@
             metaLoc.textContent = locEl?.options?.[locEl.selectedIndex || 0]?.text || 'Kraj';
             // cenu vypočítáme stejně jako při submitu
             const priceText = computePriceText();
-            pricePreview.textContent = priceText || 'Dohodou';
+            // Vždy zobrazit cenu - buď vypočítanou nebo "Dohodou"
+            if (priceText && priceText !== 'Dohodou') {
+                pricePreview.textContent = priceText;
+            } else {
+                pricePreview.textContent = 'Dohodou';
+            }
             // Zajistit, že cena je vždy viditelná
             pricePreview.style.display = 'block';
             pricePreview.style.visibility = 'visible';
