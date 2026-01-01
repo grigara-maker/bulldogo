@@ -748,6 +748,8 @@ async function register(email, password, userData) {
             profileData.businessDic = userData.dic || null;
             profileData.businessAddress = userData.companyAddress || null;
             profileData.businessDescription = userData.businessDescription || null;
+            // U firmy se businessAddress ukládá také do location, aby se zobrazovala v profilu
+            profileData.location = userData.companyAddress || null;
             // Také zachovat v company objektu pro kompatibilitu
             profileData.company = {
                 companyName: userData.companyName || null,
@@ -2426,6 +2428,8 @@ function setupEventListeners() {
                     profileData.businessDic = dic || null;
                     profileData.businessAddress = companyAddress || null;
                     profileData.businessDescription = businessDescription || null;
+                    // U firmy se businessAddress ukládá také do location, aby se zobrazovala v profilu
+                    profileData.location = companyAddress || null;
                     // Také zachovat v company objektu pro kompatibilitu
                     profileData.company = {
                         companyName: companyName || null,
@@ -2624,6 +2628,8 @@ function setupEventListeners() {
                     profileData.businessDic = userData.dic || null;
                     profileData.businessAddress = userData.companyAddress || null;
                     profileData.businessDescription = userData.businessDescription || null;
+                    // U firmy se businessAddress ukládá také do location, aby se zobrazovala v profilu
+                    profileData.location = userData.companyAddress || null;
                     // Také zachovat v company objektu pro kompatibilitu
                     profileData.company = {
                         companyName: userData.companyName || null,

@@ -645,15 +645,17 @@
                     }
                 }
                 
-                const businessData = {
-                    businessName: businessNameEl ? businessNameEl.value : '',
-                    businessType: businessTypeEl ? businessTypeEl.value : '',
-                    businessIco: normalizedIco || '',
-                    businessDic: businessDicEl ? businessDicEl.value : '',
-                    businessAddress: businessAddressEl ? businessAddressEl.value : '',
-                    businessDescription: businessDescriptionText,
-                    updatedAt: new Date()
-                };
+                const                     businessData = {
+                        businessName: businessNameEl ? businessNameEl.value : '',
+                        businessType: businessTypeEl ? businessTypeEl.value : '',
+                        businessIco: normalizedIco || '',
+                        businessDic: businessDicEl ? businessDicEl.value : '',
+                        businessAddress: businessAddressEl ? businessAddressEl.value : '',
+                        businessDescription: businessDescriptionText,
+                        // U firmy se businessAddress ukládá také do location, aby se zobrazovala v profilu
+                        location: businessAddressEl ? businessAddressEl.value : null,
+                        updatedAt: new Date()
+                    };
 
                 console.log('💾 Ukládám obchodní informace:', businessData);
 

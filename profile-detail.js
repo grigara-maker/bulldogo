@@ -427,7 +427,16 @@ function updateProfileInfo() {
                 profileAvatarPh.style.display = 'none';
             }
         } catch (e) { /* noop */ }
-    if (profileLocationEl) profileLocationEl.textContent = userProfile.city || userProfile.location || currentProfileUser.location || 'Lokace neuvedena';
+    // Pro firmy použít businessAddress jako lokaci, jinak city nebo location
+    let locationText = 'Lokace neuvedena';
+    if (userProfile?.userType === 'company' || userProfile?.type === 'company') {
+        // U firmy použít businessAddress jako lokaci
+        locationText = userProfile.businessAddress || userProfile.location || userProfile.city || currentProfileUser.location || 'Lokace neuvedena';
+    } else {
+        // U fyzické osoby použít city nebo location
+        locationText = userProfile.city || userProfile.location || currentProfileUser.location || 'Lokace neuvedena';
+    }
+    if (profileLocationEl) profileLocationEl.textContent = locationText;
     if (profileBioEl) {
         const bioText = userProfile.bio || userProfile.description || 'Uživatel nezadal žádný popis.';
         // Zachovat odřádkování - escapovat HTML a převést \n na <br>

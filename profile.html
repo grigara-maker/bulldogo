@@ -1126,7 +1126,15 @@
             // Update location
             const profileLocation = document.querySelector('.profile-location span');
             if (profileLocation) {
-                const location = userProfile?.city || userProfile?.location || 'Lokace není uvedena';
+                // Pro firmy použít businessAddress jako lokaci, jinak city nebo location
+                let location = 'Lokace není uvedena';
+                if (userProfile?.userType === 'company' || userProfile?.type === 'company') {
+                    // U firmy použít businessAddress jako lokaci
+                    location = userProfile?.businessAddress || userProfile?.location || userProfile?.city || 'Lokace není uvedena';
+                } else {
+                    // U fyzické osoby použít city nebo location
+                    location = userProfile?.city || userProfile?.location || 'Lokace není uvedena';
+                }
                 profileLocation.textContent = location;
                 console.log('📝 Updated location:', location);
             }
