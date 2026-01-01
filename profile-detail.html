@@ -400,79 +400,78 @@
                         </button>
                     </div>
                 
-                <!-- Review Form (hidden by default) -->
-                <div id="reviewFormSection" style="display: none; background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
-                    <h5 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 16px 0;">
-                        <i class="fas fa-pen" style="color: #f77c00;"></i> Vaše recenze
-                    </h5>
-                    
-                    <!-- Hodnocení hvězdičkami -->
-                    <div style="margin-bottom: 16px;">
-                        <label style="font-size: 14px; font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">
-                            Hodnocení:
-                        </label>
-                        <div id="reviewStars" style="display: flex; gap: 8px; font-size: 28px; cursor: pointer;">
-                            <i class="far fa-star" data-rating="1" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(1)" onclick="selectRating(1)"></i>
-                            <i class="far fa-star" data-rating="2" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(2)" onclick="selectRating(2)"></i>
-                            <i class="far fa-star" data-rating="3" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(3)" onclick="selectRating(3)"></i>
-                            <i class="far fa-star" data-rating="4" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(4)" onclick="selectRating(4)"></i>
-                            <i class="far fa-star" data-rating="5" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(5)" onclick="selectRating(5)"></i>
+                    <!-- Review Form (hidden by default) -->
+                    <div id="reviewFormSection" style="display: none; background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+                        <h5 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 16px 0;">
+                            <i class="fas fa-pen" style="color: #f77c00;"></i> Vaše recenze
+                        </h5>
+                        
+                        <!-- Hodnocení hvězdičkami -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-size: 14px; font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">
+                                Hodnocení:
+                            </label>
+                            <div id="reviewStars" style="display: flex; gap: 8px; font-size: 28px; cursor: pointer;">
+                                <i class="far fa-star" data-rating="1" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(1)" onclick="selectRating(1)"></i>
+                                <i class="far fa-star" data-rating="2" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(2)" onclick="selectRating(2)"></i>
+                                <i class="far fa-star" data-rating="3" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(3)" onclick="selectRating(3)"></i>
+                                <i class="far fa-star" data-rating="4" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(4)" onclick="selectRating(4)"></i>
+                                <i class="far fa-star" data-rating="5" style="color: #d1d5db; transition: color 0.2s;" onmouseover="highlightStars(5)" onclick="selectRating(5)"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Text recenze -->
+                        <div style="margin-bottom: 16px;">
+                            <label for="reviewText" style="font-size: 14px; font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">
+                                Vaše zkušenost:
+                            </label>
+                            <textarea id="reviewText" rows="4" placeholder="Popište svou zkušenost s tímto uživatelem..." style="
+                                width: 100%;
+                                padding: 12px;
+                                border: 2px solid #e5e7eb;
+                                border-radius: 8px;
+                                font-size: 14px;
+                                font-family: inherit;
+                                resize: vertical;
+                                transition: border-color 0.2s;
+                            " onfocus="this.style.borderColor='#f77c00';" onblur="this.style.borderColor='#e5e7eb';"></textarea>
+                        </div>
+                        
+                        <!-- Tlačítka -->
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="toggleReviewForm()" style="
+                                flex: 1;
+                                padding: 12px 24px;
+                                background: white;
+                                border: 2px solid #e5e7eb;
+                                border-radius: 8px;
+                                font-size: 14px;
+                                font-weight: 600;
+                                color: #6b7280;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.borderColor='#9ca3af';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                Zrušit
+                            </button>
+                            <button onclick="submitReview()" style="
+                                flex: 2;
+                                padding: 12px 24px;
+                                background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+                                border: none;
+                                border-radius: 8px;
+                                font-size: 14px;
+                                font-weight: 700;
+                                color: white;
+                                cursor: pointer;
+                                box-shadow: 0 2px 8px rgba(247,124,0,0.25);
+                                transition: all 0.2s;
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(247,124,0,0.35)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(247,124,0,0.25)';">
+                                <i class="fas fa-paper-plane"></i> Odeslat recenzi
+                            </button>
                         </div>
                     </div>
                     
-                    <!-- Text recenze -->
-                    <div style="margin-bottom: 16px;">
-                        <label for="reviewText" style="font-size: 14px; font-weight: 600; color: #374151; display: block; margin-bottom: 8px;">
-                            Vaše zkušenost:
-                        </label>
-                        <textarea id="reviewText" rows="4" placeholder="Popište svou zkušenost s tímto uživatelem..." style="
-                            width: 100%;
-                            padding: 12px;
-                            border: 2px solid #e5e7eb;
-                            border-radius: 8px;
-                            font-size: 14px;
-                            font-family: inherit;
-                            resize: vertical;
-                            transition: border-color 0.2s;
-                        " onfocus="this.style.borderColor='#f77c00';" onblur="this.style.borderColor='#e5e7eb';"></textarea>
-                    </div>
-                    
-                    <!-- Tlačítka -->
-                    <div style="display: flex; gap: 12px;">
-                        <button onclick="toggleReviewForm()" style="
-                            flex: 1;
-                            padding: 12px 24px;
-                            background: white;
-                            border: 2px solid #e5e7eb;
-                            border-radius: 8px;
-                            font-size: 14px;
-                            font-weight: 600;
-                            color: #6b7280;
-                            cursor: pointer;
-                            transition: all 0.2s;
-                        " onmouseover="this.style.borderColor='#9ca3af';" onmouseout="this.style.borderColor='#e5e7eb';">
-                            Zrušit
-                        </button>
-                        <button onclick="submitReview()" style="
-                            flex: 2;
-                            padding: 12px 24px;
-                            background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-                            border: none;
-                            border-radius: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: white;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(247,124,0,0.25);
-                            transition: all 0.2s;
-                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(247,124,0,0.35)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(247,124,0,0.25)';">
-                            <i class="fas fa-paper-plane"></i> Odeslat recenzi
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="user-other-ads" id="userReviewsSection">
                     <div class="reviews-list" id="userReviewsGrid">
                         <!-- User reviews will be loaded here -->
                     </div>
