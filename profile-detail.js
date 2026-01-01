@@ -530,10 +530,10 @@ function updateProfileInfo() {
                 addAdditionalItem('fas fa-globe', 'Webová stránka', website, true);
             }
             
-            // Lokace (businessAddress)
+            // Město (businessAddress)
             const location = userProfile.businessAddress || userProfile.location || '';
             if (location) {
-                addAdditionalItem('fas fa-map-marker-alt', 'Lokace', location);
+                addAdditionalItem('fas fa-map-marker-alt', 'Město', location);
             }
         } else {
             // Pro fyzické osoby zobrazit město (pokud je vyplněno)
