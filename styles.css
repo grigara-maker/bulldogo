@@ -7251,6 +7251,17 @@ html {
     }
 }
 
+@keyframes modalSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;

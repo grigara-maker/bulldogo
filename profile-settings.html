@@ -1207,56 +1207,219 @@
 
         // Delete account function
         async function deleteAccount() {
-            // Show confirmation modal
-            const confirmationText = prompt(`
-⚠️ VAROVÁNÍ: NEVRATNÁ AKCE ⚠️
+            // Vytvořit modal pro potvrzení smazání účtu
+            const deleteModal = document.createElement('div');
+            deleteModal.className = 'modal';
+            deleteModal.id = 'deleteAccountModal';
+            deleteModal.style.display = 'flex';
+            deleteModal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px; width: 90%;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(247, 124, 0, 0.1) 100%); border-bottom: 2px solid #EF4444;">
+                        <h2 style="color: #EF4444; font-weight: 800; font-size: clamp(1.2rem, 4vw, 1.5rem);">⚠️ VAROVÁNÍ: NEVRATNÁ AKCE ⚠️</h2>
+                        <button class="close" onclick="closeDeleteModal()" style="font-size: 1.8rem; color: #6b7280;">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 2rem; max-height: 70vh; overflow-y: auto;">
+                        <p style="font-size: clamp(1rem, 3vw, 1.1rem); font-weight: 600; color: #1a1a2e; margin-bottom: 1.5rem; line-height: 1.6;">
+                            Opravdu chcete smazat svůj účet?
+                        </p>
+                        <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #EF4444; font-weight: 700; margin-bottom: 1rem;">
+                            Tato akce je NEVRATNÁ a nelze ji vzít zpět!
+                        </p>
+                        <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #374151; margin-bottom: 1rem; line-height: 1.6;">
+                            Všechna vaše data budou trvale smazána:
+                        </p>
+                        <ul style="list-style: none; padding: 0; margin: 0 0 1.5rem 0;">
+                            <li style="padding: 0.5rem 0; font-size: clamp(0.9rem, 2.5vw, 1rem); color: #4b5563; display: flex; align-items: start; gap: 0.5rem;">
+                                <i class="fas fa-times-circle" style="color: #EF4444; margin-top: 0.2rem; flex-shrink: 0;"></i>
+                                <span>Váš profil a osobní informace</span>
+                            </li>
+                            <li style="padding: 0.5rem 0; font-size: clamp(0.9rem, 2.5vw, 1rem); color: #4b5563; display: flex; align-items: start; gap: 0.5rem;">
+                                <i class="fas fa-times-circle" style="color: #EF4444; margin-top: 0.2rem; flex-shrink: 0;"></i>
+                                <span>Všechny vaše inzeráty a služby</span>
+                            </li>
+                            <li style="padding: 0.5rem 0; font-size: clamp(0.9rem, 2.5vw, 1rem); color: #4b5563; display: flex; align-items: start; gap: 0.5rem;">
+                                <i class="fas fa-times-circle" style="color: #EF4444; margin-top: 0.2rem; flex-shrink: 0;"></i>
+                                <span>Všechny recenze a hodnocení</span>
+                            </li>
+                            <li style="padding: 0.5rem 0; font-size: clamp(0.9rem, 2.5vw, 1rem); color: #4b5563; display: flex; align-items: start; gap: 0.5rem;">
+                                <i class="fas fa-times-circle" style="color: #EF4444; margin-top: 0.2rem; flex-shrink: 0;"></i>
+                                <span>Všechny zprávy a konverzace</span>
+                            </li>
+                            <li style="padding: 0.5rem 0; font-size: clamp(0.9rem, 2.5vw, 1rem); color: #4b5563; display: flex; align-items: start; gap: 0.5rem;">
+                                <i class="fas fa-times-circle" style="color: #EF4444; margin-top: 0.2rem; flex-shrink: 0;"></i>
+                                <span>Všechna historická data</span>
+                            </li>
+                        </ul>
+                        <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px;">
+                            <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #991B1B; font-weight: 700; margin: 0; line-height: 1.5;">
+                                PO POŽÁDÁNÍ O SMAZÁNÍ NELZE PODÁVAT REKLAMACE!
+                            </p>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label for="deleteConfirmInput" style="display: block; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
+                                Pro potvrzení zadejte přesně: <strong style="color: #EF4444;">smazat</strong>
+                            </label>
+                            <input type="text" id="deleteConfirmInput" class="form-input" placeholder="Zadejte: smazat" style="width: 100%; padding: 12px; font-size: clamp(0.9rem, 2.5vw, 1rem); border: 2px solid #e5e7eb; border-radius: 8px;">
+                        </div>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
+                            <button onclick="closeDeleteModal()" class="btn-save" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                Zrušit
+                            </button>
+                            <button onclick="confirmDeleteAccount()" class="btn-danger" style="background: #EF4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                Smazat účet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(deleteModal);
+            
+            // Zaměřit input při otevření
+            setTimeout(() => {
+                const input = document.getElementById('deleteConfirmInput');
+                if (input) input.focus();
+            }, 100);
+            
+            // Zavřít při kliknutí na overlay
+            deleteModal.addEventListener('click', (e) => {
+                if (e.target === deleteModal) {
+                    closeDeleteModal();
+                }
+            });
+            
+            // Zavřít při stisknutí Escape
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    closeDeleteModal();
+                    document.removeEventListener('keydown', handleEscape);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+        }
 
-Opravdu chcete smazat svůj účet?
+        // Funkce pro zavření modalu
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteAccountModal');
+            if (modal) {
+                modal.style.animation = 'modalSlideOut 0.3s ease-out';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
 
-Tato akce je NEVRATNÁ a nelze ji vzít zpět!
-Všechna vaše data budou trvale smazána:
-- Váš profil a osobní informace
-- Všechny vaše inzeráty a služby
-- Všechny recenze a hodnocení
-- Všechny zprávy a konverzace
-- Všechna historická data
-
-PO POŽÁDÁNÍ O SMAZÁNÍ NELZE PODÁVAT REKLAMACE!
-
-Pro potvrzení zadejte přesně: smazat
-            `);
-
-            if (confirmationText !== "smazat") {
-                if (confirmationText !== null) {
-                    alert("❌ Nesprávné potvrzení. Smazání účtu bylo zrušeno.");
+        // Funkce pro finální potvrzení smazání
+        async function confirmDeleteAccount() {
+            const confirmInput = document.getElementById('deleteConfirmInput');
+            if (!confirmInput || confirmInput.value.trim() !== 'smazat') {
+                showMessage('❌ Nesprávné potvrzení. Zadejte přesně: smazat', 'error');
+                if (confirmInput) {
+                    confirmInput.style.borderColor = '#EF4444';
+                    confirmInput.focus();
+                    setTimeout(() => {
+                        confirmInput.style.borderColor = '#e5e7eb';
+                    }, 2000);
                 }
                 return;
             }
 
-            // Second confirmation
-            const finalConfirmation = confirm(`
-🚨 FINÁLNÍ POTVRZENÍ 🚨
+            // Zavřít první modal a zobrazit finální potvrzení
+            closeDeleteModal();
+            
+            // Vytvořit finální potvrzovací modal
+            const finalModal = document.createElement('div');
+            finalModal.className = 'modal';
+            finalModal.id = 'finalDeleteModal';
+            finalModal.style.display = 'flex';
+            finalModal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px; width: 90%;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(247, 124, 0, 0.15) 100%); border-bottom: 3px solid #EF4444;">
+                        <h2 style="color: #EF4444; font-weight: 800; font-size: clamp(1.1rem, 3.5vw, 1.3rem);">🚨 FINÁLNÍ POTVRZENÍ 🚨</h2>
+                        <button class="close" onclick="closeFinalDeleteModal()" style="font-size: 1.8rem; color: #6b7280;">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 2rem;">
+                        <p style="font-size: clamp(1rem, 3vw, 1.1rem); font-weight: 600; color: #1a1a2e; margin-bottom: 1rem; line-height: 1.6;">
+                            Opravdu chcete trvale smazat svůj účet?
+                        </p>
+                        <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #EF4444; font-weight: 700; margin-bottom: 1.5rem;">
+                            Tato akce je NEVRATNÁ!
+                        </p>
+                        <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #374151; margin-bottom: 1.5rem; line-height: 1.6;">
+                            Všechna vaše data budou navždy ztracena!
+                        </p>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
+                            <button onclick="closeFinalDeleteModal()" class="btn-save" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                Zrušit
+                            </button>
+                            <button onclick="executeDeleteAccount()" class="btn-danger" style="background: #EF4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                Ano, smazat účet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(finalModal);
+            
+            // Zavřít při kliknutí na overlay
+            finalModal.addEventListener('click', (e) => {
+                if (e.target === finalModal) {
+                    closeFinalDeleteModal();
+                }
+            });
+            
+            // Zavřít při stisknutí Escape
+            const handleEscape = (e) => {
+                if (e.key === 'Escape') {
+                    closeFinalDeleteModal();
+                    document.removeEventListener('keydown', handleEscape);
+                }
+            };
+            document.addEventListener('keydown', handleEscape);
+        }
 
-Opravdu chcete trvale smazat svůj účet?
-
-Tato akce je NEVRATNÁ!
-Všechna vaše data budou navždy ztracena!
-
-Klikněte OK pro pokračování nebo Storno pro zrušení.
-            `);
-
-            if (!finalConfirmation) {
-                alert("❌ Smazání účtu bylo zrušeno.");
-                return;
+        // Funkce pro zavření finálního modalu
+        function closeFinalDeleteModal() {
+            const modal = document.getElementById('finalDeleteModal');
+            if (modal) {
+                modal.style.animation = 'modalSlideOut 0.3s ease-out';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
             }
+        }
 
+        // Funkce pro skutečné smazání účtu
+        async function executeDeleteAccount() {
             try {
-                // Show loading message
-                alert("🔄 Mažu váš účet... Prosím počkejte.");
+                // Zavřít modal a zobrazit loading
+                closeFinalDeleteModal();
+                
+                // Zobrazit loading modal
+                const loadingModal = document.createElement('div');
+                loadingModal.className = 'modal';
+                loadingModal.id = 'deleteLoadingModal';
+                loadingModal.style.display = 'flex';
+                loadingModal.innerHTML = `
+                    <div class="modal-content" style="max-width: 400px; width: 90%;">
+                        <div class="modal-body" style="padding: 2rem; text-align: center;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">
+                                <i class="fas fa-spinner fa-spin" style="color: #f77c00;"></i>
+                            </div>
+                            <p style="font-size: clamp(1rem, 3vw, 1.1rem); font-weight: 600; color: #1a1a2e; margin-bottom: 0.5rem;">
+                                Mažu váš účet...
+                            </p>
+                            <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #6b7280;">
+                                Prosím počkejte
+                            </p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(loadingModal);
                 
                 const currentUser = window.firebaseAuth.currentUser;
                 if (!currentUser) {
-                    alert("❌ Uživatel není přihlášen.");
+                    loadingModal.remove();
+                    showMessage('❌ Uživatel není přihlášen.', 'error');
                     return;
                 }
 
@@ -1324,26 +1487,97 @@ Klikněte OK pro pokračování nebo Storno pro zrušení.
                 await deleteUser(window.firebaseAuth, currentUser);
                 console.log('✅ Firebase Auth uživatel smazán');
 
-                // Success message
-                alert(`
-✅ ÚČET BYL ÚSPĚŠNĚ SMAZÁN
+                // Zavřít loading modal
+                loadingModal.remove();
 
-Váš účet a všechna související data byla trvale smazána.
-Budete přesměrováni na hlavní stránku.
-                `);
+                // Zobrazit success modal
+                const successModal = document.createElement('div');
+                successModal.className = 'modal';
+                successModal.id = 'deleteSuccessModal';
+                successModal.style.display = 'flex';
+                successModal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px; width: 90%;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(247, 124, 0, 0.1) 100%); border-bottom: 3px solid #22C55E;">
+                            <h2 style="color: #22C55E; font-weight: 800; font-size: clamp(1.1rem, 3.5vw, 1.3rem);">✅ ÚČET BYL ÚSPĚŠNĚ SMAZÁN</h2>
+                        </div>
+                        <div class="modal-body" style="padding: 2rem; text-align: center;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem; color: #22C55E;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <p style="font-size: clamp(1rem, 3vw, 1.1rem); color: #374151; margin-bottom: 1rem; line-height: 1.6;">
+                                Váš účet a všechna související data byla trvale smazána.
+                            </p>
+                            <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #6b7280; margin-bottom: 1.5rem;">
+                                Budete přesměrováni na hlavní stránku...
+                            </p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(successModal);
 
-                // Redirect to home page
-                window.location.href = 'index.html';
+                // Redirect to home page after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
 
             } catch (error) {
                 console.error('❌ Chyba při mazání účtu:', error);
-                alert(`
-❌ CHYBA PŘI MAZÁNÍ ÚČTU
+                
+                // Zavřít loading modal
+                const loading = document.getElementById('deleteLoadingModal');
+                if (loading) loading.remove();
 
-Došlo k chybě: ${error.message}
+                // Zobrazit error modal
+                const errorModal = document.createElement('div');
+                errorModal.className = 'modal';
+                errorModal.id = 'deleteErrorModal';
+                errorModal.style.display = 'flex';
+                errorModal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px; width: 90%;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(247, 124, 0, 0.1) 100%); border-bottom: 3px solid #EF4444;">
+                            <h2 style="color: #EF4444; font-weight: 800; font-size: clamp(1.1rem, 3.5vw, 1.3rem);">❌ CHYBA PŘI MAZÁNÍ ÚČTU</h2>
+                            <button class="close" onclick="closeErrorModal()" style="font-size: 1.8rem; color: #6b7280;">&times;</button>
+                        </div>
+                        <div class="modal-body" style="padding: 2rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; color: #EF4444; text-align: center;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <p style="font-size: clamp(1rem, 3vw, 1.1rem); color: #374151; margin-bottom: 1rem; line-height: 1.6;">
+                                Došlo k chybě při mazání účtu:
+                            </p>
+                            <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #6b7280; margin-bottom: 1.5rem; background: #F3F4F6; padding: 1rem; border-radius: 8px; word-break: break-word;">
+                                ${error.message || 'Neznámá chyba'}
+                            </p>
+                            <p style="font-size: clamp(0.9rem, 2.5vw, 1rem); color: #374151; margin-bottom: 1.5rem; line-height: 1.6;">
+                                Prosím kontaktujte podporu.
+                            </p>
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button onclick="closeErrorModal()" class="btn-save" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: clamp(0.9rem, 2.5vw, 1rem); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                    Zavřít
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(errorModal);
+                
+                // Zavřít při kliknutí na overlay
+                errorModal.addEventListener('click', (e) => {
+                    if (e.target === errorModal) {
+                        closeErrorModal();
+                    }
+                });
+            }
+        }
 
-Prosím kontaktujte podporu.
-                `);
+        // Funkce pro zavření error modalu
+        function closeErrorModal() {
+            const modal = document.getElementById('deleteErrorModal');
+            if (modal) {
+                modal.style.animation = 'modalSlideOut 0.3s ease-out';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
             }
         }
 
@@ -1355,6 +1589,11 @@ Prosím kontaktujte podporu.
         window.changeEmailAndPhone = changeEmailAndPhone;
         window.changePassword = changePassword;
         window.deleteAccount = deleteAccount;
+        window.closeDeleteModal = closeDeleteModal;
+        window.confirmDeleteAccount = confirmDeleteAccount;
+        window.closeFinalDeleteModal = closeFinalDeleteModal;
+        window.executeDeleteAccount = executeDeleteAccount;
+        window.closeErrorModal = closeErrorModal;
         window.showMessage = showMessage;
         
         console.log('✅ Funkce exportovány:', {
