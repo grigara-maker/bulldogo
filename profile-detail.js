@@ -438,7 +438,7 @@ function updateProfileInfo() {
     }
     if (profileLocationEl) profileLocationEl.textContent = locationText;
     if (profileBioEl) {
-        const bioText = userProfile.bio || userProfile.description || 'Uživatel nezadal žádný popis.';
+        const bioText = userProfile.bio || userProfile.description || userProfile.businessDescription || 'Uživatel nezadal žádný popis.';
         // Zachovat odřádkování - escapovat HTML a převést \n na <br>
         const escapedText = bioText
             .replace(/&/g, '&amp;')
