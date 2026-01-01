@@ -533,7 +533,62 @@
                 const lastName = lastNameEl ? lastNameEl.value : '';
                 
                 const phoneRaw = phoneEl ? phoneEl.value.trim() : '';
+                const emailRaw = emailEl ? emailEl.value.trim() : '';
                 const bioText = bioEl ? bioEl.value : '';
+                
+                // Validace telefonu - musí obsahovat čísla (kromě předvolby)
+                if (phoneRaw) {
+                    // Odstranit předvolbu a mezeru, zkontrolovat zda zbývají čísla
+                    const phoneWithoutPrefix = phoneRaw.replace(/^\+420\s*/, '').replace(/^420\s*/, '').replace(/\s+/g, '');
+                    const hasNumbers = /\d/.test(phoneWithoutPrefix);
+                    
+                    if (!hasNumbers || phoneWithoutPrefix.length === 0) {
+                        showMessage('⚠️ Telefon musí obsahovat telefonní číslo. Nelze uložit pouze předvolbu.', 'error');
+                        if (phoneEl) phoneEl.focus();
+                        return;
+                    }
+                    
+                    // Kontrola, zda obsahuje alespoň 9 číslic (s předvolbou) nebo 9 číslic bez předvolby
+                    const allDigits = phoneRaw.replace(/\D/g, '');
+                    if (allDigits.length < 9) {
+                        showMessage('⚠️ Telefonní číslo musí obsahovat alespoň 9 číslic.', 'error');
+                        if (phoneEl) phoneEl.focus();
+                        return;
+                    }
+                }
+                
+                // Validace emailu - musí obsahovat text před @ a po @, musí obsahovat zavináč
+                if (emailRaw) {
+                    const emailParts = emailRaw.split('@');
+                    if (emailParts.length !== 2) {
+                        showMessage('⚠️ Email musí obsahovat zavináč (@).', 'error');
+                        if (emailEl) emailEl.focus();
+                        return;
+                    }
+                    
+                    const beforeAt = emailParts[0].trim();
+                    const afterAt = emailParts[1].trim();
+                    
+                    if (!beforeAt || beforeAt.length === 0) {
+                        showMessage('⚠️ Email musí obsahovat text před zavináčem.', 'error');
+                        if (emailEl) emailEl.focus();
+                        return;
+                    }
+                    
+                    if (!afterAt || afterAt.length === 0) {
+                        showMessage('⚠️ Email musí obsahovat text po zavináči.', 'error');
+                        if (emailEl) emailEl.focus();
+                        return;
+                    }
+                    
+                    // Základní kontrola formátu emailu
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailRaw)) {
+                        showMessage('⚠️ Email není ve správném formátu (např. jmeno@domena.cz).', 'error');
+                        if (emailEl) emailEl.focus();
+                        return;
+                    }
+                }
                 
                 // Kontrola zakázaných slov
                 if (window.ProfanityFilter && bioText) {
@@ -548,7 +603,7 @@
                     firstName: firstName,
                     lastName: lastName,
                     name: `${firstName} ${lastName}`.trim(), // Zachovat i složené jméno pro kompatibilitu
-                    email: emailEl ? emailEl.value : '',
+                    email: emailRaw,
                     phone: phoneRaw === '+420' ? '' : phoneRaw,
                     city: cityEl ? cityEl.value : '',
                     bio: bioText,
@@ -851,6 +906,42 @@
                     showMessage('Vyplňte všechna pole pro změnu emailu!', 'error');
                     return;
                 }
+                
+                // Validace emailu - musí obsahovat text před @ a po @, musí obsahovat zavináč
+                const emailParts = newEmail.split('@');
+                if (emailParts.length !== 2) {
+                    showMessage('⚠️ Email musí obsahovat zavináč (@).', 'error');
+                    const emailEl = document.getElementById('newEmail');
+                    if (emailEl) emailEl.focus();
+                    return;
+                }
+                
+                const beforeAt = emailParts[0].trim();
+                const afterAt = emailParts[1].trim();
+                
+                if (!beforeAt || beforeAt.length === 0) {
+                    showMessage('⚠️ Email musí obsahovat text před zavináčem.', 'error');
+                    const emailEl = document.getElementById('newEmail');
+                    if (emailEl) emailEl.focus();
+                    return;
+                }
+                
+                if (!afterAt || afterAt.length === 0) {
+                    showMessage('⚠️ Email musí obsahovat text po zavináči.', 'error');
+                    const emailEl = document.getElementById('newEmail');
+                    if (emailEl) emailEl.focus();
+                    return;
+                }
+                
+                // Základní kontrola formátu emailu
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(newEmail)) {
+                    showMessage('⚠️ Email není ve správném formátu (např. jmeno@domena.cz).', 'error');
+                    const emailEl = document.getElementById('newEmail');
+                    if (emailEl) emailEl.focus();
+                    return;
+                }
+                
                 if (newEmail !== confirmEmail) {
                     showMessage('Emaily se neshodují!', 'error');
                     return;
@@ -1413,6 +1504,51 @@ Prosím kontaktujte podporu.
                     }, 500);
                 });
             });
+            
+            // Speciální kontrola pro telefon - zabránit úplnému smazání
+            const phoneEl = document.getElementById('phone');
+            if (phoneEl) {
+                // Kontrola při změně hodnoty
+                phoneEl.addEventListener('input', function() {
+                    const value = this.value.trim();
+                    // Pokud je pole prázdné nebo obsahuje jen předvolbu bez čísla, obnovit minimální hodnotu
+                    if (!value || value === '+' || value === '420') {
+                        this.value = '+420';
+                        return;
+                    }
+                    
+                    // Pokud uživatel smaže všechno, obnovit předvolbu
+                    if (value.length === 0) {
+                        this.value = '+420';
+                        return;
+                    }
+                    
+                    // Zkontrolovat, zda obsahuje alespoň nějaké číslo (kromě předvolby)
+                    const withoutPrefix = value.replace(/^\+420\s*/, '').replace(/^420\s*/, '').replace(/\s+/g, '');
+                    if (withoutPrefix.length === 0) {
+                        // Pokud není žádné číslo, ponechat alespoň předvolbu
+                        if (!value.startsWith('+420') && !value.startsWith('420')) {
+                            this.value = '+420';
+                        }
+                    }
+                });
+                
+                // Kontrola při ztrátě fokusu (blur)
+                phoneEl.addEventListener('blur', function() {
+                    const value = this.value.trim();
+                    // Pokud je pole prázdné nebo obsahuje jen předvolbu bez čísla, obnovit minimální hodnotu
+                    if (!value || value === '+' || value === '420' || value === '+420') {
+                        this.value = '+420';
+                    } else {
+                        // Zkontrolovat, zda obsahuje alespoň nějaké číslo
+                        const withoutPrefix = value.replace(/^\+420\s*/, '').replace(/^420\s*/, '').replace(/\s+/g, '');
+                        const hasNumbers = /\d/.test(withoutPrefix);
+                        if (!hasNumbers || withoutPrefix.length === 0) {
+                            this.value = '+420';
+                        }
+                    }
+                });
+            }
         }
 
         // Aktualizace formulářových polí s daty (vždy prefilled kromě hesel)
