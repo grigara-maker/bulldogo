@@ -578,6 +578,11 @@
                 await setDoc(profileRef, personalData, { merge: true });
 
                 console.log('✅ Data úspěšně uložena do Firebase');
+                
+                // Resetovat flagy po úspěšném uložení
+                isUserEditing = false;
+                editedFields.clear();
+                
                 showMessage('✅ Osobní informace byly uloženy!', 'success');
 
             } catch (error) {
