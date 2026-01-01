@@ -729,9 +729,11 @@ async function register(email, password, userData) {
             phone: normalizedPhone || null,
             city: userData.city || null,
             bio: userData.bio || null,
-            // Obchodní informace
+            // Obchodní informace (pro firmy i osoby, které mohou mít obchodní údaje)
             businessName: userData.companyName || userData.businessName || null,
             businessType: userData.businessType || null,
+            businessIco: null, // Bude nastaveno níže pro firmy
+            businessDic: null, // Bude nastaveno níže pro firmy
             businessAddress: userData.companyAddress || userData.businessAddress || null,
             businessDescription: userData.businessDescription || null,
             // Předvolby
@@ -757,9 +759,18 @@ async function register(email, password, userData) {
             profileData.name = `${userData.firstName} ${userData.lastName}`;
         } else if (userData.type === 'company') {
             profileData.name = userData.companyName || 'Firma';
+            // Uložit obchodní informace i na hlavní úroveň profilu (pro zobrazení v nastavení)
+            const normalizedIco = normalizeICO(userData.ico || '');
+            profileData.businessName = userData.companyName || null;
+            profileData.businessType = userData.businessType || null;
+            profileData.businessIco = normalizedIco || null;
+            profileData.businessDic = userData.dic || null;
+            profileData.businessAddress = userData.companyAddress || null;
+            profileData.businessDescription = userData.businessDescription || null;
+            // Také zachovat v company objektu pro kompatibilitu
             profileData.company = {
                 companyName: userData.companyName || null,
-                ico: normalizeICO(userData.ico || '') || null,
+                ico: normalizedIco || null,
                 dic: userData.dic || null,
                 phone: normalizedPhone || null,
                 address: userData.companyAddress || null
@@ -2450,6 +2461,10 @@ function setupEventListeners() {
                 const birthDate = (formData.get('birthDate') || '').toString().trim();
                 const companyName = (formData.get('companyName') || '').toString().trim();
                 const ico = (formData.get('ico') || '').toString().trim();
+                const dic = (formData.get('dic') || '').toString().trim();
+                const businessType = (formData.get('businessType') || '').toString().trim();
+                const companyAddress = (formData.get('companyAddress') || '').toString().trim();
+                const businessDescription = (formData.get('businessDescription') || '').toString().trim();
 
                 // Vytvořit e-mailové přihlašování k telefonnímu účtu
                 const { linkWithCredential, EmailAuthProvider, updateProfile } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
@@ -2459,6 +2474,38 @@ function setupEventListeners() {
                 // Zapsat profil
                 const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 const finalUser = phoneUser;
+                const normalizedIco = normalizeICO(ico);
+                
+                const profileData = {
+                    name: userType === 'company' ? companyName : `${firstName} ${lastName}`.trim(),
+                    firstName: userType === 'company' ? '' : firstName,
+                    lastName: userType === 'company' ? '' : lastName,
+                    birthDate: userType === 'company' ? '' : birthDate,
+                    phone: (finalUser.phoneNumber || ''),
+                    email: email,
+                    userType: userType,
+                    plan: 'none',
+                    updatedAt: serverTimestamp()
+                };
+                
+                // Pro firmy přidat obchodní informace na hlavní úroveň profilu
+                if (userType === 'company') {
+                    profileData.businessName = companyName || null;
+                    profileData.businessType = businessType || null;
+                    profileData.businessIco = normalizedIco || null;
+                    profileData.businessDic = dic || null;
+                    profileData.businessAddress = companyAddress || null;
+                    profileData.businessDescription = businessDescription || null;
+                    // Také zachovat v company objektu pro kompatibilitu
+                    profileData.company = {
+                        companyName: companyName || null,
+                        ico: normalizedIco || null,
+                        dic: dic || null,
+                        phone: (finalUser.phoneNumber || ''),
+                        address: companyAddress || null
+                    };
+                }
+                
                 await setDoc(doc(firebaseDb, 'users', finalUser.uid), {
                     uid: finalUser.uid,
                     email,
@@ -2467,16 +2514,7 @@ function setupEventListeners() {
                     provider: 'password+phone',
                     type: userType
                 }, { merge: true });
-                await setDoc(doc(firebaseDb, 'users', finalUser.uid, 'profile', 'profile'), {
-                    name: userType === 'company' ? companyName : `${firstName} ${lastName}`.trim(),
-                    firstName: userType === 'company' ? '' : firstName,
-                    lastName: userType === 'company' ? '' : lastName,
-                    birthDate: userType === 'company' ? '' : birthDate,
-                    phone: (finalUser.phoneNumber || ''),
-                    ico: userType === 'company' ? ico : '',
-                    plan: 'none',
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
+                await setDoc(doc(firebaseDb, 'users', finalUser.uid, 'profile', 'profile'), profileData, { merge: true });
                 try {
                     await updateProfile(finalUser, { displayName: userType === 'company' ? companyName : `${firstName} ${lastName}`.trim() });
                 } catch (_) {}

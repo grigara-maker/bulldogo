@@ -1632,12 +1632,14 @@ Prosím kontaktujte podporu.
             } catch (e) { /* noop */ }
 
             // Obchodní informace - vždy prefilled
+            // Načíst z hlavní úrovně profilu, nebo z company objektu (pro zpětnou kompatibilitu)
+            const company = userProfile?.company || {};
             const businessFields = {
-                'businessName': userProfile?.businessName || '',
+                'businessName': userProfile?.businessName || company?.companyName || '',
                 'businessType': userProfile?.businessType || '',
-                'businessIco': userProfile?.businessIco || '',
-                'businessDic': userProfile?.businessDic || '',
-                'businessAddress': userProfile?.businessAddress || '',
+                'businessIco': userProfile?.businessIco || company?.ico || '',
+                'businessDic': userProfile?.businessDic || company?.dic || '',
+                'businessAddress': userProfile?.businessAddress || company?.address || '',
                 'businessDescription': userProfile?.businessDescription || ''
             };
 
