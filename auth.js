@@ -1392,7 +1392,7 @@ function showAuthModal(type = 'login') {
                     console.warn('setupEventListeners failed in fallback', e); 
                 }
             } else if (authForm) {
-                console.log('✅ AuthForm už má listener nastaven');
+                // AuthForm už má listener - logy odstraněny
             } else {
                 console.warn('⚠️ AuthForm nebyl nalezen v fallback');
             }
