@@ -522,11 +522,13 @@ async function sendMessage() {
         
         // Přidat zprávu
         const messagesRef = collection(window.firebaseDb, 'conversations', currentConversationId, 'messages');
-        await addDoc(messagesRef, {
+        const messageDocRef = await addDoc(messagesRef, {
             senderId: currentUser.uid,
             text: text,
             createdAt: serverTimestamp()
         });
+        
+        console.log('✅ Zpráva uložena:', messageDocRef.id);
         
         // Aktualizovat konverzaci
         const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
@@ -534,6 +536,8 @@ async function sendMessage() {
             lastMessage: text,
             lastMessageAt: serverTimestamp()
         });
+        
+        console.log('✅ Konverzace aktualizována:', currentConversationId);
         
         // Vyčistit input
         if (input) input.value = '';
