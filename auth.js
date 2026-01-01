@@ -341,11 +341,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Inicializace autentifikace
 function initAuth() {
-    console.log('🔧 Inicializuji auth s Firebase:', { firebaseAuth: !!firebaseAuth, firebaseDb: !!firebaseDb });
+    // Inicializace auth s Firebase - logy odstraněny
     
     // Import Firebase funkcí dynamicky
     import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js').then(({ onAuthStateChanged }) => {
-        console.log('✅ Firebase Auth modul načten');
+        // Firebase Auth modul načten - logy odstraněny
         
         // DEV bypass pro reCAPTCHA – pouze na lokálu (nikoliv na vercel.app)
         try {
@@ -783,9 +783,9 @@ async function login(email, password) {
             return;
         }
         
-        console.log('📦 Importuji Firebase Auth modul...');
+        // Importuji Firebase Auth modul - logy odstraněny
         const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        console.log('✅ Firebase Auth modul načten');
+        // Firebase Auth modul načten - logy odstraněny
         
         console.log('🔑 Volám signInWithEmailAndPassword...');
         const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
@@ -1708,7 +1708,7 @@ function humanizePhoneError(error) {
         case 'auth/missing-phone-number':
             return 'Chybí telefonní číslo.';
         case 'auth/too-many-requests':
-            return 'Příliš mnoho pokusů. Zkuste to později.';
+            return 'Příliš mnoho pokusů o odeslání SMS. Firebase má ochranu proti zneužití - počkejte prosím 10-60 minut a zkuste to znovu, nebo použijte jiné telefonní číslo. Pro testování můžete použít testovací telefonní čísla z Firebase Console.';
         case 'auth/captcha-check-failed':
             return 'Ověření reCAPTCHA selhalo. Obnovte stránku a zkuste to znovu.';
         case 'auth/invalid-verification-code':
