@@ -449,7 +449,7 @@ function updateProfileInfo() {
         profileBioEl.innerHTML = escapedText.replace(/\n/g, '<br>');
     }
     
-    // Update additional info (ICO, DIČ, Typ podnikání, Web, Město, Lokace) - vlevo u profilovky
+    // Update additional info (ICO, DIČ, Typ podnikání, Web, Město, Lokace) - v sekci s datem registrace
     const additionalInfoContainer = document.getElementById('profileAdditionalInfo');
     const viewer = window.firebaseAuth?.currentUser;
     const isCompany = userProfile?.userType === 'company' || userProfile?.type === 'company';
@@ -458,29 +458,17 @@ function updateProfileInfo() {
         // Vyčistit existující obsah
         additionalInfoContainer.innerHTML = '';
         
-        // Pomocná funkce pro přidání dalšího údaje
+        // Pomocná funkce pro přidání dalšího údaje ve stejném formátu jako datum registrace
         const addAdditionalItem = (icon, label, value, isLink = false) => {
             if (!value || value.trim() === '') return; // Zobrazit jen vyplněné údaje
             
             const item = document.createElement('div');
-            item.className = 'contact-item';
-            item.style.display = 'flex';
-            item.style.alignItems = 'center';
-            item.style.gap = '8px';
-            item.style.fontSize = '0.9rem';
-            item.style.color = '#6b7280';
+            item.className = 'ad-meta-item';
             
             const iconEl = document.createElement('i');
             iconEl.className = icon;
-            iconEl.style.color = '#f77c00';
-            iconEl.style.width = '16px';
             
-            const labelEl = document.createElement('span');
-            labelEl.style.fontWeight = '600';
-            labelEl.style.color = '#374151';
-            labelEl.textContent = label + ':';
-            
-            const valueEl = document.createElement('span');
+            const spanEl = document.createElement('span');
             
             if (isLink) {
                 const link = document.createElement('a');
@@ -488,18 +476,17 @@ function updateProfileInfo() {
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
                 link.textContent = value.replace(/^https?:\/\//, '');
-                link.style.color = '#f77c00';
+                link.style.color = 'inherit';
                 link.style.textDecoration = 'none';
-                link.style.fontWeight = '500';
-                valueEl.appendChild(link);
+                link.onmouseover = () => link.style.textDecoration = 'underline';
+                link.onmouseout = () => link.style.textDecoration = 'none';
+                spanEl.appendChild(link);
             } else {
-                valueEl.textContent = value;
-                valueEl.style.color = '#6b7280';
+                spanEl.textContent = value;
             }
             
             item.appendChild(iconEl);
-            item.appendChild(labelEl);
-            item.appendChild(valueEl);
+            item.appendChild(spanEl);
             additionalInfoContainer.appendChild(item);
         };
         
@@ -652,7 +639,14 @@ function updateProfileInfo() {
         console.warn('⚠️ Unable to parse join date, using current date');
     }
     const profileJoinDateEl = document.getElementById('profileJoinDate');
-    if (profileJoinDateEl) profileJoinDateEl.textContent = joinDate.toLocaleDateString('cs-CZ');
+    if (profileJoinDateEl) {
+        const formattedDate = joinDate.toLocaleDateString('cs-CZ', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        profileJoinDateEl.textContent = `Registrován ${formattedDate}`;
+    }
     
     console.log('🖼️ Profile info updated successfully');
 }
