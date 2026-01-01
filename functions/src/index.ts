@@ -346,15 +346,15 @@ function generateInactivityWarningEmailHTML(userName: string, deletionDate: Date
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+              <p class="email-text" style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+              <p class="email-text" style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
                 <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+              <p class="email-text-light" style="margin: 0; font-size: 12px; color: #6b7280;">
                 © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
@@ -1025,15 +1025,15 @@ function generateAccountDeletedEmailHTML(userName: string): string {
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+              <p class="email-text" style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+              <p class="email-text" style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
                 <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+              <p class="email-text-light" style="margin: 0; font-size: 12px; color: #6b7280;">
                 © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
@@ -2399,10 +2399,24 @@ function generateWelcomeEmailHTML(userName: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Vítejte na Bulldogo.cz</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .email-body { background-color: #1a1a1a !important; }
+      .email-container { background-color: #1a1a1a !important; }
+      .email-card { background: linear-gradient(180deg, #2d2d2d 0%, #1f1f1f 100%) !important; }
+      .email-text { color: #e5e5e5 !important; }
+      .email-text-light { color: #b0b0b0 !important; }
+      .email-text-dark { color: #ffffff !important; }
+      .email-title { color: #ffffff !important; }
+      .email-border { border-color: #404040 !important; }
+      .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
@@ -2426,7 +2440,7 @@ function generateWelcomeEmailHTML(userName: string): string {
           <!-- Hlavní karta -->
           <tr>
             <td>
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); border-radius: 24px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1); overflow: hidden;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-card" style="background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); border-radius: 24px; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1); overflow: hidden;">
                 
                 <!-- Oranžový header pruh -->
                 <tr>
@@ -2438,7 +2452,7 @@ function generateWelcomeEmailHTML(userName: string): string {
                   <td align="center" style="padding: 40px 0 20px 0;">
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(255, 166, 43, 0.3);">
+                        <td class="email-bg-light" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(255, 166, 43, 0.3);">
                           <span style="font-size: 50px;">🎉</span>
                         </td>
                       </tr>
@@ -2449,7 +2463,7 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <!-- Pozdrav -->
                 <tr>
                   <td align="center" style="padding: 0 40px 20px 40px;">
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
+                    <h1 class="email-title" style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
                       Ahoj, ${userName}! 👋
                     </h1>
                   </td>
@@ -2458,11 +2472,11 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <!-- Hlavní text -->
                 <tr>
                   <td align="center" style="padding: 0 40px 30px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #1a1a2e;">
-                      <strong style="color: #ff6a00;">Děkujeme za registraci</strong> na portálu <strong style="color: #1a1a2e;">Bulldogo.cz</strong>!
+                    <p class="email-text-dark" style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #1a1a2e;">
+                      <strong style="color: #ff6a00;">Děkujeme za registraci</strong> na portálu <strong class="email-text-dark" style="color: #1a1a2e;">Bulldogo.cz</strong>!
                     </p>
-                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #2d3748;">
-                      Jsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – <strong style="color: #1a1a2e;">vytvářet inzeráty</strong>, <strong style="color: #1a1a2e;">hledat služby</strong> a <strong style="color: #1a1a2e;">spojovat se s profesionály</strong> po celé České republice.
+                    <p class="email-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #2d3748;">
+                      Jsme rádi, že jste se stali součástí naší komunity. Nyní můžete využívat všechny výhody našeho portálu – <strong class="email-text-dark" style="color: #1a1a2e;">vytvářet inzeráty</strong>, <strong class="email-text-dark" style="color: #1a1a2e;">hledat služby</strong> a <strong class="email-text-dark" style="color: #1a1a2e;">spojovat se s profesionály</strong> po celé České republice.
                     </p>
                   </td>
                 </tr>
@@ -2470,7 +2484,7 @@ function generateWelcomeEmailHTML(userName: string): string {
                 <!-- Výhody sekce -->
                 <tr>
                   <td style="padding: 0 40px 30px 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fff8eb 0%, #fff3e0 100%); border-radius: 16px; border: 1px solid #ffe0b2;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-bg-light email-border" style="background: linear-gradient(135deg, #fff8eb 0%, #fff3e0 100%); border-radius: 16px; border: 1px solid #ffe0b2;">
                       <tr>
                         <td style="padding: 25px;">
                           <p style="margin: 0 0 15px 0; font-size: 14px; font-weight: 700; color: #ff6a00; text-transform: uppercase; letter-spacing: 1px;">
@@ -2480,25 +2494,25 @@ function generateWelcomeEmailHTML(userName: string): string {
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Snadné vytváření inzerátů</span>
+                                <span class="email-text-dark" style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Snadné vytváření inzerátů</span>
                               </td>
                             </tr>
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Ověření firemních profilu</span>
+                                <span class="email-text-dark" style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Ověření firemních profilu</span>
                               </td>
                             </tr>
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Integrovaný chat se zákazníky</span>
+                                <span class="email-text-dark" style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Integrovaný chat se zákazníky</span>
                               </td>
                             </tr>
                             <tr>
                               <td style="padding: 8px 0;">
                                 <span style="color: #22c55e; font-size: 18px;">✓</span>
-                                <span style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Systém hodnocení a recenzí</span>
+                                <span class="email-text-dark" style="margin-left: 10px; color: #1a1a2e; font-size: 15px; font-weight: 500;">Systém hodnocení a recenzí</span>
                               </td>
                             </tr>
                           </table>
@@ -2530,15 +2544,15 @@ function generateWelcomeEmailHTML(userName: string): string {
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #374151; font-weight: 500;">
+              <p class="email-text" style="margin: 0 0 10px 0; font-size: 14px; color: #374151; font-weight: 500;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #1a1a2e;">
+              <p class="email-text-dark" style="margin: 0 0 20px 0; font-size: 13px; color: #1a1a2e;">
                 <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none; font-weight: 600;">bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none; font-weight: 600;">support@bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none; font-weight: 600;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #4b5563;">
+              <p class="email-text-light" style="margin: 0; font-size: 12px; color: #4b5563;">
                 © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
@@ -2667,13 +2681,13 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
 function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field: string; label: string; oldValue: any; newValue: any }>): string {
   const changesHTML = changes.map((change) => `
     <tr>
-      <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
+      <td class="email-text-dark email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
         <strong style="color: #1a1a2e;">${change.label}</strong>
       </td>
-      <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #6b7280; text-decoration: line-through;">
+      <td class="email-text-light email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #6b7280; text-decoration: line-through;">
         ${formatValue(change.oldValue)}
       </td>
-      <td style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #22c55e; font-weight: 600;">
+      <td class="email-text-dark" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0; color: #22c55e; font-weight: 600;">
         ${formatValue(change.newValue)}
       </td>
     </tr>
@@ -2685,10 +2699,26 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Změna údajů - Bulldogo.cz</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .email-body { background-color: #1a1a1a !important; }
+      .email-container { background-color: #1a1a1a !important; }
+      .email-card { background: linear-gradient(180deg, #2d2d2d 0%, #1f1f1f 100%) !important; }
+      .email-text { color: #e5e5e5 !important; }
+      .email-text-light { color: #b0b0b0 !important; }
+      .email-text-dark { color: #ffffff !important; }
+      .email-title { color: #ffffff !important; }
+      .email-border { border-color: #404040 !important; }
+      .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+      .email-table { background-color: #2d2d2d !important; border-color: #404040 !important; }
+      .email-table-header { background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
@@ -2724,7 +2754,7 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                   <td align="center" style="padding: 40px 0 20px 0;">
                     <table role="presentation" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(255, 166, 43, 0.3);">
+                        <td class="email-bg-light" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-radius: 50%; width: 100px; height: 100px; text-align: center; line-height: 100px; box-shadow: 0 10px 30px rgba(255, 166, 43, 0.3);">
                           <span style="font-size: 50px;">🔐</span>
                         </td>
                       </tr>
@@ -2735,7 +2765,7 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                 <!-- Pozdrav -->
                 <tr>
                   <td align="center" style="padding: 0 40px 20px 40px;">
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
+                    <h1 class="email-title" style="margin: 0; font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1.3;">
                       Změna údajů v účtu
                     </h1>
                   </td>
@@ -2744,11 +2774,11 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                 <!-- Hlavní text -->
                 <tr>
                   <td align="center" style="padding: 0 40px 30px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
+                    <p class="email-text" style="margin: 0 0 20px 0; font-size: 18px; line-height: 1.7; color: #4a5568;">
                       Ahoj, <strong style="color: #ff6a00;">${userName}</strong>!
                     </p>
-                    <p style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
-                      Ve vašem účtu na <strong>Bulldogo.cz</strong> byly právě provedeny následující změny:
+                    <p class="email-text" style="margin: 0; font-size: 16px; line-height: 1.7; color: #718096;">
+                      Ve vašem účtu na <strong class="email-text-dark" style="color: #1a1a2e;">Bulldogo.cz</strong> byly právě provedeny následující změny:
                     </p>
                   </td>
                 </tr>
@@ -2756,11 +2786,11 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                 <!-- Tabulka změn -->
                 <tr>
                   <td style="padding: 0 40px 30px 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden;">
-                      <tr style="background: linear-gradient(90deg, #f8f9fa 0%, #f3f4f6 100%);">
-                        <th style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Položka</th>
-                        <th style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Původní</th>
-                        <th style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Nové</th>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-table" style="background: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden;">
+                      <tr class="email-table-header" style="background: linear-gradient(90deg, #f8f9fa 0%, #f3f4f6 100%);">
+                        <th class="email-text-light" style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Položka</th>
+                        <th class="email-text-light" style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Původní</th>
+                        <th class="email-text-light" style="padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px;">Nové</th>
                       </tr>
                       ${changesHTML}
                     </table>
@@ -2770,7 +2800,7 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                 <!-- Varování -->
                 <tr>
                   <td style="padding: 0 40px 30px 40px;">
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 1px solid #fecaca;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-bg-light email-border" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; border: 1px solid #fecaca;">
                       <tr>
                         <td style="padding: 20px;">
                           <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
@@ -2779,7 +2809,7 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
                                 <span style="font-size: 24px;">⚠️</span>
                               </td>
                               <td>
-                                <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #991b1b;">
+                                <p class="email-text-dark" style="margin: 0; font-size: 14px; line-height: 1.6; color: #991b1b;">
                                   <strong>Neprovedli jste tuto změnu?</strong><br>
                                   Pokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na 
                                   <a href="mailto:support@bulldogo.cz" style="color: #dc2626; font-weight: 600;">support@bulldogo.cz</a> 
@@ -2817,15 +2847,15 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+              <p class="email-text" style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+              <p class="email-text" style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
                 <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+              <p class="email-text-light" style="margin: 0; font-size: 12px; color: #6b7280;">
                 © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
@@ -2945,10 +2975,26 @@ function generateNewMessageEmailHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Nová zpráva - Bulldogo.cz</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .email-body { background-color: #1a1a1a !important; }
+      .email-container { background-color: #1a1a1a !important; }
+      .email-card { background: linear-gradient(180deg, #2d2d2d 0%, #1f1f1f 100%) !important; }
+      .email-text { color: #e5e5e5 !important; }
+      .email-text-light { color: #b0b0b0 !important; }
+      .email-text-dark { color: #ffffff !important; }
+      .email-title { color: #ffffff !important; }
+      .email-border { border-color: #404040 !important; }
+      .email-bg-light { background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+      .email-table { background-color: #2d2d2d !important; border-color: #404040 !important; }
+      .email-table-header { background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%) !important; }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background: #ffffff;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #ffffff; min-height: 100vh;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="email-container" style="background: #ffffff;">
     <tr>
       <td align="center" style="padding: 40px 20px;">
         <!-- Hlavní kontejner -->
@@ -3066,15 +3112,15 @@ function generateNewMessageEmailHTML(
           <!-- Footer -->
           <tr>
             <td align="center" style="padding: 40px 20px 20px 20px;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
+              <p class="email-text" style="margin: 0 0 10px 0; font-size: 14px; color: #6b7280;">
                 „Služby jednoduše. Pro každého."
               </p>
-              <p style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
+              <p class="email-text" style="margin: 0 0 20px 0; font-size: 13px; color: #4a5568;">
                 <a href="https://bulldogo.cz" style="color: #ff6a00; text-decoration: none;">bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="mailto:support@bulldogo.cz" style="color: #ff6a00; text-decoration: none;">support@bulldogo.cz</a> &nbsp;|&nbsp;
                 <a href="tel:+420605121023" style="color: #ff6a00; text-decoration: none;">+420 605 121 023</a>
               </p>
-              <p style="margin: 0; font-size: 12px; color: #6b7280;">
+              <p class="email-text-light" style="margin: 0; font-size: 12px; color: #6b7280;">
                 © 2026 BULLDOGO. Všechna práva vyhrazena.
               </p>
             </td>
