@@ -1432,7 +1432,6 @@
                     query, 
                     where
                 } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                const { deleteUser } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
 
                 console.log('🗑️ Začínám mazání účtu pro uživatele:', currentUser.uid);
 
@@ -1483,8 +1482,8 @@
                     console.log('⚠️ Zprávy nebyly nalezeny nebo již byly smazány');
                 }
 
-                // Delete Firebase Auth user
-                await deleteUser(window.firebaseAuth, currentUser);
+                // Delete Firebase Auth user (v Firebase v10+ se volá jako metoda na uživateli)
+                await currentUser.delete();
                 console.log('✅ Firebase Auth uživatel smazán');
 
                 // Zavřít loading modal
