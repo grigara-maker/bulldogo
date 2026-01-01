@@ -5494,13 +5494,22 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 .tab-btn.active {
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-    color: white;
+    color: white !important;
     border-color: #f77c00;
+}
+
+.tab-btn.active:hover {
+    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
+    color: white !important;
 }
 
 .tab-btn:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(253, 240, 2, 0.45), 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.tab-btn:active {
+    color: white !important;
 }
 
 /* Zvýraznění akčních pilulek v manage sekcích (balíček / topování) */
