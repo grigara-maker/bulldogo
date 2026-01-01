@@ -3662,19 +3662,9 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4);
 }
 
-/* Menší verze tlačítka pro "Mé inzeráty" */
-.btn-create-ad-small {
-    padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
-    border-radius: 10px;
-}
-
-.btn-create-ad-small i {
-    font-size: 0.95rem;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* Tlačítko btn-create-ad v no-services-actions - zachovat stejný styl jako v hero sekci */
+.no-services-actions .btn-create-ad {
+    /* Použít stejný styling jako v hero sekci - žádné přepisování */
 }
 
 /* Bulldog Image */

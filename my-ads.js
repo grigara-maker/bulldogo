@@ -278,7 +278,7 @@ function displayAds(ads) {
                 <h3>Zatím nemáte žádné inzeráty</h3>
                 <p>Začněte tím, že přidáte svou první službu!</p>
                 <div class="no-services-actions">
-                    <button class="btn-create-ad btn-create-ad-small" onclick="window.location.href='create-ad.html'">
+                    <button class="btn-create-ad" onclick="window.location.href='create-ad.html'">
                         <i class="fas fa-plus"></i>
                         Přidat inzerát
                     </button>
