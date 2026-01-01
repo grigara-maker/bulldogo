@@ -3662,9 +3662,32 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4);
 }
 
-/* Tlačítko btn-create-ad v no-services-actions - zachovat stejný styl jako v hero sekci */
+/* Tlačítko btn-create-ad v no-services-actions - zachovat přesně stejný styl jako v hero sekci */
 .no-services-actions .btn-create-ad {
-    /* Použít stejný styling jako v hero sekci - žádné přepisování */
+    background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 1rem 2rem !important;
+    color: white !important;
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    cursor: pointer !important;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 15px rgba(247, 124, 0, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+}
+
+.no-services-actions .btn-create-ad:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(247, 124, 0, 0.4) !important;
+}
+
+.no-services-actions .btn-create-ad i {
+    font-size: 1.1rem !important;
+    line-height: 1 !important;
 }
 
 /* Bulldog Image */
