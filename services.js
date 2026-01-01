@@ -10,36 +10,41 @@ let servicesFirebaseDb = null;
 
 // Funkce pro inicializaci služeb
 function initializeServices() {
-    // Inicializace služeb - logy odstraněny
+    // Pokud už je Firebase připraven, inicializovat ihned
+    if (window.firebaseAuth && window.firebaseDb) {
+        servicesFirebaseAuth = window.firebaseAuth;
+        servicesFirebaseDb = window.firebaseDb;
+        initServices();
+        return;
+    }
     
-    // Počkat na inicializaci Firebase
-    const checkFirebase = setInterval(() => {
+    // Použít event listener místo polling (rychlejší a efektivnější)
+    const initOnceFirebaseReady = () => {
         if (window.firebaseAuth && window.firebaseDb) {
             servicesFirebaseAuth = window.firebaseAuth;
             servicesFirebaseDb = window.firebaseDb;
-            // Firebase nalezen - logy odstraněny
             initServices();
-            clearInterval(checkFirebase);
-        } else {
-            console.log('⏳ Čekám na Firebase...', {
-                auth: !!window.firebaseAuth,
-                db: !!window.firebaseDb
-            });
+            window.removeEventListener('firebaseReady', initOnceFirebaseReady);
         }
-    }, 100);
+    };
     
-    // Timeout po 5 sekundách (optimalizováno)
+    // Přidat event listener
+    window.addEventListener('firebaseReady', initOnceFirebaseReady);
+    
+    // Fallback timeout po 5 sekundách (pokud event nepřijde)
     setTimeout(() => {
         if (!servicesFirebaseAuth || !servicesFirebaseDb) {
-            console.error('❌ Firebase se nepodařilo načíst po 5 sekundách');
-            console.log('Final state:', {
-                servicesFirebaseAuth: !!servicesFirebaseAuth,
-                servicesFirebaseDb: !!servicesFirebaseDb,
-                windowAuth: !!window.firebaseAuth,
-                windowDb: !!window.firebaseDb
-            });
-            console.log('🔄 Přepínám na lokální databázi...');
-            initLocalFallback();
+            if (window.firebaseAuth && window.firebaseDb) {
+                // Zkusit ještě jednou
+                servicesFirebaseAuth = window.firebaseAuth;
+                servicesFirebaseDb = window.firebaseDb;
+                initServices();
+            } else {
+                console.error('❌ Firebase se nepodařilo načíst po 5 sekundách');
+                console.log('🔄 Přepínám na lokální databázi...');
+                initLocalFallback();
+            }
+            window.removeEventListener('firebaseReady', initOnceFirebaseReady);
         }
     }, 5000);
 }
