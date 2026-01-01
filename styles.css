@@ -8491,6 +8491,11 @@ html {
 #myAdsGrid .btn-start-free i {
     font-size: 1rem;
     color: #ffffff;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
 }
 
 #myAdsGrid .btn-start-free::after {
@@ -8535,6 +8540,11 @@ html {
     }
     #myAdsGrid .btn-start-free i {
         font-size: 0.85rem;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
     }
 }
 
