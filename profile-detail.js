@@ -470,8 +470,8 @@ function updateProfileInfo() {
             
             const spanEl = document.createElement('span');
             
-            // Přidat text před hodnotu
-            const labelText = document.createTextNode(label + ' ');
+            // Přidat text před hodnotu s dvojtečkou
+            const labelText = document.createTextNode(label + ': ');
             
             if (isLink) {
                 const link = document.createElement('a');
