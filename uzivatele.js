@@ -474,17 +474,35 @@ async function deleteUser(userId) {
                 })
             });
 
-            const result = await response.json();
-            
             if (!response.ok) {
-                throw new Error(result.error || result.message || 'Chyba při mazání z Authentication');
+                let errorMessage = 'Chyba při mazání z Authentication';
+                try {
+                    const result = await response.json();
+                    errorMessage = result.error || result.message || errorMessage;
+                } catch (e) {
+                    // Pokud není JSON response, použít status text
+                    errorMessage = response.statusText || `HTTP ${response.status}`;
+                }
+                
+                if (response.status === 404) {
+                    errorMessage = 'Cloud Function deleteUserAuth není nasazena. Prosím nasaďte ji pomocí: firebase deploy --only functions:deleteUserAuth';
+                }
+                
+                throw new Error(errorMessage);
             }
 
-            console.log('   ✓ Firebase Auth uživatel smazán');
+            const result = await response.json();
+            console.log('   ✓ Firebase Auth uživatel smazán:', result);
         } catch (error) {
             console.error('   ❌ Chyba při mazání z Firebase Auth:', error);
-            // Nevyhodit chybu - data z Firestore a Storage jsou smazána
-            console.log('   ⚠️ Data z Firestore a Storage byla smazána, ale Auth uživatel zůstal');
+            
+            // Pokud je to 404, zobrazit uživatelsky přívětivou zprávu
+            if (error.message && error.message.includes('404')) {
+                showMessage('⚠️ Cloud Function není nasazena. Data z Firestore a Storage byla smazána, ale Auth uživatel zůstal. Pro úplné smazání nasaďte Cloud Function.', 'warning');
+            } else {
+                // Nevyhodit chybu - data z Firestore a Storage jsou smazána
+                console.log('   ⚠️ Data z Firestore a Storage byla smazána, ale Auth uživatel zůstal');
+            }
         }
         
         console.log('✅ Uživatel úspěšně smazán ze všech částí Firebase');
