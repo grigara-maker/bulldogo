@@ -532,24 +532,32 @@
             const unit = (document.querySelector('input[name=\"priceUnit\"]:checked')?.value || 'hour');
             const unitText = unit === 'hour' ? 'hod' : ''; // Pro "práci" nebudeme zobrazovat jednotku
             const cur = 'Kč';
+            
             if (priceType === 'fixed') {
-                const val = (document.getElementById('servicePrice')?.value || '').trim();
+                const priceEl = document.getElementById('servicePrice');
+                if (!priceEl) return 'Dohodou';
+                const val = (priceEl.value || '').trim();
                 if (!val) return 'Dohodou'; // Pokud není cena, zobrazit "Dohodou"
                 // Zajistit, že číslo je správně formátované s Kč
                 const numVal = val.replace(/[^0-9]/g, ''); // Odebrat všechny nečíselné znaky
                 if (!numVal) return 'Dohodou'; // Pokud není číslo, zobrazit "Dohodou"
                 // Pokud je jednotka "hod", zobrazit "750 Kč/hod", jinak jen "750 Kč"
-                return unitText ? `${numVal} ${cur}/${unitText}` : `${numVal} ${cur}`;
+                const result = unitText ? `${numVal} ${cur}/${unitText}` : `${numVal} ${cur}`;
+                return result;
             } else if (priceType === 'range') {
-                const from = (document.getElementById('servicePriceFrom')?.value || '').trim();
-                const to = (document.getElementById('servicePriceTo')?.value || '').trim();
+                const fromEl = document.getElementById('servicePriceFrom');
+                const toEl = document.getElementById('servicePriceTo');
+                if (!fromEl || !toEl) return 'Dohodou';
+                const from = (fromEl.value || '').trim();
+                const to = (toEl.value || '').trim();
                 if (!from || !to) return 'Dohodou'; // Pokud není rozmezí, zobrazit "Dohodou"
                 const numFrom = from.replace(/[^0-9]/g, '');
                 const numTo = to.replace(/[^0-9]/g, '');
                 if (!numFrom || !numTo) return 'Dohodou'; // Pokud není číslo, zobrazit "Dohodou"
                 // Formát: "200 - 600 Kč/hod" nebo "200 - 600 Kč" (bez jednotky pro práci)
                 const unitPart = unitText ? `/${unitText}` : '';
-                return `${numFrom} - ${numTo} ${cur}${unitPart}`;
+                const result = `${numFrom} - ${numTo} ${cur}${unitPart}`;
+                return result;
             }
             return 'Dohodou';
         }
