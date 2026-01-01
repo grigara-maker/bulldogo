@@ -114,7 +114,7 @@
 .ig-row .ig-bubble { justify-self: start; }
 .ig-row .ig-avatar { justify-self: start; width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; overflow: hidden; }
 .ig-row .ig-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-.ig-row.mine .ig-bubble { order: 1; justify-self: end; background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%) !important; color: #111827 !important; }
+.ig-row.mine .ig-bubble { order: 1; justify-self: end; background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%) !important; color: white !important; }
 .ig-row.mine .ig-avatar { order: 2; justify-self: end; }
 .ig-messages .ig-row:not(.mine) .ig-bubble { background: #fff1db !important; border: 1px solid #ffd89a !important; color: #111827 !important; }
 .ig-bubble { background: #fff8eb; border: 1px solid #ffe0b2; color: #111827; border-radius: 20px; padding: 10px 14px; max-width: 70%; position: relative; }
@@ -1767,7 +1767,7 @@
 
 .ad-create-actions .btn-primary {
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-    color: #111827;
+    color: white;
 }
 
 .ad-create-actions .btn-primary:hover {
@@ -2801,7 +2801,7 @@ body {
 /* Odznak plánu vedle tlačítka Profil */
 .btn-profile .user-badge { display: inline-flex; align-items: center; margin-left: auto; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
 .btn-profile .badge-business { background: #111827; color: #ffffff; }
-.btn-profile .badge-hobby { background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%); color: #111827; }
+.btn-profile .badge-hobby { background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%); color: white; }
 .btn-profile .badge-unknown { background: #e5e7eb; color: #374151; }
 .sidebar:not(:hover) .btn-profile .user-badge { display: none; }
 
@@ -3668,7 +3668,7 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     border: none;
     border-radius: 12px;
     padding: 1rem 2.5rem;
-    color: #111827;
+    color: white;
     font-weight: 700;
     font-size: 1.1rem;
     cursor: pointer;
@@ -5604,7 +5604,7 @@ body.profile-plan-page .plan-info {
     font-weight: 600;
     font-size: 0.95rem;
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-    color: #111827;
+    color: white;
     box-shadow: 0 10px 25px rgba(247, 124, 0, 0.35);
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
@@ -7371,7 +7371,7 @@ html {
 
 .modal-body .btn-primary {
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
-    color: #111827;
+    color: white;
     box-shadow: 0 4px 12px rgba(247, 124, 0, 0.3);
 }
 
