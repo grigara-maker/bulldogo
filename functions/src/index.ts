@@ -1574,7 +1574,22 @@ async function sendStripeInvoiceEmail(
     companyName
   );
 
-  // Odeslat fakturu pouze na účetní email
+  // Odeslat fakturu uživateli
+  const userMailOptions = {
+    from: {
+      name: "BULLDOGO",
+      address: "info@bulldogo.cz",
+    },
+    to: userEmail,
+    subject: `Faktura ${invoiceNumber} - ${planName} - Bulldogo.cz`,
+    html: invoiceHTML,
+    text: `Faktura ${invoiceNumber} pro ${userName}\n\nEmail: ${userEmail || "neuvedeno"}\nTelefon: ${phone || "neuvedeno"}\nČástka: ${amount} ${currency}\nBalíček: ${planName}\n\n© 2026 BULLDOGO.CZ`,
+  };
+
+  await smtpTransporter.sendMail(userMailOptions);
+  functions.logger.info("✅ Faktura odeslána uživateli", { subscriptionId, userEmail, userId, userName });
+
+  // Odeslat fakturu také na účetní email
   const accountingEmail = "ucetni@bulldogo.cz";
   const accountingMailOptions = {
     from: {
