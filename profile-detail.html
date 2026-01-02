@@ -312,25 +312,25 @@
             </div>
 
             <!-- Profile Information -->
-            <div class="ad-detail-main" style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                <!-- First Column - Basic Info -->
-                <div class="ad-detail-right" style="width: 100%;">
+            <div class="profile-detail-main">
+                <!-- Left Column - Profile Info -->
+                <div class="profile-detail-left">
                     <!-- Profile Title and Stats -->
-                    <div class="ad-title-section" style="width: 100%;">
-                        <div style="display:flex; align-items:center; gap:14px;">
-                            <div style="width:56px; height:56px; border-radius:50%; overflow:hidden; background:#f3f4f6; display:flex; align-items:center; justify-content:center; border:1px solid #e5e7eb;">
-                                <img id="profileAvatar" src="" alt="Profilová fotka" style="width:100%; height:100%; object-fit:cover; display:none;" loading="lazy" decoding="async">
-                                <i id="profileAvatarPlaceholder" class="fas fa-user" style="color:#9ca3af; font-size:20px;"></i>
+                    <div class="ad-title-section">
+                        <div class="profile-header-info">
+                            <div class="profile-avatar-container">
+                                <img id="profileAvatar" src="" alt="Profilová fotka" class="profile-avatar-img" loading="lazy" decoding="async">
+                                <i id="profileAvatarPlaceholder" class="fas fa-user profile-avatar-placeholder"></i>
                             </div>
-                            <div style="flex: 1;">
-                                <h1 class="ad-detail-title" id="profileName" style="margin:0 0 4px 0;">Jméno uživatele</h1>
-                                <div class="ad-detail-price" id="profileStats" style="margin:0;">Statistiky</div>
+                            <div class="profile-header-text">
+                                <h1 class="ad-detail-title" id="profileName">Jméno uživatele</h1>
+                                <div class="ad-detail-price" id="profileStats">Statistiky</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Profile Meta Information -->
-                    <div class="ad-meta-section" style="width: 100%; margin-top: 16px;">
+                    <div class="ad-meta-section">
                         <div class="ad-meta-item">
                             <i class="fas fa-calendar"></i>
                             <span id="profileJoinDate">Registrován</span>
@@ -342,16 +342,16 @@
                     </div>
                 </div>
 
-                <!-- Second Column - Additional Info -->
-                <div class="ad-detail-right" style="width: 100%;">
+                <!-- Right Column - About User -->
+                <div class="profile-detail-right">
                     <!-- Profile Description -->
-                    <div class="ad-description-section" style="width: 100%;">
+                    <div class="ad-description-section">
                         <h3>O uživateli</h3>
                         <p class="ad-description" id="profileBio">Popis uživatele</p>
                     </div>
 
                     <!-- Contact Information -->
-                    <div class="ad-contact-section" style="width: 100%;">
+                    <div class="ad-contact-section">
                         <h3>Kontaktní informace</h3>
                         <div class="contact-info" id="profileContactInfo">
                             <!-- Kontaktní údaje budou dynamicky přidány JavaScriptem -->
@@ -359,7 +359,7 @@
                     </div>
 
                     <!-- Chat Button in About User Section -->
-                    <div class="profile-chat-section" style="width: 100%; margin-top: 20px;">
+                    <div class="profile-chat-section">
                         <button class="btn btn-primary profile-chat-btn" id="startChatBtn" onclick="console.log('💬 Chat button clicked!'); startChat(); return false;">
                             <i class="fas fa-comments"></i>
                             Začít chat

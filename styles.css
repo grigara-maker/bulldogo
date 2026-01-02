@@ -6565,6 +6565,7 @@ body.profile-plan-page .plan-info {
         text-shadow: 0 4px 20px rgba(247, 124, 0, 0.3) !important;
         filter: drop-shadow(0 4px 12px rgba(247, 124, 0, 0.2)) drop-shadow(0 2px 4px rgba(247, 124, 0, 0.15)) !important;
         white-space: nowrap !important;
+        text-align: center !important;
     }
 
     .hero-slogan {
@@ -12339,17 +12340,20 @@ html body .ad-actions {
 .ad-detail-main {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
     margin-bottom: 2rem;
     width: 100%;
     padding: 0;
+    align-items: start;
 }
 
 .ad-detail-left {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 2rem;
 }
 
 .ad-images-section {
@@ -12479,14 +12483,14 @@ html body .ad-actions {
 
 .ad-detail-right {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 2rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     height: fit-content;
 }
 
 .ad-title-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
     border-bottom: 2px solid #f0f0f0;
 }
@@ -12499,7 +12503,9 @@ html body .ad-actions {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin: 0 0 1rem 0;
-    line-height: 1.2;
+    line-height: 1.3;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .ad-detail-price {
@@ -12509,7 +12515,7 @@ html body .ad-actions {
 }
 
 .ad-meta-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .ad-meta-item {
@@ -12545,7 +12551,7 @@ html body .ad-actions {
 }
 
 .ad-description-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .ad-description-section h3 {
@@ -12564,10 +12570,10 @@ html body .ad-actions {
 }
 
 .ad-contact-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding: 1.5rem;
     background: #f8f9fa;
-    border-radius: 8px;
+    border-radius: 12px;
 }
 
 .ad-contact-section h3 {
@@ -12658,13 +12664,113 @@ html body .ad-actions {
     box-shadow: 0 4px 12px rgba(247, 124, 0, 0.3);
 }
 
+/* Profile Detail Page - Modern Layout */
+.profile-detail-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    padding: 0;
+}
+
+.profile-detail-left {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    height: fit-content;
+    position: sticky;
+    top: 2rem;
+}
+
+.profile-detail-right {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    height: fit-content;
+}
+
+.profile-header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-avatar-container {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.profile-avatar-placeholder {
+    color: #9ca3af;
+    font-size: 24px;
+}
+
+.profile-header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-header-text .ad-detail-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+    line-height: 1.2;
+}
+
+.profile-header-text .ad-detail-price {
+    margin: 0;
+    font-size: 1rem;
+    color: #6b7280;
+}
+
+.profile-chat-section {
+    width: 100%;
+    margin-top: 1.5rem;
+}
+
+.profile-chat-btn {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.profile-chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(247, 124, 0, 0.3);
+}
+
 .ad-user-profile {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 2rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     width: 100%;
     box-sizing: border-box;
+    margin-top: 2rem;
 }
 
 .user-profile-header {
@@ -12871,6 +12977,8 @@ html body .ad-actions {
         margin-right: 0 !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
+        position: static !important;
+        top: auto !important;
     }
     
     .ad-detail-right {
@@ -13046,6 +13154,56 @@ html body .ad-actions {
     .user-stats {
         justify-content: center !important;
         flex-wrap: wrap !important;
+    }
+    
+    /* Profile Detail Page - Mobile */
+    .profile-detail-main {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        display: grid !important;
+    }
+    
+    .profile-detail-left {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5rem 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        position: static !important;
+        top: auto !important;
+    }
+    
+    .profile-detail-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1.5rem 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    
+    .profile-header-info {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+    
+    .profile-avatar-container {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    .profile-header-text .ad-detail-title {
+        font-size: 1.5rem !important;
     }
     
     .ad-user-profile {
@@ -13309,6 +13467,10 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
 }
 
 /* Zarovnání textu v hero sekci */
+.hero-title {
+    text-align: left !important;
+}
+
 .hero-slogan {
     text-align: left !important;
 }
@@ -13316,10 +13478,29 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
 /* ===== KOMPLEXNÍ RESPOZIVNÍ ÚPRAVY PRO MOBILY A TABLETY ===== */
 
 /* Tablet breakpoint (768px - 1024px) */
+/* Tablet optimizations for ad and profile detail pages */
 @media (max-width: 1024px) and (min-width: 769px) {
     .main-content {
         margin-left: 70px;
         padding: 1.5rem;
+    }
+    
+    .ad-detail-main {
+        gap: 1.5rem;
+    }
+    
+    .ad-detail-left {
+        position: static;
+        top: auto;
+    }
+    
+    .profile-detail-main {
+        gap: 1.5rem;
+    }
+    
+    .profile-detail-left {
+        position: static;
+        top: auto;
     }
     
     .ads-grid {
@@ -14308,6 +14489,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         box-shadow: none !important;
         filter: none !important;
         text-shadow: none !important;
+        text-align: center !important;
     }
     
     .hero-slogan {
