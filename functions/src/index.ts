@@ -4057,3 +4057,196 @@ export const setAdminStatus = functions.region("europe-west1").https.onRequest(a
   });
 });
 
+/**
+ * Stripe Webhook - Odešle kopii faktury na účetní email
+ * Tento webhook zachytí invoice.finalized event a pošle kopii faktury na ucetni@bulldogo.cz
+ * 
+ * Nastavení webhooku v Stripe Dashboard:
+ * 1. Jdi do Developers → Webhooks
+ * 2. Přidej endpoint: https://europe-west1-inzerio-inzerce.cloudfunctions.net/stripeInvoiceWebhook
+ * 3. Vyber event: invoice.finalized
+ * 4. Zkopíruj webhook signing secret a nastav ho jako STRIPE_WEBHOOK_SECRET v Firebase Functions environment
+ */
+export const stripeInvoiceWebhook = functions
+  .region("europe-west1")
+  .https.onRequest(async (req, res) => {
+    // Povolit pouze POST požadavky
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
+      return;
+    }
+
+    const accountingEmail = "ucetni@bulldogo.cz";
+    const sig = req.headers["stripe-signature"] as string;
+
+    if (!sig) {
+      functions.logger.error("❌ Stripe signature missing");
+      res.status(400).send("Stripe signature missing");
+      return;
+    }
+
+    try {
+      const event = req.body;
+
+      // Zpracovat pouze invoice.finalized eventy
+      if (event.type === "invoice.finalized") {
+        const invoice = event.data.object;
+        const invoiceId = invoice.id;
+        const customerId = invoice.customer;
+        const amount = invoice.amount_paid || invoice.amount_due;
+        const currency = (invoice.currency || "czk").toUpperCase();
+        const invoiceNumber = invoice.number || invoiceId;
+        const invoicePdf = invoice.invoice_pdf;
+        const customerEmail = invoice.customer_email;
+        const subscriptionId = invoice.subscription;
+
+        functions.logger.info("📧 Invoice finalized event received", {
+          invoiceId,
+          customerId,
+          amount,
+          currency,
+          invoiceNumber,
+          customerEmail,
+        });
+
+        // Získat informace o zákazníkovi z Firestore
+        let userId = null;
+        let userName = "Neznámý zákazník";
+        let userEmail = customerEmail;
+
+        if (customerId) {
+          try {
+            const db = admin.firestore();
+            // Zkusit najít uživatele podle Stripe customer ID (Firebase Extension ukládá customer ID jako document ID)
+            const customerDoc = await db.collection("customers").doc(customerId).get();
+            if (customerDoc.exists) {
+              userId = customerId;
+              const userProfileDoc = await db
+                .collection("users")
+                .doc(userId)
+                .collection("profile")
+                .doc("profile")
+                .get();
+              if (userProfileDoc.exists) {
+                const userProfile = userProfileDoc.data() as AnyObj;
+                const firstName = userProfile?.firstName || "";
+                const lastName = userProfile?.lastName || "";
+                const name = userProfile?.name || "";
+                const companyName = userProfile?.companyName;
+
+                if (firstName && lastName) {
+                  userName = `${firstName} ${lastName}`;
+                } else if (name && name !== "Uživatel" && name !== "Firma") {
+                  userName = name;
+                } else if (companyName) {
+                  userName = companyName;
+                }
+
+                userEmail = userProfile?.email || customerEmail || userEmail;
+              }
+            }
+          } catch (error: any) {
+            functions.logger.warn("⚠️ Could not fetch user data", {
+              error: error?.message,
+              customerId,
+            });
+          }
+        }
+
+        // Vytvořit email s kopií faktury
+        const amountFormatted = (amount / 100).toFixed(2); // Stripe ukládá v centech
+        const invoiceType = amount === 0 ? "Free Trial" : subscriptionId ? "Předplatné" : "Topování inzerátu";
+
+        const emailHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background-color: #f9f9f9; }
+    .info-box { background-color: white; padding: 15px; margin: 10px 0; border-left: 4px solid #4CAF50; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Kopie faktury - BULLDOGO</h1>
+    </div>
+    <div class="content">
+      <div class="info-box">
+        <h2>Informace o faktuře</h2>
+        <p><strong>Číslo faktury:</strong> ${invoiceNumber}</p>
+        <p><strong>Typ:</strong> ${invoiceType}</p>
+        <p><strong>Částka:</strong> ${amountFormatted} ${currency}</p>
+        <p><strong>Zákazník:</strong> ${userName}</p>
+        <p><strong>Email zákazníka:</strong> ${userEmail || "neuvedeno"}</p>
+        ${userId ? `<p><strong>User ID:</strong> ${userId}</p>` : ""}
+        ${customerId ? `<p><strong>Stripe Customer ID:</strong> ${customerId}</p>` : ""}
+      </div>
+      ${invoicePdf ? `<p><a href="${invoicePdf}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Stáhnout PDF faktury</a></p>` : ""}
+      <p>Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.</p>
+    </div>
+    <div class="footer">
+      <p>© 2026 BULLDOGO.CZ</p>
+      <p>Tento email byl automaticky vygenerován systémem.</p>
+    </div>
+  </div>
+</body>
+</html>
+        `;
+
+        const emailText = `
+Kopie faktury - BULLDOGO
+
+Číslo faktury: ${invoiceNumber}
+Typ: ${invoiceType}
+Částka: ${amountFormatted} ${currency}
+Zákazník: ${userName}
+Email zákazníka: ${userEmail || "neuvedeno"}
+${userId ? `User ID: ${userId}` : ""}
+${customerId ? `Stripe Customer ID: ${customerId}` : ""}
+
+${invoicePdf ? `PDF faktury: ${invoicePdf}` : ""}
+
+Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.
+
+© 2026 BULLDOGO.CZ
+        `;
+
+        // Odeslat email na účetní
+        const accountingMailOptions = {
+          from: {
+            name: "BULLDOGO",
+            address: "info@bulldogo.cz",
+          },
+          to: accountingEmail,
+          subject: `Kopie faktury ${invoiceNumber} - ${userName}${userId ? ` (UID: ${userId})` : ""}`,
+          html: emailHTML,
+          text: emailText,
+        };
+
+        await smtpTransporter.sendMail(accountingMailOptions);
+        functions.logger.info("✅ Kopie faktury odeslána na účetní email", {
+          invoiceId,
+          invoiceNumber,
+          accountingEmail,
+          userId,
+          userName,
+        });
+      }
+
+      // Vrátit úspěšnou odpověď Stripe
+      res.status(200).json({ received: true });
+    } catch (error: any) {
+      functions.logger.error("❌ Chyba při zpracování Stripe webhooku", {
+        error: error?.message,
+        stack: error?.stack,
+      });
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
