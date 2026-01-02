@@ -165,48 +165,93 @@ async function loadConversations() {
         }
         
         conversationsUnsubscribe = onSnapshot(q, async (snapshot) => {
-            conversations = [];
+            const conversationsMap = new Map(); // Pro deduplikaci podle ID
+            const processedIds = new Set(); // Pro kontrolu duplicit
             
             for (const doc of snapshot.docs) {
                 const data = doc.data();
+                const conversationId = doc.id;
+                
+                // Přeskočit, pokud už jsme tuto konverzaci zpracovali
+                if (processedIds.has(conversationId)) {
+                    console.warn('⚠️ Duplicitní konverzace nalezena:', conversationId);
+                    continue;
+                }
+                processedIds.add(conversationId);
+                
+                // Zkontrolovat, zda participants obsahuje aktuálního uživatele
+                if (!data.participants || !Array.isArray(data.participants) || !data.participants.includes(currentUser.uid)) {
+                    console.warn('⚠️ Konverzace neobsahuje aktuálního uživatele:', conversationId);
+                    continue;
+                }
+                
                 const otherParticipantId = data.participants.find(uid => uid !== currentUser.uid);
+                
+                // Přeskočit, pokud není druhý účastník
+                if (!otherParticipantId) {
+                    console.warn('⚠️ Konverzace nemá druhého účastníka:', conversationId);
+                    continue;
+                }
+                
+                // Zkontrolovat, zda konverzace má alespoň jednu zprávu
+                // (nebo zobrazit jen ty, kde uživatel skutečně psal)
+                const hasMessage = data.lastMessage && data.lastMessage.trim() !== '';
                 
                 // Načíst jméno a avatar druhého účastníka
                 let otherParticipantName = 'Uživatel';
                 let otherParticipantAvatar = '';
                 let otherParticipantPhone = '';
                 
-                if (otherParticipantId) {
-                    try {
-                        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                        const profileRef = doc(window.firebaseDb, 'users', otherParticipantId, 'profile', 'profile');
-                        const profileSnap = await getDoc(profileRef);
-                        
-                        if (profileSnap.exists()) {
-                            const profileData = profileSnap.data();
-                            otherParticipantName = profileData.name || profileData.email || 'Uživatel';
-                            otherParticipantAvatar = profileData.photoURL || profileData.avatarUrl || '';
-                            otherParticipantPhone = profileData.phone || profileData.telefon || '';
-                        }
-                    } catch (e) {
-                        console.warn('⚠️ Nepodařilo se načíst profil:', e);
+                try {
+                    const { doc: docFn, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const profileRef = docFn(window.firebaseDb, 'users', otherParticipantId, 'profile', 'profile');
+                    const profileSnap = await getDoc(profileRef);
+                    
+                    if (profileSnap.exists()) {
+                        const profileData = profileSnap.data();
+                        otherParticipantName = profileData.name || profileData.email || 'Uživatel';
+                        otherParticipantAvatar = profileData.photoURL || profileData.avatarUrl || '';
+                        otherParticipantPhone = profileData.phone || profileData.telefon || '';
                     }
+                } catch (e) {
+                    console.warn('⚠️ Nepodařilo se načíst profil:', e);
                 }
                 
-                conversations.push({
-                    id: doc.id,
-                    participants: data.participants,
-                    otherParticipantId: otherParticipantId,
-                    otherParticipantName: otherParticipantName,
-                    otherParticipantAvatar: otherParticipantAvatar,
-                    otherParticipantPhone: otherParticipantPhone,
-                    listingId: data.listingId || null,
-                    listingTitle: data.listingTitle || null,
-                    lastMessage: data.lastMessage || '',
-                    lastMessageAt: data.lastMessageAt || data.createdAt,
-                    createdAt: data.createdAt
-                });
+                // Vytvořit klíč pro deduplikaci (normalizovat participants)
+                const normalizedParticipants = [...data.participants].sort().join('_');
+                const dedupKey = `${normalizedParticipants}_${conversationId}`;
+                
+                // Přidat konverzaci pouze pokud ještě není v mapě
+                if (!conversationsMap.has(dedupKey)) {
+                    conversationsMap.set(dedupKey, {
+                        id: conversationId,
+                        participants: data.participants,
+                        otherParticipantId: otherParticipantId,
+                        otherParticipantName: otherParticipantName,
+                        otherParticipantAvatar: otherParticipantAvatar,
+                        otherParticipantPhone: otherParticipantPhone,
+                        listingId: data.listingId || null,
+                        listingTitle: data.listingTitle || null,
+                        lastMessage: data.lastMessage || '',
+                        lastMessageAt: data.lastMessageAt || data.createdAt,
+                        createdAt: data.createdAt,
+                        hasMessage: hasMessage
+                    });
+                } else {
+                    console.warn('⚠️ Duplicitní konverzace (stejní účastníci):', conversationId);
+                }
             }
+            
+            // Převést mapu na pole
+            conversations = Array.from(conversationsMap.values());
+            
+            // Filtrovat: zobrazit jen konverzace s alespoň jednou zprávou
+            // (nebo konverzace, kde uživatel skutečně psal)
+            // POZNÁMKA: Zobrazíme všechny konverzace, ale můžeme přidat další kontrolu
+            // Pokud chceme zobrazit jen ty s zprávami, odkomentujte následující:
+            // conversations = conversations.filter(conv => {
+            //     return conv.hasMessage || conv.id === currentConversationId;
+            // });
             
             // Seřadit podle lastMessageAt (pokud není orderBy v query)
             conversations.sort((a, b) => {
