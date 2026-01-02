@@ -1144,10 +1144,11 @@ function filterServices() {
         // Speciální hodnoty: "Kdekoliv" a "CelaCeskaRepublika" zobrazí všechny inzeráty
         let matchesRegion = true;
         if (regionFilter && regionFilter.trim()) {
-            if (regionFilter === 'Kdekoliv' || regionFilter === 'CelaCeskaRepublika') {
-                // Zobrazit všechny inzeráty, které mají "Kdekoliv" nebo "CelaCeskaRepublika" nebo konkrétní kraj
-                const serviceLoc = storedLocRaw.toString().trim();
-                matchesRegion = serviceLoc === 'Kdekoliv' || serviceLoc === 'CelaCeskaRepublika' || serviceLoc === regionFilter || (locCode && locCode === regionCode);
+            const serviceLoc = storedLocRaw.toString().trim();
+            if (regionFilter === 'Kdekoliv') {
+                matchesRegion = serviceLoc === 'Kdekoliv';
+            } else if (regionFilter === 'CelaCeskaRepublika') {
+                matchesRegion = serviceLoc === 'CelaCeskaRepublika';
             } else if (regionCode) {
                 matchesRegion = locCode && locCode === regionCode;
             }
@@ -1219,7 +1220,18 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
         const matchesSearch = !searchTerm || title.includes(searchTerm) || meta.includes(searchTerm);
         const matchesCategory = !categoryFilter || dataCategory === categoryFilter;
         // Pokud je vybrán kraj, musí se shodovat. Pokud kraj není vybrán, zobrazit všechny.
-        const matchesRegion = !regionCode ? true : (locationCode && locationCode === regionCode);
+        // Speciální hodnoty: "Kdekoliv" a "CelaCeskaRepublika" zobrazí všechny inzeráty s touto hodnotou
+        let matchesRegion = true;
+        if (regionFilter && regionFilter.trim()) {
+            const serviceLoc = locationText.trim();
+            if (regionFilter === 'Kdekoliv') {
+                matchesRegion = serviceLoc === 'Kdekoliv';
+            } else if (regionFilter === 'CelaCeskaRepublika') {
+                matchesRegion = serviceLoc === 'Celá Česká republika' || serviceLoc === 'CelaCeskaRepublika';
+            } else if (regionCode) {
+                matchesRegion = locationCode && locationCode === regionCode;
+            }
+        }
 
         // Ve veřejném katalogu zobrazujeme jen aktivní karty (fallback režim)
         const st = (card.getAttribute('data-status') || 'active').toString().trim().toLowerCase();
