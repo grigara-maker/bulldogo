@@ -5331,11 +5331,10 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 .footer-content {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
     margin-bottom: 2rem;
-    align-items: start;
 }
 
 .footer-section {
@@ -5344,31 +5343,48 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     flex-direction: column;
 }
 
-/* Footer na PC - 4 sloupce vedle sebe v jednom řádku */
+/* Footer na PC - 4 sloupce vedle sebe v jednom řádku pomocí flexboxu */
 @media (min-width: 769px) {
     .footer {
         padding: 2.5rem 0 1rem;
     }
     
     .footer-content {
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
-        grid-template-rows: auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
         gap: 2.5rem !important;
         margin-bottom: 2rem !important;
-        align-items: start !important;
     }
     
     .footer-section {
         display: flex !important;
         flex-direction: column !important;
-        width: 100% !important;
-        max-width: 100% !important;
+        flex: 1 1 0% !important;
         min-width: 0 !important;
+        max-width: none !important;
+        width: auto !important;
     }
     
     .footer-section h3 {
         margin-top: 0 !important;
+        margin-bottom: 0.875rem !important;
+    }
+}
+
+/* Explicitní pravidlo pro větší obrazovky */
+@media (min-width: 1024px) {
+    .footer-content {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 3rem !important;
+    }
+    
+    .footer-section {
+        flex: 1 1 0% !important;
     }
 }
 
@@ -15067,9 +15083,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .footer-content {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        grid-template-rows: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
         gap: 1.5rem !important;
         text-align: left !important;
     }
@@ -15079,6 +15095,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         flex-direction: column !important;
         width: 100% !important;
         max-width: 100% !important;
+        flex: 1 1 100% !important;
     }
     
     .footer-section h3 {
