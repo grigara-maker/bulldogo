@@ -602,10 +602,49 @@ async function processPayment() {
         alert('Neznámá délka topování: ' + selectedPricing.duration);
         return;
     }
-    // 1) Zkusit dynamicky — pokud existují produkty/prices synchronizované z test/live Stripe
-    let priceId = await resolveStripePriceIdForTopAd(topAdKey);
-    // 2) Fallback na pevně zadané IDs (typicky LIVE)
-    if (!priceId) priceId = STRIPE_PRICE_IDS_TOPAD[topAdKey];
+    // Pro 7denní topování použijeme normální cenu (promo kód to udělá zdarma)
+    // Pro ostatní použijeme zdarma ceny (0 Kč)
+    let priceId = null;
+    if (topAdKey === 'oneweek') {
+        // Pro 7denní topování použijeme normální cenu (promo kód to udělá zdarma)
+        priceId = await resolveStripePriceIdForTopAd(topAdKey);
+        if (!priceId) priceId = "price_1Sf29n1aQBd6ajy20hbq5x6L"; // Normální cena pro 7denní topování
+    } else {
+        // Pro ostatní (1 den, 30 dní) použijeme zdarma ceny
+        // 1) Zkusit dynamicky najít cenu 0 Kč
+        try {
+            if (!window.firebaseDb) throw new Error('No Firebase DB');
+            const { getDocs, collection, query, where } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const PRODUCT_NAME_BY_KEY = {
+                oneday: 'Topování 1 den',
+                onemonth: 'Topování 30 dní'
+            };
+            const targetName = PRODUCT_NAME_BY_KEY[topAdKey];
+            if (targetName) {
+                const productsQ = query(
+                    collection(window.firebaseDb, 'products'),
+                    where('active', '==', true),
+                    where('name', '==', targetName + ' - zdarma')
+                );
+                const productsSnap = await getDocs(productsQ);
+                if (!productsSnap.empty) {
+                    const prodDoc = productsSnap.docs[0];
+                    const pricesSnap = await getDocs(collection(prodDoc.ref, 'prices'));
+                    for (const priceDoc of pricesSnap.docs) {
+                        const p = priceDoc.data() || {};
+                        if (p.active && p.type === 'one_time' && (p.unit_amount === 0 || p.unit_amount === null)) {
+                            priceId = priceDoc.id;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (_) {}
+        // 2) Fallback na pevně zadané Price IDs pro zdarma (0 Kč)
+        if (!priceId) {
+            priceId = STRIPE_PRICE_IDS_TOPAD_FREE[topAdKey];
+        }
+    }
     
     if (!priceId) {
         alert("Chybí Stripe cena pro vybranou délku topování.");
