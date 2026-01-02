@@ -825,20 +825,29 @@ async function findOrCreateConversation(otherUserId, listingId, listingTitle) {
         );
         
         const snapshot = await getDocs(q);
+        
+        // Normalizovat participants pro konzistentní porovnání
+        const normalizedParticipants = [currentUser.uid, otherUserId].sort();
+        
+        // Najít existující konverzaci se stejnými participants (bez ohledu na pořadí)
         const existingConv = snapshot.docs.find(doc => {
             const data = doc.data();
-            return data.participants.includes(currentUser.uid) && 
-                   data.participants.includes(otherUserId);
+            if (!data.participants || !Array.isArray(data.participants)) return false;
+            
+            // Normalizovat participants pro porovnání
+            const dataParticipants = [...data.participants].sort();
+            return JSON.stringify(dataParticipants) === JSON.stringify(normalizedParticipants);
         });
         
         if (existingConv) {
+            console.log('✅ Nalezena existující konverzace:', existingConv.id);
             return existingConv.id;
         }
         
         // Vytvořit novou konverzaci
         const newConvRef = doc(conversationsRef);
         await setDoc(newConvRef, {
-            participants: [currentUser.uid, otherUserId].sort(),
+            participants: normalizedParticipants,
             listingId: listingId || null,
             listingTitle: listingTitle || null,
             lastMessage: '',
@@ -846,6 +855,7 @@ async function findOrCreateConversation(otherUserId, listingId, listingTitle) {
             createdAt: serverTimestamp()
         });
         
+        console.log('✅ Vytvořena nová konverzace:', newConvRef.id);
         return newConvRef.id;
     } catch (error) {
         console.error('❌ Chyba při vytváření/nalezení konverzace:', error);
