@@ -338,52 +338,55 @@ async function openStripeCustomerPortal() {
             try {
                 const { addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 
-                // Vytvořit billing portal session přes Firebase Extension
-                // Firebase Extension potřebuje success_url a return_url pro billing portal
-                const portalData = {
-                    mode: 'subscription', // Explicitně označit jako subscription mode
-                    success_url: `${window.location.origin}/profile-plan.html`,
-                    cancel_url: `${window.location.origin}/profile-plan.html`,
-                    return_url: `${window.location.origin}/profile-plan.html`
-                };
+                // Vytvořit billing portal session přes Cloud Function
+                // Firebase Extension nepodporuje billing portal přímo, použijeme Cloud Function
+                const returnUrl = `${window.location.origin}/profile-plan.html`;
                 
-                const portalRef = await addDoc(
-                    collection(window.firebaseDb, 'customers', user.uid, 'checkout_sessions'),
-                    portalData
-                );
+                // Získat Firebase project ID z konfigurace
+                let projectId = 'inzerio-inzerce'; // fallback podle firebase-init.js
+                if (window.firebaseApp && window.firebaseApp.options && window.firebaseApp.options.projectId) {
+                    projectId = window.firebaseApp.options.projectId;
+                }
                 
-                // Čekat na URL
-                const startedAt = Date.now();
-                const timeoutMs = 60_000;
-                const pollMs = 700;
+                // Zavolat Cloud Function pro vytvoření billing portal session
+                const functionsUrl = `https://europe-west1-${projectId}.cloudfunctions.net/createBillingPortalSession`;
                 
-                const poll = async () => {
-                    try {
-                        const snap = await getDoc(portalRef);
-                        const data = snap.data() || {};
-                        const url = data.url;
-                        const error = data.error;
-                        
-                        if (error) {
-                            console.error('Stripe portal error:', error);
-                            showError(`Chyba při vytváření portálu: ${error.message || 'zkuste to prosím znovu.'}`);
-                            return true;
-                        }
-                        
-                        if (url) {
-                            window.location.assign(url);
-                            return true;
-                        }
-                    } catch (e) {
-                        console.error('Stripe portal poll error:', e);
-                    }
-                    return (Date.now() - startedAt) > timeoutMs;
-                };
+                // Získat auth token pro autentizaci
+                let authToken = null;
+                if (user && typeof user.getIdToken === 'function') {
+                    authToken = await user.getIdToken();
+                }
                 
-                const t = setInterval(async () => {
-                    const stop = await poll();
-                    if (stop) clearInterval(t);
-                }, pollMs);
+                const response = await fetch(functionsUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+                    },
+                    body: JSON.stringify({
+                        returnUrl: returnUrl,
+                        uid: user.uid
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Stripe portal error:', data.error);
+                    showError(`Chyba při vytváření portálu: ${data.error || 'zkuste to prosím znovu.'}`);
+                    return;
+                }
+                
+                if (data.url) {
+                    window.location.assign(data.url);
+                } else {
+                    throw new Error('Nepodařilo se získat URL portálu');
+                }
                 
             } catch (error) {
                 console.error('❌ Stripe portal error:', error);
