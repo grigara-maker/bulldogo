@@ -12298,6 +12298,17 @@ html body .ad-actions {
 .main-content:has(.ad-detail-content) {
     max-width: 100% !important;
     width: 100% !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+    box-sizing: border-box !important;
+}
+
+/* Zajistit, že ad-detail-content má plnou šířku */
+body:has(.ad-detail-content) .main-content .ad-detail-content,
+.main-content .ad-detail-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 /* Explicitní pravidlo pro zajištění správného grid rozložení */
@@ -12314,14 +12325,18 @@ body:has(.ad-detail-content) .ad-detail-main,
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 2rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     
     .ad-detail-left {
         order: 1 !important;
+        grid-column: 1 !important;
     }
     
     .ad-detail-right {
         order: 2 !important;
+        grid-column: 2 !important;
     }
 }
 
@@ -12372,12 +12387,13 @@ body:has(.ad-detail-content) .ad-detail-main,
 .ad-detail-main {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 2rem;
+    gap: 2rem !important;
     margin-bottom: 2rem;
     width: 100% !important;
     max-width: 100% !important;
     padding: 0;
     align-items: start;
+    grid-auto-flow: row !important;
 }
 
 .ad-detail-left {
@@ -12390,6 +12406,7 @@ body:has(.ad-detail-content) .ad-detail-main,
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box;
+    grid-column: 1 !important;
 }
 
 .ad-images-section {
@@ -12526,6 +12543,7 @@ body:has(.ad-detail-content) .ad-detail-main,
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box;
+    grid-column: 2 !important;
 }
 
 .ad-title-section {
@@ -13006,6 +13024,16 @@ body:has(.ad-detail-content) .ad-detail-main,
         margin-right: 0 !important;
         box-sizing: border-box !important;
         display: grid !important;
+    }
+    
+    .ad-detail-left {
+        grid-column: 1 !important;
+        order: 1 !important;
+    }
+    
+    .ad-detail-right {
+        grid-column: 1 !important;
+        order: 2 !important;
     }
     
     .ad-detail-left {
