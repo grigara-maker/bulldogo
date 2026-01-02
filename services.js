@@ -827,6 +827,12 @@ function createAdCard(service, showActions = true) {
             imageUrl = firstImg.url;
         }
     }
+    
+    // Debug: logovat imageUrl pro ověření
+    if (service.id && imageUrl === '/fotky/vychozi-inzerat.png') {
+        console.log('⚠️ Service', service.id, 'has no valid image. Images:', service.images);
+    }
+    
     const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
     
     // Použít WebP pouze pro lokální obrázky (ze složky /fotky/)
