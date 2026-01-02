@@ -372,6 +372,9 @@ async function openConversation(conversationId) {
     currentConversationId = conversationId;
     renderConversations();
     
+    // Na mobilu přidat třídu pro zobrazení chatu
+    document.body.classList.add('chat-active');
+    
     // Aktualizovat hlavičku
     const peerNameEl = q('igPeerName');
     const peerAvatarEl = q('igPeerAvatar');
