@@ -5345,6 +5345,24 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     min-width: 0;
 }
 
+/* Footer na PC - všechny sekce v jednom řádku */
+@media (min-width: 769px) {
+    .footer-content {
+        flex-wrap: nowrap !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        gap: 2rem !important;
+    }
+    
+    .footer-section {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+}
+
 .footer-section h3 {
     margin-bottom: 1rem;
     color: #111827; /* gray-900 */
@@ -15014,14 +15032,16 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .footer-content {
-        flex-direction: column;
-        gap: 1.5rem;
-        text-align: left;
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+        gap: 1.5rem !important;
+        text-align: left !important;
     }
     
     .footer-section {
-        width: 100%;
-        flex: 1 1 100%;
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
     }
     
     .footer-section h3 {
