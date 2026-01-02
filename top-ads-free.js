@@ -631,8 +631,8 @@ async function processPayment() {
     (async () => {
         try {
             const { addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const successUrl = `${window.location.origin}/top-ads.html?payment=success`;
-            const cancelUrl = `${window.location.origin}/top-ads.html?payment=canceled`;
+            const successUrl = `${window.location.origin}/bulldogo-top-free-jirka-boss.html?payment=success`;
+            const cancelUrl = `${window.location.origin}/bulldogo-top-free-jirka-boss.html?payment=canceled`;
             // Pro 100% slevu použijeme coupon ID "BULLDOGOTOP" nebo promotion_code
             // Podle screenshotů: kupon "BULLDOGOTOP", promotion code "top" (API: promo_1SlGX81aQBd6aj)
             const checkoutData = {
