@@ -18,8 +18,9 @@
 	<link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
 	<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
     <link rel="preload" as="image" href="fotky/bulldogo-logo.png" fetchpriority="high">
-    <link rel="preload" as="script" href="/firebase-init.js">
+    <link rel="preload" as="script" href="/firebase-init.js" crossorigin>
     <link rel="preload" as="style" href="/styles.css">
+    <link rel="preload" as="font" href="/fotky/bulldogo-logo.png" type="image/png" crossorigin>
     <link rel="icon" type="image/png" href="fotky/bulldogo-logo.png">
     <link rel="apple-touch-icon" href="fotky/bulldogo-logo.png">
     <link rel="manifest" href="/site.webmanifest">
@@ -44,9 +45,9 @@
     <meta name="twitter:image" content="https://bulldogo.cz/fotky/bulldogo-logo.png">
     <!-- CSS načítání s defer pro neblokující načítání -->
     <link rel="stylesheet" href="/styles.css" media="print" onload="this.media='all'; this.onload=null;">
-    <noscript><link rel="stylesheet" href="/styles.css" media="print" onload="this.media='all'; this.onload=null;">></noscript>
+    <noscript><link rel="stylesheet" href="/styles.css"></noscript>
     <link rel="stylesheet" href="/electric-border.css" media="print" onload="this.media='all'; this.onload=null;">
-    <noscript><link rel="stylesheet" href="/electric-border.css" media="print" onload="this.media='all'; this.onload=null;">></noscript>
+    <noscript><link rel="stylesheet" href="/electric-border.css"></noscript>
     <!-- Font Awesome - načítat až po načtení stránky -->
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>

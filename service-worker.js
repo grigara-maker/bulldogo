@@ -1,15 +1,17 @@
-// Service Worker pro Bulldogo.cz - Caching strategie
-const CACHE_VERSION = 'v1.0.0';
+// Service Worker pro Bulldogo.cz - Optimalizovaná caching strategie
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `bulldogo-cache-${CACHE_VERSION}`;
+const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
-// Statické zdroje k cache (CSS, JS, obrázky)
+// Kritické statické zdroje k cache (CSS, JS, obrázky)
 const STATIC_ASSETS = [
     '/styles.css',
     '/electric-border.css',
     '/script.js',
     '/auth.js',
     '/firebase-init.js',
-    '/fotky/bulldogo-logo.png'
+    '/fotky/bulldogo-logo.png',
+    '/site.webmanifest'
 ];
 
 // Strategie: Cache First (pro statické zdroje)
@@ -74,36 +76,59 @@ self.addEventListener('activate', (event) => {
     return self.clients.claim(); // Převzít kontrolu nad stránkami
 });
 
-// Fetch event - aplikovat strategie
+// Fetch event - optimalizované strategie
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
+    const request = event.request;
     
-    // Ignorovat Firebase a externí API
+    // Ignorovat Firebase a externí API (necacheovat)
     if (url.hostname.includes('firebase') || 
         url.hostname.includes('googleapis.com') ||
         url.hostname.includes('googleusercontent.com') ||
-        url.hostname.includes('chimpstatic.com')) {
+        url.hostname.includes('chimpstatic.com') ||
+        url.hostname.includes('cdnjs.cloudflare.com')) {
         return; // Nechat projít bez cache
     }
     
-    // HTML stránky - Network First
-    if (event.request.destination === 'document' || 
-        event.request.headers.get('accept').includes('text/html')) {
-        event.respondWith(networkFirst(event.request));
+    // HTML stránky - Stale While Revalidate (rychlejší než Network First)
+    if (request.destination === 'document' || 
+        request.headers.get('accept')?.includes('text/html')) {
+        event.respondWith(staleWhileRevalidate(request));
         return;
     }
     
-    // CSS, JS, obrázky - Cache First
-    if (event.request.destination === 'style' ||
-        event.request.destination === 'script' ||
-        event.request.destination === 'image' ||
+    // CSS, JS - Cache First (nejrychlejší pro statické zdroje)
+    if (request.destination === 'style' ||
+        request.destination === 'script' ||
         url.pathname.endsWith('.css') ||
         url.pathname.endsWith('.js')) {
-        event.respondWith(cacheFirst(event.request));
+        event.respondWith(cacheFirst(request));
+        return;
+    }
+    
+    // Obrázky - Cache First s fallbackem
+    if (request.destination === 'image' || 
+        /\.(jpg|jpeg|png|gif|webp|svg|avif)$/i.test(url.pathname)) {
+        event.respondWith(cacheFirst(request));
         return;
     }
     
     // Ostatní - Network First
-    event.respondWith(networkFirst(event.request));
+    event.respondWith(networkFirst(request));
 });
+
+// Stale While Revalidate - rychlejší než Network First
+async function staleWhileRevalidate(request) {
+    const cache = await caches.open(CACHE_NAME);
+    const cachedResponse = await cache.match(request);
+    
+    const fetchPromise = fetch(request).then((networkResponse) => {
+        if (networkResponse.ok) {
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    }).catch(() => cachedResponse);
+    
+    return cachedResponse || fetchPromise;
+}
 

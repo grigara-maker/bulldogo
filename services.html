@@ -17,9 +17,20 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
+    <link rel="preload" as="image" href="fotky/bulldogo-logo.png" fetchpriority="high">
+    <link rel="preload" as="script" href="firebase-init.js" crossorigin>
+    <link rel="preload" as="style" href="styles.css">
     <link rel="icon" type="image/png" href="fotky/bulldogo-logo.png">
     <link rel="apple-touch-icon" href="fotky/bulldogo-logo.png">
     <link rel="manifest" href="/site.webmanifest">
+    <script>
+        // Service Worker registrace - dříve pro rychlejší caching
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log('✅ Service Worker registrován'))
+                .catch((err) => console.log('⚠️ Service Worker registrace selhala:', err));
+        }
+    </script>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="BULLDOGO">
     <meta property="og:title" content="Všechny služby - BULLDOGO">
