@@ -12940,6 +12940,43 @@ html body .ad-actions {
         height: auto !important;
     }
     
+    .default-image-container {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-default-img {
+        max-width: 100% !important;
+        max-height: 70% !important;
+        height: auto !important;
+        width: auto !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .default-image-text {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        color: #6b7280 !important;
+        font-size: 14px !important;
+        gap: 4px !important;
+    }
+    
+    .default-image-text span {
+        display: block !important;
+        line-height: 1.4 !important;
+    }
+    
     .ad-thumbnail {
         width: 80px !important;
         height: 80px !important;

@@ -434,14 +434,22 @@ function handleThumbnailClick(e) {
     }
 }
 
-// Display no images placeholder - zobrazit výchozí obrázek
+// Display no images placeholder - zobrazit výchozí obrázek s textem
 function displayNoImages() {
     const mainImage = document.getElementById('adMainImage');
     const thumbnails = document.getElementById('adThumbnails');
     
-    // Zobrazit výchozí obrázek stejně jako na stránce služeb
+    // Zobrazit výchozí obrázek s textem pod ním
     const defaultImageUrl = '/fotky/vychozi-inzerat.png';
-    mainImage.innerHTML = `<img src="${defaultImageUrl}" alt="Výchozí obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.onerror=null; this.src='/fotky/vychozi-inzerat.png'">`;
+    mainImage.innerHTML = `
+        <div class="default-image-container">
+            <img src="${defaultImageUrl}" alt="Výchozí obrázek" class="ad-default-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.onerror=null; this.src='/fotky/vychozi-inzerat.png'">
+            <div class="default-image-text">
+                <span>Bez fotografie</span>
+                <span>Použít výchozí obrázek</span>
+            </div>
+        </div>
+    `;
     
     thumbnails.innerHTML = '';
 }
