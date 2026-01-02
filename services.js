@@ -826,14 +826,30 @@ function createAdCard(service, showActions = true) {
         } else if (firstImg && firstImg.url) {
             imageUrl = firstImg.url;
         }
+    } else if (service.image) {
+        // Fallback na service.image (starší formát)
+        if (typeof service.image === 'string') {
+            imageUrl = service.image;
+        } else if (service.image.url) {
+            imageUrl = service.image.url;
+        }
+    } else if (service.photo) {
+        // Fallback na service.photo (starší formát)
+        if (typeof service.photo === 'string') {
+            imageUrl = service.photo;
+        } else if (service.photo.url) {
+            imageUrl = service.photo.url;
+        }
     }
     
-    // Debug: logovat imageUrl pro ověření
-    if (service.id && imageUrl === '/fotky/vychozi-inzerat.png') {
-        console.log('⚠️ Service', service.id, 'has no valid image. Images:', service.images);
+    // Ověřit, že imageUrl je platná URL nebo cesta
+    if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null') {
+        imageUrl = '/fotky/vychozi-inzerat.png';
     }
     
     const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
+    const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+    const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
     
     // Použít WebP pouze pro lokální obrázky (ze složky /fotky/)
     // Pro obrázky z Firebase Storage nepoužívat WebP, protože neexistují
@@ -845,12 +861,12 @@ function createAdCard(service, showActions = true) {
         imageHtml = `
                 <picture>
                     <source srcset="${escapedWebpUrl}" type="image/webp">
-                    <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async">
+                    <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
                 </picture>
             `;
     } else {
         // Pro Firebase Storage obrázky použít pouze <img> bez WebP
-        imageHtml = `<img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='/fotky/vychozi-inzerat.png'">`;
+        imageHtml = `<img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
     }
     
     return `
