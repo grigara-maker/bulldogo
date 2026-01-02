@@ -5333,7 +5333,7 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 .footer-content {
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: space-between;
     align-items: flex-start;
     gap: 2rem;
