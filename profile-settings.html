@@ -945,10 +945,19 @@
                 const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
                 await reauthenticateWithCredential(currentUser, credential);
 
-                // Změna emailu v Auth (pokud je vyplněn) - bez ověřování
+                // Změna emailu v Auth (pokud je vyplněn)
+                // Firebase vyžaduje ověření, použijeme verifyBeforeUpdateEmail
                 if (newEmail) {
-                    const { updateEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                    await updateEmail(currentUser, newEmail);
+                    const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    
+                    // Zkus použít verifyBeforeUpdateEmail (Firebase vyžaduje ověření)
+                    if (authModule.verifyBeforeUpdateEmail) {
+                        // Odešle ověřovací email na novou adresu, email se změní až po ověření
+                        await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
+                    } else {
+                        // Fallback na updateEmail pokud verifyBeforeUpdateEmail není dostupné
+                        await authModule.updateEmail(currentUser, newEmail);
+                    }
                 }
 
                 // Aktualizace v databázi
@@ -1070,9 +1079,18 @@
                 const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
                 await reauthenticateWithCredential(currentUser, credential);
 
-                // Změna emailu v Auth - bez ověřování
-                const { updateEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                await updateEmail(currentUser, newEmail);
+                // Změna emailu v Auth
+                // Firebase vyžaduje ověření, použijeme verifyBeforeUpdateEmail
+                const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                
+                // Zkus použít verifyBeforeUpdateEmail (Firebase vyžaduje ověření)
+                if (authModule.verifyBeforeUpdateEmail) {
+                    // Odešle ověřovací email na novou adresu, email se změní až po ověření
+                    await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
+                } else {
+                    // Fallback na updateEmail pokud verifyBeforeUpdateEmail není dostupné
+                    await authModule.updateEmail(currentUser, newEmail);
+                }
 
                 // Propsat změnu i do Firestore (root + profile)
                 try {
