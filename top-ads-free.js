@@ -555,9 +555,11 @@ async function processPayment() {
     // Mapování Stripe Price IDs pro zdarma topování (0 Kč)
     const STRIPE_PRICE_IDS_TOPAD_FREE = {
         oneday: "price_1SlH2S1aQBd6ajy21KSFpDei", // "Topování 1 den - zdarma" (0 Kč)
-        oneweek: "price_1SlH2n1aQBd6ajy2S7qWaKYH", // "Topování 7 dní - zdarma" (0 Kč)
+        oneweek: "price_1Sf29n1aQBd6ajy20hbq5x6L", // "Topování 7 dní" - použijeme normální cenu s promo kódem
         onemonth: "price_1SlH371aQBd6ajy2UNsClAMB" // "Topování 30 dní - zdarma" (0 Kč)
     };
+    // Promo kód pro 7denní topování (100% sleva)
+    const PROMO_CODE_7DAYS = 'promo_1SlHGn1aQBd6ajy2QHBxTL2u'; // "bulldogotop" - 100% sleva na 7denní topování
     // Pokus o dynamické zjištění priceId z Firestore (funguje v TEST i LIVE módu)
     async function resolveStripePriceIdForTopAd(key) {
         try {
