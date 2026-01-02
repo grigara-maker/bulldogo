@@ -684,16 +684,12 @@ async function processPayment() {
             // Pro 100% slevu použijeme coupon ID "BULLDOGOTOP" nebo promotion_code
             // Podle screenshotů: kupon "BULLDOGOTOP", promotion code "top" (API: promo_1SlGX81aQBd6aj)
             const checkoutData = {
-                price: priceId,
+                price: priceId, // Používáme cenu 0 Kč místo slevy (vytvořenou v Stripe)
                 mode: 'payment',
                 success_url: successUrl,
                 cancel_url: cancelUrl,
                 metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
-                allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
-                // Automaticky aplikovat 100% slevu pomocí promotion_code
-                discounts: [{
-                    promotion_code: 'promo_1SlGX81aQBd6aj' // Promotion code API ID pro "top" (BULLDOGOTOP)
-                }],
+                allow_promotion_codes: false, // Nepotřebujeme promo kódy, protože používáme cenu 0 Kč
                 // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                 invoice_creation: {
                     enabled: true, // Povolit automatické vytváření faktur
