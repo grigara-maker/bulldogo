@@ -2641,6 +2641,7 @@ const fieldLabels: Record<string, string> = {
   name: "Jméno",
   email: "E-mail",
   phone: "Telefon",
+  passwordChangedAt: "Heslo",
   city: "Město",
   bio: "O mně",
   businessName: "Název firmy",
@@ -2696,6 +2697,10 @@ function formatValue(value: any): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "boolean") return value ? "Ano" : "Ne";
   if (typeof value === "object") {
+    // Timestamp objekty (Firestore Timestamp)
+    if (value && typeof value === 'object' && 'toDate' in value) {
+      return value.toDate().toLocaleString('cs-CZ');
+    }
     if (value.companyName || value.ico) {
       // Je to company objekt
       const parts = [];
@@ -2760,17 +2765,44 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
     const oldVal = before[key];
     const newVal = after[key];
     
-    // Porovnání hodnot
-    const oldStr = JSON.stringify(oldVal || "");
-    const newStr = JSON.stringify(newVal || "");
+    // Porovnání hodnot - normalizace pro Timestamp objekty
+    let oldNormalized: any = oldVal;
+    let newNormalized: any = newVal;
     
-    if (oldStr !== newStr) {
-      changes.push({
-        field: key,
-        label: fieldLabels[key] || key,
-        oldValue: oldVal,
-        newValue: newVal,
-      });
+    // Normalizovat Timestamp objekty
+    if (oldVal && typeof oldVal === 'object' && 'toDate' in oldVal) {
+      oldNormalized = oldVal.toDate().getTime();
+    } else if (oldVal === null || oldVal === undefined || oldVal === "") {
+      oldNormalized = "";
+    } else {
+      oldNormalized = String(oldVal);
+    }
+    
+    if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
+      newNormalized = newVal.toDate().getTime();
+    } else if (newVal === null || newVal === undefined || newVal === "") {
+      newNormalized = "";
+    } else {
+      newNormalized = String(newVal);
+    }
+    
+    if (oldNormalized !== newNormalized) {
+      // Speciální zpracování pro passwordChangedAt - zobrazit jako změnu hesla
+      if (key === 'passwordChangedAt') {
+        changes.push({
+          field: key,
+          label: fieldLabels[key] || "Heslo",
+          oldValue: oldVal ? "Změněno" : "—",
+          newValue: newVal ? "Změněno" : "—",
+        });
+      } else {
+        changes.push({
+          field: key,
+          label: fieldLabels[key] || key,
+          oldValue: oldVal,
+          newValue: newVal,
+        });
+      }
     }
   }
   
@@ -3111,11 +3143,22 @@ export const sendProfileChangeEmail = functions
       return null;
     }
     
-    // Získej email uživatele
-    const email = afterData.email;
+    // Získej email uživatele - použij nový email pokud se změnil, jinak starý
+    let email = afterData.email || beforeData.email;
     if (!email) {
       functions.logger.warn("Uživatel nemá email, přeskakuji odeslání emailu o změně", { userId });
       return null;
+    }
+    
+    // Pokud se změnil email, poslat email na nový email
+    const emailChanged = beforeData.email && afterData.email && beforeData.email !== afterData.email;
+    if (emailChanged) {
+      email = afterData.email; // Použít nový email
+      functions.logger.info("Email se změnil, posílám notifikaci na nový email", { 
+        userId, 
+        oldEmail: beforeData.email, 
+        newEmail: afterData.email 
+      });
     }
     
     // Získej jméno uživatele
