@@ -645,7 +645,13 @@ async function processPayment() {
                     invoice_creation: {
                         enabled: true, // Povolit automatické vytváření faktur
                         invoice_data: {
-                            description: `Topování inzerátu - ${selectedPricing.duration} ${selectedPricing.duration === 1 ? 'den' : selectedPricing.duration === 7 ? 'dní' : 'dní'}`
+                            description: `Topování inzerátu - ${selectedPricing.duration} ${selectedPricing.duration === 1 ? 'den' : selectedPricing.duration === 7 ? 'dní' : 'dní'}`,
+                            custom_fields: [
+                                {
+                                    name: 'Typ faktury',
+                                    value: 'Topování inzerátu'
+                                }
+                            ]
                         }
                     }
                 }

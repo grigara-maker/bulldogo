@@ -489,7 +489,15 @@ async function processPayment() {
             invoice_creation: {
                 enabled: true, // Povolit automatické vytváření faktur
                 invoice_data: {
-                    description: planId === 'business' ? 'Měsíční předplatné - Firma' : 'Měsíční předplatné - Hobby uživatel'
+                    description: planId === 'business' ? 'Měsíční předplatné - Firma' : 'Měsíční předplatné - Hobby uživatel',
+                    // Memo se zobrazí na faktuře - Stripe automaticky použije pro trial faktury (0 Kč)
+                    // Pro běžné faktury použije standardní popis
+                    custom_fields: [
+                        {
+                            name: 'Typ faktury',
+                            value: 'Předplatné'
+                        }
+                    ]
                 }
             }
         };
