@@ -4126,22 +4126,19 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 .tool-bubble i {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     z-index: 2;
     font-size: 1.8rem;
     color: #2c3e50;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     margin: 0 !important;
     padding: 0 !important;
-    display: inline-block;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 1em;
     height: 1em;
-    text-align: center;
-    vertical-align: middle;
+    line-height: 1;
 }
 
 .bubble-1 { animation-delay: 0s; }
