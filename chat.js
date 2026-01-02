@@ -1060,6 +1060,7 @@ async function init() {
     // Nastavit event listenery
     const sendBtn = q('igSend');
     const input = q('igText');
+    const backBtn = q('igBackBtn');
     
     if (sendBtn) {
         sendBtn.onclick = sendMessage;
@@ -1072,6 +1073,16 @@ async function init() {
                 sendMessage();
             }
         });
+    }
+    
+    // Tlačítko zpět - na mobilu vrátit k seznamu konverzací
+    if (backBtn) {
+        backBtn.onclick = () => {
+            currentConversationId = null;
+            document.body.classList.remove('chat-active');
+            renderConversations();
+            renderMessages();
+        };
     }
     
     // Inicializovat file input

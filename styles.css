@@ -3425,11 +3425,35 @@ body.chat-page .ig-chat {
       height: 100vh; 
       height: 100dvh; 
   }
+  
+  /* Na mobilu: zobrazit levý sloupec (konverzace) na začátku */
   body.chat-page .ig-sidebar { 
-      display: none !important; 
+      display: flex !important; 
   }
+  
+  /* Na mobilu: vždy skrýt pravý sloupec (inzeráty) */
   body.chat-page .ig-sidebar-right { 
       display: none !important; 
+  }
+  
+  /* Na mobilu: skrýt chat (střední sloupec) pokud není vybrána konverzace */
+  body.chat-page .ig-main { 
+      display: none !important; 
+  }
+  
+  /* Na mobilu: zobrazit chat když je vybrána konverzace */
+  body.chat-page.chat-active .ig-main { 
+      display: flex !important; 
+  }
+  
+  /* Na mobilu: skrýt levý sloupec když je vybrána konverzace */
+  body.chat-page.chat-active .ig-sidebar { 
+      display: none !important; 
+  }
+  
+  /* Tlačítko zpět - zobrazit na mobilu */
+  body.chat-page .ig-back-btn {
+      display: inline-flex !important;
   }
 }
 body.chat-page .instagram-chat-container { height: 100vh; width: 100%; position: relative; display: flex; }
