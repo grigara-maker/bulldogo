@@ -1341,8 +1341,12 @@ function generateInvoiceHTML(orderNumber, planName, amount, currency, userName, 
                     </h2>
                     <p style="margin: 0 0 8px 0; font-size: 14px; color: #374151; line-height: 1.6;">
                       <strong>Dominik Hašek</strong><br>
-                      Jiřího z Poděbrad 2017, Sokolov 356 01<br>
-                      IČO: 17059470<br>
+                      Bulldogo.cz<br>
+                      IČO 17059470<br>
+                      <br>
+                      Jiřího Z Poděbrad 2017<br>
+                      Sokolov<br>
+                      356 01<br>
                       Email: ucetni@bulldogo.cz
                     </p>
                   </td>
@@ -1418,7 +1422,7 @@ function generateInvoiceHTML(orderNumber, planName, amount, currency, userName, 
             <td style="padding: 30px 40px; background: #f9fafb; border-radius: 0 0 12px 12px; border-top: 2px solid #e5e7eb;">
               <p style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
                 <strong>Platební údaje:</strong><br>
-                Bankovní účet: 123456789/0100<br>
+                Bankovní účet: 277067486/0600<br>
                 Variabilní symbol: ${orderNumber}
               </p>
               <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af; line-height: 1.6;">
@@ -1488,7 +1492,20 @@ async function sendStripeInvoiceEmail(subscriptionId, userId, subscriptionData) 
     const invoiceNumber = subscriptionId.substring(0, 12); // zkrátit na rozumnou délku
     const invoiceDate = new Date();
     const invoiceHTML = generateInvoiceHTML(invoiceNumber, planName, amount, currency, userName, invoiceDate, userId, userEmail, phone, ico, dic, companyName);
-    // Odeslat fakturu pouze na účetní email
+    // Odeslat fakturu uživateli
+    const userMailOptions = {
+        from: {
+            name: "BULLDOGO",
+            address: "info@bulldogo.cz",
+        },
+        to: userEmail,
+        subject: `Faktura ${invoiceNumber} - ${planName} - Bulldogo.cz`,
+        html: invoiceHTML,
+        text: `Faktura ${invoiceNumber} pro ${userName}\n\nEmail: ${userEmail || "neuvedeno"}\nTelefon: ${phone || "neuvedeno"}\nČástka: ${amount} ${currency}\nBalíček: ${planName}\n\n© 2026 BULLDOGO.CZ`,
+    };
+    await smtpTransporter.sendMail(userMailOptions);
+    functions.logger.info("✅ Faktura odeslána uživateli", { subscriptionId, userEmail, userId, userName });
+    // Odeslat fakturu také na účetní email
     const accountingEmail = "ucetni@bulldogo.cz";
     const accountingMailOptions = {
         from: {
