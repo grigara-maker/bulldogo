@@ -247,11 +247,11 @@ async function loadConversations() {
             
             // Filtrovat: zobrazit jen konverzace s alespoň jednou zprávou
             // (nebo konverzace, kde uživatel skutečně psal)
-            // POZNÁMKA: Zobrazíme všechny konverzace, ale můžeme přidat další kontrolu
-            // Pokud chceme zobrazit jen ty s zprávami, odkomentujte následující:
-            // conversations = conversations.filter(conv => {
-            //     return conv.hasMessage || conv.id === currentConversationId;
-            // });
+            // Zobrazíme jen konverzace, které mají zprávu nebo jsou aktuálně otevřené
+            conversations = conversations.filter(conv => {
+                // Zobrazit konverzaci, pokud má zprávu nebo pokud je aktuálně otevřená
+                return conv.hasMessage || conv.id === currentConversationId;
+            });
             
             // Seřadit podle lastMessageAt (pokud není orderBy v query)
             conversations.sort((a, b) => {
