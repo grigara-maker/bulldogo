@@ -480,6 +480,7 @@ async function loadMessages(conversationId) {
                     id: doc.id,
                     senderId: data.senderId,
                     text: data.text || '',
+                    images: data.images || [],
                     createdAt: data.createdAt,
                     senderAvatar: senderAvatar
                 });
@@ -545,6 +546,19 @@ function renderMessages() {
             ? `<img src="${msg.senderAvatar}" alt="Avatar" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`
             : (!isMine ? '<i class="fas fa-user"></i>' : '');
         
+        // Zpracovat obrázky
+        let imagesHtml = '';
+        if (msg.images && msg.images.length > 0) {
+            imagesHtml = `<div class="ig-images" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 8px;">
+                ${msg.images.map(imgUrl => {
+                    const escapedUrl = imgUrl.replace(/"/g, '&quot;');
+                    return `<a href="${escapedUrl}" target="_blank" rel="noopener">
+                        <img src="${escapedUrl}" alt="Obrázek" loading="lazy" style="width: 100%; max-width: 300px; border-radius: 8px; cursor: pointer; object-fit: cover;">
+                    </a>`;
+                }).join('')}
+            </div>`;
+        }
+        
         return `
             <div class="ig-row ${isMine ? 'mine' : ''}">
                 <div class="ig-avatar">
@@ -552,6 +566,7 @@ function renderMessages() {
                 </div>
                 <div class="ig-bubble">
                     ${msg.text ? `<div>${msg.text}</div>` : ''}
+                    ${imagesHtml}
                     <div class="ig-meta">${time}</div>
                 </div>
             </div>
@@ -561,6 +576,74 @@ function renderMessages() {
     // Scroll na konec
     container.scrollTop = container.scrollHeight;
 }
+
+// ============================================
+// SPRÁVA PŘÍLOH
+// ============================================
+let selectedFiles = [];
+
+function initFileInput() {
+    const fileInput = q('igFiles');
+    const previewContainer = q('igFilePreview');
+    
+    if (!fileInput || !previewContainer) return;
+    
+    fileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+        
+        selectedFiles = files;
+        showFilePreview(files, previewContainer);
+    });
+}
+
+function showFilePreview(files, container) {
+    if (!container) return;
+    
+    container.innerHTML = files.map((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = container.querySelector(`[data-index="${index}"] img`);
+            if (img) img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        return `
+            <div class="ig-file-preview-item" data-index="${index}">
+                <img src="" alt="Preview" style="max-width: 100px; max-height: 100px; border-radius: 8px; object-fit: cover;">
+                <button type="button" class="ig-file-remove" onclick="removeFile(${index})" title="Odstranit">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+    
+    container.style.display = 'flex';
+}
+
+function removeFile(index) {
+    selectedFiles = selectedFiles.filter((_, i) => i !== index);
+    const fileInput = q('igFiles');
+    if (fileInput) {
+        // Vytvořit nový DataTransfer objekt pro aktualizaci file inputu
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    }
+    
+    const previewContainer = q('igFilePreview');
+    if (previewContainer) {
+        if (selectedFiles.length === 0) {
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'none';
+        } else {
+            showFilePreview(selectedFiles, previewContainer);
+        }
+    }
+}
+
+// Globální funkce pro onclick
+window.removeFile = removeFile;
 
 // ============================================
 // ODESLÁNÍ ZPRÁVY
@@ -574,7 +657,8 @@ async function sendMessage() {
     const input = q('igText');
     const text = (input?.value || '').trim();
     
-    if (!text) {
+    // Povolit odeslání i bez textu, pokud jsou obrázky
+    if (!text && selectedFiles.length === 0) {
         return;
     }
     
@@ -946,6 +1030,9 @@ async function init() {
             }
         });
     }
+    
+    // Inicializovat file input
+    initFileInput();
     
     // Načíst konverzace
     await loadConversations();
