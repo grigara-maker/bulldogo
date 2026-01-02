@@ -7048,6 +7048,11 @@ body.profile-plan-page .plan-info {
         margin-top: 0 !important;
     }
     
+    /* Pro topované inzeráty: menší padding dole, protože tlačítka jsou pod lokací */
+    .ad-card.is-top .ad-body {
+        padding-bottom: 16px !important;
+    }
+    
     .ad-card .ad-meta {
         font-size: 0.85rem !important;
         margin-top: 0 !important;
