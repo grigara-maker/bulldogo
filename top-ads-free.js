@@ -635,15 +635,20 @@ async function processPayment() {
             const { addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const successUrl = `${window.location.origin}/bulldogo-top-free-jirka-boss.html?payment=success`;
             const cancelUrl = `${window.location.origin}/bulldogo-top-free-jirka-boss.html?payment=canceled`;
-            // Pro 100% slevu použijeme coupon ID "BULLDOGOTOP" nebo promotion_code
-            // Podle screenshotů: kupon "BULLDOGOTOP", promotion code "top" (API: promo_1SlGX81aQBd6aj)
+            // Pro zdarma topování použijeme cenu 0 Kč nebo promo kód
             const checkoutData = {
                 price: priceId,
                 mode: 'payment',
                 success_url: successUrl,
                 cancel_url: cancelUrl,
                 metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
-                allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
+                allow_promotion_codes: false, // Nepotřebujeme promo kódy, protože používáme cenu 0 Kč nebo automatický promo kód
+                // Pro 7denní topování použijeme promo kód místo ceny 0 Kč
+                ...(topAdKey === 'oneweek' ? {
+                    discounts: [{
+                        promotion_code: PROMO_CODE_7DAYS // Automaticky aplikovat promo kód pro 7denní topování
+                    }]
+                } : {})
                 // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                 invoice_creation: {
                     enabled: true, // Povolit automatické vytváření faktur
