@@ -7104,6 +7104,20 @@ body.profile-plan-page .plan-info {
         transform: translateX(-50%) !important;
     }
     
+    /* Pro topované inzeráty: tlačítka pod lokací, ne absolutně pozicovaná */
+    .ad-card.is-top .ad-actions {
+        position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin-top: 12px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .ad-card.is-top .ad-body {
+        padding-bottom: 16px !important;
+    }
+    
     .mobile-menu-btn {
         display: none;
     }
