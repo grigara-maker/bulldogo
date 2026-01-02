@@ -3558,10 +3558,21 @@ export const sendNewMessageEmail = functions
 /**
  * Firestore Trigger - Odešle fakturu při aktivaci Stripe subscription
  */
+/**
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při:
+ * - Začátku trial období (0 Kč)
+ * - Konci trial období (plná cena)
+ * - Každém měsíčním obnovení předplatného
+ */
 export const sendStripeInvoice = functions
   .region("europe-west1")
   .firestore.document("customers/{userId}/subscriptions/{subscriptionId}")
   .onCreate(async (snap, context) => {
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
     const subscriptionData = snap.data() as AnyObj;
     const userId = context.params.userId;
     const subscriptionId = context.params.subscriptionId;
@@ -3599,6 +3610,7 @@ export const sendStripeInvoice = functions
         });
       }
     }
+    */
     
     return null;
   });
