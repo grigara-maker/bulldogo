@@ -25,10 +25,12 @@
     <meta property="og:description" content="Přehled vašeho účtu a služeb.">
     <meta property="og:url" content="https://bulldogo.cz/profile.html">
     <meta property="og:image" content="https://bulldogo.cz/fotky/bulldogo-logo.png">
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">"></noscript>>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
     <!-- Firebase SDK (centralizovaná inicializace) -->
-    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="firebase-init.js" defer>></script>
 </head>
 <body>
     <!-- Sidebar Navigation -->
@@ -395,10 +397,10 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
-    <script src="auth.js"></script>
-    <script src="cities.js"></script>
-    <script src="click-spark.js"></script>
+    <script src="script.js" defer>></script>
+    <script src="auth.js" defer>></script>
+    <script src="cities.js" defer>></script>
+    <script src="click-spark.js" defer>></script>
     
     <style>
         /* Reviews styles for profile page */

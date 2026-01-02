@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platba zrušena - BULLDOGO</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">"></noscript>>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
     <!-- Mailchimp popup (newsletter) -->
-    <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");</script>
+    <script>
+        window.addEventListener('load', function() {
+            if (!document.getElementById('mcjs')) {
+                !function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");
+            }
+        });
+    </script>
     <style>
         .failed-container {
             max-width: 600px;
@@ -83,7 +91,7 @@
     </div>
     
     <!-- Firebase SDK -->
-    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="firebase-init.js" defer>></script>
     <script src="gopay-config.js" defer></script>
     <script src="gopay-payment-handler.js" defer></script>
     <script>

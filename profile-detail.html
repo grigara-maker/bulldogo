@@ -4,10 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Profil uživatele - Bulldogo</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">"></noscript>>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>"></noscript>>
     <!-- Mailchimp popup (newsletter) -->
-    <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");</script>
+    <script>
+        window.addEventListener('load', function() {
+            if (!document.getElementById('mcjs')) {
+                !function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");
+            }
+        });
+    </script>
     
     <style>
         /* Override styles to make profile content full width */
@@ -522,9 +532,9 @@
     <!-- Auth Modal je vytvářen dynamicky v auth.js (createAuthModal) -->
 
     <!-- Scripts -->
-    <script src="script.js"></script>
-    <script src="auth.js"></script>
-    <script src="profile-detail.js"></script>
+    <script src="script.js" defer>></script>
+    <script src="auth.js" defer>></script>
+    <script src="profile-detail.js" defer>></script>
     
     <!-- Test script for back button -->
     <script>

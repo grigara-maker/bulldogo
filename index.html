@@ -17,20 +17,19 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 	<link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
 	<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
-    <link rel="preload" as="image" href="fotky/bulldogo-logo.png">
+    <link rel="preload" as="image" href="fotky/bulldogo-logo.png" fetchpriority="high">
     <link rel="preload" as="script" href="/firebase-init.js">
     <link rel="preload" as="style" href="/styles.css">
     <link rel="icon" type="image/png" href="fotky/bulldogo-logo.png">
     <link rel="apple-touch-icon" href="fotky/bulldogo-logo.png">
     <link rel="manifest" href="/site.webmanifest">
     <script>
-        // Registrace Service Worker pro caching
+        // Registrace Service Worker pro caching - přesunuto dříve pro rychlejší caching
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(() => console.log('✅ Service Worker registrován'))
-                    .catch((err) => console.log('⚠️ Service Worker registrace selhala:', err));
-            });
+            // Registrovat ihned, nečekat na load event
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log('✅ Service Worker registrován'))
+                .catch((err) => console.log('⚠️ Service Worker registrace selhala:', err));
         }
     </script>
     <meta property="og:type" content="website">
@@ -43,18 +42,29 @@
     <meta name="twitter:title" content="BULLDOGO – inzerce služeb pro každého">
     <meta name="twitter:description" content="Najděte nebo nabídněte službu v ČR/SR. Vložte inzerát zdarma.">
     <meta name="twitter:image" content="https://bulldogo.cz/fotky/bulldogo-logo.png">
-    <link rel="stylesheet" href="/styles.css">
-    <link rel="stylesheet" href="/electric-border.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'" crossorigin="anonymous">
+    <!-- CSS načítání s defer pro neblokující načítání -->
+    <link rel="stylesheet" href="/styles.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="/styles.css" media="print" onload="this.media='all'; this.onload=null;">></noscript>
+    <link rel="stylesheet" href="/electric-border.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="/electric-border.css" media="print" onload="this.media='all'; this.onload=null;">></noscript>
+    <!-- Font Awesome - načítat až po načtení stránky -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    
     <style>
         /* Skryje spodní popis (tagy) u kartiček kategorií na hlavní stránce */
         #services-categories .carousel-tags { display: none !important; }
     </style>
-    <!-- Firebase SDK (centralizovaná inicializace) -->
-    <script type="module" src="/firebase-init.js"></script>
-    <!-- Mailchimp popup (newsletter) -->
-    <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");</script>
+    <!-- Firebase SDK (centralizovaná inicializace) - defer pro neblokující načítání -->
+    <script type="module" src="/firebase-init.js" defer></script>
+    <!-- Mailchimp popup (newsletter) - načítat až po načtení stránky -->
+    <script>
+        window.addEventListener('load', function() {
+            if (!document.getElementById('mcjs')) {
+                !function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");
+            }
+        });
+    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",

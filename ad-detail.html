@@ -21,16 +21,24 @@
     <link rel="apple-touch-icon" href="fotky/bulldogo-logo.png">
     <link rel="manifest" href="/site.webmanifest">
     <!-- Mailchimp popup (newsletter) -->
-    <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");</script>
+    <script>
+        window.addEventListener('load', function() {
+            if (!document.getElementById('mcjs')) {
+                !function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");
+            }
+        });
+    </script>
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="BULLDOGO">
     <meta property="og:title" content="Detail inzerátu - BULLDOGO">
     <meta property="og:description" content="Popis, fotky a kontakt na poskytovatele služby.">
     <meta property="og:url" content="https://bulldogo.cz/ad-detail.html">
     <meta property="og:image" content="https://bulldogo.cz/fotky/bulldogo-logo.png">
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">"></noscript>>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    
     
     <style>
         /* Start Chat Button Styles */
@@ -157,7 +165,7 @@
     </style>
     
     <!-- Firebase SDK (centralizovaná inicializace) -->
-    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="firebase-init.js" defer>></script>
 </head>
 <body>
     <!-- Sidebar Navigation -->

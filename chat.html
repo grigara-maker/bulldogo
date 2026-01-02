@@ -22,8 +22,7 @@
     <link rel="manifest" href="/site.webmanifest">
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+            navigator.serviceWorker.register('/service-worker.js').then(() => console.log('✅ Service Worker registrován')).catch((err) => console.log('⚠️ Service Worker registrace selhala:', err));
             });
         }
     </script>
@@ -33,11 +32,13 @@
     <meta property="og:description" content="Komunikujte se zákazníky a poskytovateli služeb.">
     <meta property="og:url" content="https://bulldogo.cz/chat.html">
     <meta property="og:image" content="https://bulldogo.cz/fotky/bulldogo-logo.png">
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link rel="stylesheet" href="<link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'; this.onload=null;">"></noscript>>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    
     <!-- Firebase SDK (centralizovaná inicializace) -->
-    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="firebase-init.js" defer>></script>
     <!-- Mailchimp popup (newsletter) -->
     <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/e223755f97b06a0750d885407/971d5b572a7403c313f3aacc9.js");</script>
 </head>
@@ -284,7 +285,7 @@
         </div>
     </div>
 
-    <script src="profanity-filter.js"></script>
+    <script src="profanity-filter.js" defer>></script>
     <script src="script.js" defer></script>
     <script src="auth.js" defer></script>
     <script src="chat.js" defer></script>
