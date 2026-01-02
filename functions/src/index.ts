@@ -1484,7 +1484,7 @@ function generateInvoiceHTML(
             <td style="padding: 30px 40px; background: #f9fafb; border-radius: 0 0 12px 12px; border-top: 2px solid #e5e7eb;">
               <p style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280; line-height: 1.6;">
                 <strong>Platební údaje:</strong><br>
-                Bankovní účet: 123456789/0100<br>
+                Bankovní účet: 277067486/0600<br>
                 Variabilní symbol: ${orderNumber}
               </p>
               <p style="margin: 20px 0 0 0; font-size: 12px; color: #9ca3af; line-height: 1.6;">
