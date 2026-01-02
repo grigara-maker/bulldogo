@@ -1506,6 +1506,8 @@ function generateInvoiceHTML(
 /**
  * Odešle fakturu na email uživatele a účetní (pro Stripe)
  */
+// VYPNUTO - Stripe automaticky generuje faktury, tato funkce se nepoužívá
+// @ts-ignore - unused function, kept for potential future use
 async function sendStripeInvoiceEmail(
   subscriptionId: string,
   userId: string,
@@ -1613,6 +1615,8 @@ async function sendStripeInvoiceEmail(
 /**
  * Odešle fakturu za topování na email účetní
  */
+// VYPNUTO - Stripe automaticky generuje faktury, tato funkce se nepoužívá
+// @ts-ignore - unused function, kept for potential future use
 async function sendTopAdInvoiceEmail(
   sessionId: string,
   userId: string,

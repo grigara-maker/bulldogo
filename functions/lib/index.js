@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setAdminStatus = exports.deleteUserAuth = exports.sendWelcomeEmail = exports.sendStripeInvoiceOnUpdate = exports.sendTopAdInvoice = exports.sendTopAdInvoiceOnCreate = exports.sendStripeInvoice = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
+exports.stripeInvoiceWebhook = exports.setAdminStatus = exports.deleteUserAuth = exports.sendWelcomeEmail = exports.sendStripeInvoiceOnUpdate = exports.sendTopAdInvoice = exports.sendTopAdInvoiceOnCreate = exports.sendStripeInvoice = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const axios_1 = __importDefault(require("axios"));
@@ -1443,6 +1443,8 @@ function generateInvoiceHTML(orderNumber, planName, amount, currency, userName, 
 /**
  * Odešle fakturu na email uživatele a účetní (pro Stripe)
  */
+// VYPNUTO - Stripe automaticky generuje faktury, tato funkce se nepoužívá
+// @ts-ignore - unused function, kept for potential future use
 async function sendStripeInvoiceEmail(subscriptionId, userId, subscriptionData) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     const db = admin.firestore();
@@ -1523,6 +1525,8 @@ async function sendStripeInvoiceEmail(subscriptionId, userId, subscriptionData) 
 /**
  * Odešle fakturu za topování na email účetní
  */
+// VYPNUTO - Stripe automaticky generuje faktury, tato funkce se nepoužívá
+// @ts-ignore - unused function, kept for potential future use
 async function sendTopAdInvoiceEmail(sessionId, userId, checkoutData) {
     const db = admin.firestore();
     // Načíst profil uživatele pro email a údaje
@@ -2424,6 +2428,7 @@ const fieldLabels = {
     name: "Jméno",
     email: "E-mail",
     phone: "Telefon",
+    passwordChangedAt: "Heslo",
     city: "Město",
     bio: "O mně",
     businessName: "Název firmy",
@@ -2479,6 +2484,10 @@ function formatValue(value) {
     if (typeof value === "boolean")
         return value ? "Ano" : "Ne";
     if (typeof value === "object") {
+        // Timestamp objekty (Firestore Timestamp)
+        if (value && typeof value === 'object' && 'toDate' in value) {
+            return value.toDate().toLocaleString('cs-CZ');
+        }
         if (value.companyName || value.ico) {
             // Je to company objekt
             const parts = [];
@@ -2541,16 +2550,48 @@ function getChangedFields(before, after) {
             continue; // Ignorovat foto-related pole úplně
         const oldVal = before[key];
         const newVal = after[key];
-        // Porovnání hodnot
-        const oldStr = JSON.stringify(oldVal || "");
-        const newStr = JSON.stringify(newVal || "");
-        if (oldStr !== newStr) {
-            changes.push({
-                field: key,
-                label: fieldLabels[key] || key,
-                oldValue: oldVal,
-                newValue: newVal,
-            });
+        // Porovnání hodnot - normalizace pro Timestamp objekty
+        let oldNormalized = oldVal;
+        let newNormalized = newVal;
+        // Normalizovat Timestamp objekty
+        if (oldVal && typeof oldVal === 'object' && 'toDate' in oldVal) {
+            oldNormalized = oldVal.toDate().getTime();
+        }
+        else if (oldVal === null || oldVal === undefined || oldVal === "") {
+            oldNormalized = "";
+        }
+        else {
+            oldNormalized = String(oldVal);
+        }
+        if (newVal && typeof newVal === 'object' && 'toDate' in newVal) {
+            newNormalized = newVal.toDate().getTime();
+        }
+        else if (newVal === null || newVal === undefined || newVal === "") {
+            newNormalized = "";
+        }
+        else {
+            newNormalized = String(newVal);
+        }
+        if (oldNormalized !== newNormalized) {
+            // Speciální zpracování pro passwordChangedAt - zobrazit jako změnu hesla bez specifických údajů
+            if (key === 'passwordChangedAt') {
+                // Pro heslo zobrazíme jen jednoduchou zprávu bez technických údajů
+                changes.push({
+                    field: key,
+                    label: "Heslo",
+                    oldValue: null,
+                    newValue: null,
+                    isPasswordChange: true, // Flag pro speciální zobrazení
+                });
+            }
+            else {
+                changes.push({
+                    field: key,
+                    label: fieldLabels[key] || key,
+                    oldValue: oldVal,
+                    newValue: newVal,
+                });
+            }
         }
     }
     return changes;
@@ -2559,7 +2600,19 @@ function getChangedFields(before, after) {
  * Generuje HTML šablonu emailu o změně údajů
  */
 function generateProfileChangeEmailHTML(userName, changes) {
-    const changesHTML = changes.map((change) => `
+    const changesHTML = changes.map((change) => {
+        // Speciální zobrazení pro změnu hesla - jen zpráva bez hodnot
+        if (change.field === 'passwordChangedAt' || change.isPasswordChange) {
+            return `
+    <tr>
+      <td colspan="3" class="email-text-dark email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
+        <strong style="color: #1a1a2e;">${change.label}</strong>: <span style="color: #22c55e; font-weight: 600;">Vaše heslo bylo změněno</span>
+      </td>
+    </tr>
+  `;
+        }
+        // Normální zobrazení pro ostatní změny
+        return `
     <tr>
       <td class="email-text-dark email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
         <strong style="color: #1a1a2e;">${change.label}</strong>
@@ -2571,7 +2624,8 @@ function generateProfileChangeEmailHTML(userName, changes) {
         ${formatValue(change.newValue)}
       </td>
     </tr>
-  `).join("");
+  `;
+    }).join("");
     return `
 <!DOCTYPE html>
 <html lang="cs">
@@ -2883,11 +2937,21 @@ exports.sendProfileChangeEmail = functions
         functions.logger.debug("Žádné relevantní změny v profilu", { userId });
         return null;
     }
-    // Získej email uživatele
-    const email = afterData.email;
+    // Získej email uživatele - použij nový email pokud se změnil, jinak starý
+    let email = afterData.email || beforeData.email;
     if (!email) {
         functions.logger.warn("Uživatel nemá email, přeskakuji odeslání emailu o změně", { userId });
         return null;
+    }
+    // Pokud se změnil email, poslat email na nový email
+    const emailChanged = beforeData.email && afterData.email && beforeData.email !== afterData.email;
+    if (emailChanged) {
+        email = afterData.email; // Použít nový email
+        functions.logger.info("Email se změnil, posílám notifikaci na nový email", {
+            userId,
+            oldEmail: beforeData.email,
+            newEmail: afterData.email
+        });
     }
     // Získej jméno uživatele
     let userName = "uživateli";
@@ -2908,7 +2972,12 @@ exports.sendProfileChangeEmail = functions
         to: email,
         subject: "🔐 Změna údajů ve vašem účtu - Bulldogo.cz",
         html: generateProfileChangeEmailHTML(userName, changes),
-        text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2026 BULLDOGO`,
+        text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => {
+            if (c.field === 'passwordChangedAt') {
+                return `${c.label}: Vaše heslo bylo změněno`;
+            }
+            return `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`;
+        }).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2026 BULLDOGO`,
     };
     try {
         await smtpTransporter.sendMail(mailOptions);
@@ -3250,182 +3319,231 @@ exports.sendNewMessageEmail = functions
 /**
  * Firestore Trigger - Odešle fakturu při aktivaci Stripe subscription
  */
+/**
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při:
+ * - Začátku trial období (0 Kč)
+ * - Konci trial období (plná cena)
+ * - Každém měsíčním obnovení předplatného
+ */
 exports.sendStripeInvoice = functions
     .region("europe-west1")
     .firestore.document("customers/{userId}/subscriptions/{subscriptionId}")
     .onCreate(async (snap, context) => {
-    const subscriptionData = snap.data();
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
+    const subscriptionData = snap.data() as AnyObj;
     const userId = context.params.userId;
     const subscriptionId = context.params.subscriptionId;
-    const status = subscriptionData === null || subscriptionData === void 0 ? void 0 : subscriptionData.status;
+    
+    const status = subscriptionData?.status;
+    
     // Odeslat fakturu pouze když je subscription aktivní nebo v trial období
     if (status === "active" || status === "trialing") {
-        try {
-            // Zkontrolovat, zda už jsme fakturu neodeslali (ochrana před duplicitami)
-            const invoiceSent = subscriptionData === null || subscriptionData === void 0 ? void 0 : subscriptionData.invoiceSent;
-            if (invoiceSent) {
-                functions.logger.info("Faktura už byla odeslána", { subscriptionId, userId });
-                return null;
-            }
-            await sendStripeInvoiceEmail(subscriptionId, userId, subscriptionData);
-            // Označit, že faktura byla odeslána
-            await snap.ref.update({
-                invoiceSent: true,
-                invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            functions.logger.info("✅ Faktura odeslána pro Stripe subscription", {
-                subscriptionId,
-                userId,
-                status
-            });
+      try {
+        // Zkontrolovat, zda už jsme fakturu neodeslali (ochrana před duplicitami)
+        const invoiceSent = subscriptionData?.invoiceSent;
+        if (invoiceSent) {
+          functions.logger.info("Faktura už byla odeslána", { subscriptionId, userId });
+          return null;
         }
-        catch (error) {
-            functions.logger.error("❌ Chyba při odesílání faktury pro Stripe subscription", {
-                subscriptionId,
-                userId,
-                error: error === null || error === void 0 ? void 0 : error.message
-            });
-        }
+        
+        await sendStripeInvoiceEmail(subscriptionId, userId, subscriptionData);
+        
+        // Označit, že faktura byla odeslána
+        await snap.ref.update({
+          invoiceSent: true,
+          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        functions.logger.info("✅ Faktura odeslána pro Stripe subscription", {
+          subscriptionId,
+          userId,
+          status
+        });
+      } catch (error: any) {
+        functions.logger.error("❌ Chyba při odesílání faktury pro Stripe subscription", {
+          subscriptionId,
+          userId,
+          error: error?.message
+        });
+      }
     }
+    */
     return null;
 });
 /**
- * Firestore Trigger - Odešle fakturu za topování po úspěšné platbě přes Stripe checkout (onCreate)
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při úspěšné platbě za topování
  */
 exports.sendTopAdInvoiceOnCreate = functions
     .region("europe-west1")
     .firestore.document("customers/{userId}/checkout_sessions/{sessionId}")
     .onCreate(async (snap, context) => {
-    const checkoutData = snap.data();
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
+    const checkoutData = snap.data() as AnyObj;
     const userId = context.params.userId;
     const sessionId = context.params.sessionId;
+    
     // Kontrola, zda je platba úspěšná
-    const paymentStatus = checkoutData === null || checkoutData === void 0 ? void 0 : checkoutData.payment_status;
+    const paymentStatus = checkoutData?.payment_status;
+    
     // Zkontrolovat, zda jde o topování (má metadata s adId)
-    const metadata = (checkoutData === null || checkoutData === void 0 ? void 0 : checkoutData.metadata) || {};
-    const adId = metadata === null || metadata === void 0 ? void 0 : metadata.adId;
+    const metadata = checkoutData?.metadata || {};
+    const adId = metadata?.adId;
+    
     // Odeslat fakturu pouze když:
     // 1. Platba je úspěšně zaplacena (payment_status === 'paid')
     // 2. Jde o topování (metadata obsahuje adId)
     // 3. Faktura ještě nebyla odeslána
-    if (paymentStatus === "paid" && adId && !(checkoutData === null || checkoutData === void 0 ? void 0 : checkoutData.invoiceSent)) {
-        try {
-            await sendTopAdInvoiceEmail(sessionId, userId, checkoutData);
-            // Označit, že faktura byla odeslána
-            await snap.ref.update({
-                invoiceSent: true,
-                invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            functions.logger.info("✅ Faktura za topování odeslána (onCreate)", {
-                sessionId,
-                userId,
-                adId,
-                paymentStatus
-            });
-        }
-        catch (error) {
-            functions.logger.error("❌ Chyba při odesílání faktury za topování (onCreate)", {
-                sessionId,
-                userId,
-                adId,
-                error: error === null || error === void 0 ? void 0 : error.message
-            });
-        }
+    if (paymentStatus === "paid" && adId && !checkoutData?.invoiceSent) {
+      try {
+        await sendTopAdInvoiceEmail(sessionId, userId, checkoutData);
+        
+        // Označit, že faktura byla odeslána
+        await snap.ref.update({
+          invoiceSent: true,
+          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        functions.logger.info("✅ Faktura za topování odeslána (onCreate)", {
+          sessionId,
+          userId,
+          adId,
+          paymentStatus
+        });
+      } catch (error: any) {
+        functions.logger.error("❌ Chyba při odesílání faktury za topování (onCreate)", {
+          sessionId,
+          userId,
+          adId,
+          error: error?.message
+        });
+      }
     }
+    */
     return null;
 });
 /**
- * Firestore Trigger - Odešle fakturu za topování po úspěšné platbě přes Stripe checkout (onUpdate)
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při úspěšné platbě za topování
  */
 exports.sendTopAdInvoice = functions
     .region("europe-west1")
     .firestore.document("customers/{userId}/checkout_sessions/{sessionId}")
     .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
+    const before = change.before.data() as AnyObj;
+    const after = change.after.data() as AnyObj;
     const userId = context.params.userId;
     const sessionId = context.params.sessionId;
+    
     // Kontrola, zda je platba úspěšná
-    const paymentStatusBefore = before === null || before === void 0 ? void 0 : before.payment_status;
-    const paymentStatusAfter = after === null || after === void 0 ? void 0 : after.payment_status;
+    const paymentStatusBefore = before?.payment_status;
+    const paymentStatusAfter = after?.payment_status;
+    
     // Zkontrolovat, zda jde o topování (má metadata s adId)
-    const metadata = (after === null || after === void 0 ? void 0 : after.metadata) || {};
-    const adId = metadata === null || metadata === void 0 ? void 0 : metadata.adId;
+    const metadata = after?.metadata || {};
+    const adId = metadata?.adId;
+    
     // Odeslat fakturu pouze když:
     // 1. Platba byla úspěšně zaplacena (payment_status se změnil na 'paid')
     // 2. Jde o topování (metadata obsahuje adId)
     // 3. Faktura ještě nebyla odeslána
-    if (paymentStatusAfter === "paid" && adId && !(after === null || after === void 0 ? void 0 : after.invoiceSent)) {
-        try {
-            await sendTopAdInvoiceEmail(sessionId, userId, after);
-            // Označit, že faktura byla odeslána
-            await change.after.ref.update({
-                invoiceSent: true,
-                invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            functions.logger.info("✅ Faktura za topování odeslána", {
-                sessionId,
-                userId,
-                adId,
-                paymentStatusBefore,
-                paymentStatusAfter
-            });
-        }
-        catch (error) {
-            functions.logger.error("❌ Chyba při odesílání faktury za topování", {
-                sessionId,
-                userId,
-                adId,
-                error: error === null || error === void 0 ? void 0 : error.message
-            });
-        }
+    if (paymentStatusAfter === "paid" && adId && !after?.invoiceSent) {
+      try {
+        await sendTopAdInvoiceEmail(sessionId, userId, after);
+        
+        // Označit, že faktura byla odeslána
+        await change.after.ref.update({
+          invoiceSent: true,
+          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        functions.logger.info("✅ Faktura za topování odeslána", {
+          sessionId,
+          userId,
+          adId,
+          paymentStatusBefore,
+          paymentStatusAfter
+        });
+      } catch (error: any) {
+        functions.logger.error("❌ Chyba při odesílání faktury za topování", {
+          sessionId,
+          userId,
+          adId,
+          error: error?.message
+        });
+      }
     }
+    */
     return null;
 });
 /**
- * Firestore Trigger - Odešle fakturu při změně statusu subscription na aktivní
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při:
+ * - Začátku trial období (0 Kč)
+ * - Konci trial období (plná cena)
+ * - Každém měsíčním obnovení předplatného
  */
 exports.sendStripeInvoiceOnUpdate = functions
     .region("europe-west1")
     .firestore.document("customers/{userId}/subscriptions/{subscriptionId}")
     .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
+    const before = change.before.data() as AnyObj;
+    const after = change.after.data() as AnyObj;
     const userId = context.params.userId;
     const subscriptionId = context.params.subscriptionId;
-    const statusBefore = before === null || before === void 0 ? void 0 : before.status;
-    const statusAfter = after === null || after === void 0 ? void 0 : after.status;
+    
+    const statusBefore = before?.status;
+    const statusAfter = after?.status;
+    
     // Odeslat fakturu pouze když se status změní na aktivní nebo trialing
     if ((statusBefore !== "active" && statusBefore !== "trialing") &&
         (statusAfter === "active" || statusAfter === "trialing")) {
-        try {
-            // Zkontrolovat, zda už jsme fakturu neodeslali
-            const invoiceSent = after === null || after === void 0 ? void 0 : after.invoiceSent;
-            if (invoiceSent) {
-                functions.logger.info("Faktura už byla odeslána", { subscriptionId, userId });
-                return null;
-            }
-            await sendStripeInvoiceEmail(subscriptionId, userId, after);
-            // Označit, že faktura byla odeslána
-            await change.after.ref.update({
-                invoiceSent: true,
-                invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            functions.logger.info("✅ Faktura odeslána pro Stripe subscription (update)", {
-                subscriptionId,
-                userId,
-                statusBefore,
-                statusAfter
-            });
+      try {
+        // Zkontrolovat, zda už jsme fakturu neodeslali
+        const invoiceSent = after?.invoiceSent;
+        if (invoiceSent) {
+          functions.logger.info("Faktura už byla odeslána", { subscriptionId, userId });
+          return null;
         }
-        catch (error) {
-            functions.logger.error("❌ Chyba při odesílání faktury pro Stripe subscription (update)", {
-                subscriptionId,
-                userId,
-                error: error === null || error === void 0 ? void 0 : error.message
-            });
-        }
+        
+        await sendStripeInvoiceEmail(subscriptionId, userId, after);
+        
+        // Označit, že faktura byla odeslána
+        await change.after.ref.update({
+          invoiceSent: true,
+          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        functions.logger.info("✅ Faktura odeslána pro Stripe subscription (update)", {
+          subscriptionId,
+          userId,
+          statusBefore,
+          statusAfter
+        });
+      } catch (error: any) {
+        functions.logger.error("❌ Chyba při odesílání faktury pro Stripe subscription (update)", {
+          subscriptionId,
+          userId,
+          error: error?.message
+        });
+      }
     }
+    */
     return null;
 });
 /**
@@ -3670,5 +3788,186 @@ exports.setAdminStatus = functions.region("europe-west1").https.onRequest(async 
             });
         }
     });
+});
+/**
+ * Stripe Webhook - Odešle kopii faktury na účetní email
+ * Tento webhook zachytí invoice.finalized event a pošle kopii faktury na ucetni@bulldogo.cz
+ *
+ * Nastavení webhooku v Stripe Dashboard:
+ * 1. Jdi do Developers → Webhooks
+ * 2. Přidej endpoint: https://europe-west1-inzerio-inzerce.cloudfunctions.net/stripeInvoiceWebhook
+ * 3. Vyber event: invoice.finalized
+ * 4. Zkopíruj webhook signing secret a nastav ho jako STRIPE_WEBHOOK_SECRET v Firebase Functions environment
+ */
+exports.stripeInvoiceWebhook = functions
+    .region("europe-west1")
+    .https.onRequest(async (req, res) => {
+    // Povolit pouze POST požadavky
+    if (req.method !== "POST") {
+        res.status(405).send("Method Not Allowed");
+        return;
+    }
+    const accountingEmail = "ucetni@bulldogo.cz";
+    const sig = req.headers["stripe-signature"];
+    if (!sig) {
+        functions.logger.error("❌ Stripe signature missing");
+        res.status(400).send("Stripe signature missing");
+        return;
+    }
+    try {
+        const event = req.body;
+        // Zpracovat pouze invoice.finalized eventy
+        if (event.type === "invoice.finalized") {
+            const invoice = event.data.object;
+            const invoiceId = invoice.id;
+            const customerId = invoice.customer;
+            const amount = invoice.amount_paid || invoice.amount_due;
+            const currency = (invoice.currency || "czk").toUpperCase();
+            const invoiceNumber = invoice.number || invoiceId;
+            const invoicePdf = invoice.invoice_pdf;
+            const customerEmail = invoice.customer_email;
+            const subscriptionId = invoice.subscription;
+            functions.logger.info("📧 Invoice finalized event received", {
+                invoiceId,
+                customerId,
+                amount,
+                currency,
+                invoiceNumber,
+                customerEmail,
+            });
+            // Získat informace o zákazníkovi z Firestore
+            let userId = null;
+            let userName = "Neznámý zákazník";
+            let userEmail = customerEmail;
+            if (customerId) {
+                try {
+                    const db = admin.firestore();
+                    // Zkusit najít uživatele podle Stripe customer ID (Firebase Extension ukládá customer ID jako document ID)
+                    const customerDoc = await db.collection("customers").doc(customerId).get();
+                    if (customerDoc.exists) {
+                        userId = customerId;
+                        const userProfileDoc = await db
+                            .collection("users")
+                            .doc(userId)
+                            .collection("profile")
+                            .doc("profile")
+                            .get();
+                        if (userProfileDoc.exists) {
+                            const userProfile = userProfileDoc.data();
+                            const firstName = (userProfile === null || userProfile === void 0 ? void 0 : userProfile.firstName) || "";
+                            const lastName = (userProfile === null || userProfile === void 0 ? void 0 : userProfile.lastName) || "";
+                            const name = (userProfile === null || userProfile === void 0 ? void 0 : userProfile.name) || "";
+                            const companyName = userProfile === null || userProfile === void 0 ? void 0 : userProfile.companyName;
+                            if (firstName && lastName) {
+                                userName = `${firstName} ${lastName}`;
+                            }
+                            else if (name && name !== "Uživatel" && name !== "Firma") {
+                                userName = name;
+                            }
+                            else if (companyName) {
+                                userName = companyName;
+                            }
+                            userEmail = (userProfile === null || userProfile === void 0 ? void 0 : userProfile.email) || customerEmail || userEmail;
+                        }
+                    }
+                }
+                catch (error) {
+                    functions.logger.warn("⚠️ Could not fetch user data", {
+                        error: error === null || error === void 0 ? void 0 : error.message,
+                        customerId,
+                    });
+                }
+            }
+            // Vytvořit email s kopií faktury
+            const amountFormatted = (amount / 100).toFixed(2); // Stripe ukládá v centech
+            const invoiceType = amount === 0 ? "Free Trial" : subscriptionId ? "Předplatné" : "Topování inzerátu";
+            const emailHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background-color: #f9f9f9; }
+    .info-box { background-color: white; padding: 15px; margin: 10px 0; border-left: 4px solid #4CAF50; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Kopie faktury - BULLDOGO</h1>
+    </div>
+    <div class="content">
+      <div class="info-box">
+        <h2>Informace o faktuře</h2>
+        <p><strong>Číslo faktury:</strong> ${invoiceNumber}</p>
+        <p><strong>Typ:</strong> ${invoiceType}</p>
+        <p><strong>Částka:</strong> ${amountFormatted} ${currency}</p>
+        <p><strong>Zákazník:</strong> ${userName}</p>
+        <p><strong>Email zákazníka:</strong> ${userEmail || "neuvedeno"}</p>
+        ${userId ? `<p><strong>User ID:</strong> ${userId}</p>` : ""}
+        ${customerId ? `<p><strong>Stripe Customer ID:</strong> ${customerId}</p>` : ""}
+      </div>
+      ${invoicePdf ? `<p><a href="${invoicePdf}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Stáhnout PDF faktury</a></p>` : ""}
+      <p>Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.</p>
+    </div>
+    <div class="footer">
+      <p>© 2026 BULLDOGO.CZ</p>
+      <p>Tento email byl automaticky vygenerován systémem.</p>
+    </div>
+  </div>
+</body>
+</html>
+        `;
+            const emailText = `
+Kopie faktury - BULLDOGO
+
+Číslo faktury: ${invoiceNumber}
+Typ: ${invoiceType}
+Částka: ${amountFormatted} ${currency}
+Zákazník: ${userName}
+Email zákazníka: ${userEmail || "neuvedeno"}
+${userId ? `User ID: ${userId}` : ""}
+${customerId ? `Stripe Customer ID: ${customerId}` : ""}
+
+${invoicePdf ? `PDF faktury: ${invoicePdf}` : ""}
+
+Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.
+
+© 2026 BULLDOGO.CZ
+        `;
+            // Odeslat email na účetní
+            const accountingMailOptions = {
+                from: {
+                    name: "BULLDOGO",
+                    address: "info@bulldogo.cz",
+                },
+                to: accountingEmail,
+                subject: `Kopie faktury ${invoiceNumber} - ${userName}${userId ? ` (UID: ${userId})` : ""}`,
+                html: emailHTML,
+                text: emailText,
+            };
+            await smtpTransporter.sendMail(accountingMailOptions);
+            functions.logger.info("✅ Kopie faktury odeslána na účetní email", {
+                invoiceId,
+                invoiceNumber,
+                accountingEmail,
+                userId,
+                userName,
+            });
+        }
+        // Vrátit úspěšnou odpověď Stripe
+        res.status(200).json({ received: true });
+    }
+    catch (error) {
+        functions.logger.error("❌ Chyba při zpracování Stripe webhooku", {
+            error: error === null || error === void 0 ? void 0 : error.message,
+            stack: error === null || error === void 0 ? void 0 : error.stack,
+        });
+        res.status(500).json({ error: error === null || error === void 0 ? void 0 : error.message });
+    }
 });
 //# sourceMappingURL=index.js.map
