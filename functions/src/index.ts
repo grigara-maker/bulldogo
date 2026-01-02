@@ -1403,8 +1403,12 @@ function generateInvoiceHTML(
                     </h2>
                     <p style="margin: 0 0 8px 0; font-size: 14px; color: #374151; line-height: 1.6;">
                       <strong>Dominik Hašek</strong><br>
-                      Jiřího z Poděbrad 2017, Sokolov 356 01<br>
-                      IČO: 17059470<br>
+                      Bulldogo.cz<br>
+                      IČO 17059470<br>
+                      <br>
+                      Jiřího Z Poděbrad 2017<br>
+                      Sokolov<br>
+                      356 01<br>
                       Email: ucetni@bulldogo.cz
                     </p>
                   </td>
