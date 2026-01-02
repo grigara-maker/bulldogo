@@ -12286,11 +12286,43 @@ html body .ad-actions {
 
 /* Ad Detail Page Styles */
 .ad-detail-content {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     margin: 0;
     padding: 2rem;
     box-sizing: border-box;
     background: #ffffff;
+}
+
+/* Zajistit, že main-content neomezuje šířku pro ad-detail */
+.main-content:has(.ad-detail-content) {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Explicitní pravidlo pro zajištění správného grid rozložení */
+body:has(.ad-detail-content) .ad-detail-main,
+.ad-detail-content .ad-detail-main {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem !important;
+}
+
+/* Pro PC - zajistit, že levý sloupec je vlevo a pravý vpravo */
+@media (min-width: 769px) {
+    .ad-detail-main {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 2rem !important;
+    }
+    
+    .ad-detail-left {
+        order: 1 !important;
+    }
+    
+    .ad-detail-right {
+        order: 2 !important;
+    }
 }
 
 .ad-detail-header {
@@ -12338,11 +12370,12 @@ html body .ad-actions {
 }
 
 .ad-detail-main {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
     gap: 2rem;
     margin-bottom: 2rem;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     padding: 0;
     align-items: start;
 }
@@ -12354,6 +12387,9 @@ html body .ad-actions {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     position: sticky;
     top: 2rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
 }
 
 .ad-images-section {
@@ -12487,6 +12523,9 @@ html body .ad-actions {
     padding: 2rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     height: fit-content;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
 }
 
 .ad-title-section {
