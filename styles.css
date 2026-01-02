@@ -5332,17 +5332,19 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 
 .footer-content {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2.5rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
     margin-bottom: 2rem;
     align-items: start;
 }
 
 .footer-section {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Footer na PC - 4 sloupce v jednom řádku */
+/* Footer na PC - 4 sloupce vedle sebe v jednom řádku */
 @media (min-width: 769px) {
     .footer {
         padding: 2.5rem 0 1rem;
@@ -5351,14 +5353,22 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     .footer-content {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: auto !important;
         gap: 2.5rem !important;
         margin-bottom: 2rem !important;
+        align-items: start !important;
     }
     
     .footer-section {
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
+    }
+    
+    .footer-section h3 {
+        margin-top: 0 !important;
     }
 }
 
@@ -15059,13 +15069,15 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .footer-content {
         display: grid !important;
         grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
         gap: 1.5rem !important;
         text-align: left !important;
     }
     
     .footer-section {
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
-        flex: 1 1 100% !important;
         max-width: 100% !important;
     }
     
