@@ -632,33 +632,38 @@ async function processPayment() {
             const { addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const successUrl = `${window.location.origin}/top-ads.html?payment=success`;
             const cancelUrl = `${window.location.origin}/top-ads.html?payment=canceled`;
-            const checkoutRef = await addDoc(
-                collection(window.firebaseDb, 'customers', user.uid, 'checkout_sessions'),
-                {
-                    price: priceId,
-                    mode: 'payment',
-                    success_url: successUrl,
-                    cancel_url: cancelUrl,
-                    metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
-                    allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
-                    // Automaticky aplikovat promo code 100OFF (100% sleva na topování)
-                    discounts: [{
-                        promotion_code: 'promo_1SlGEN1aQBd6ajy2vmVfxG6S' // 100OFF - 100% sleva
-                    }],
-                    // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
-                    invoice_creation: {
-                        enabled: true, // Povolit automatické vytváření faktur
-                        invoice_data: {
-                            description: `Topování inzerátu - ${selectedPricing.duration} ${selectedPricing.duration === 1 ? 'den' : selectedPricing.duration === 7 ? 'dní' : 'dní'}`,
-                            custom_fields: [
-                                {
-                                    name: 'Typ faktury',
-                                    value: 'Topování inzerátu'
-                                }
-                            ]
-                        }
+            // Pro 100% slevu použijeme coupon ID místo promotion_code
+            // Firebase Extension podporuje discounts s coupon ID
+            const checkoutData = {
+                price: priceId,
+                mode: 'payment',
+                success_url: successUrl,
+                cancel_url: cancelUrl,
+                metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
+                allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
+                // Automaticky aplikovat promo code 100OFF (100% sleva na topování)
+                // Použijeme coupon ID místo promotion_code (Firebase Extension podporuje discounts s coupon)
+                discounts: [{
+                    coupon: 'FREE_TOP' // Coupon ID (ne promotion code ID)
+                }],
+                // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
+                invoice_creation: {
+                    enabled: true, // Povolit automatické vytváření faktur
+                    invoice_data: {
+                        description: `Topování inzerátu - ${selectedPricing.duration} ${selectedPricing.duration === 1 ? 'den' : selectedPricing.duration === 7 ? 'dní' : 'dní'}`,
+                        custom_fields: [
+                            {
+                                name: 'Typ faktury',
+                                value: 'Topování inzerátu'
+                            }
+                        ]
                     }
                 }
+            };
+            
+            const checkoutRef = await addDoc(
+                collection(window.firebaseDb, 'customers', user.uid, 'checkout_sessions'),
+                checkoutData
             );
             // doplň checkoutSessionId do pending pro případné budoucí dohledání
             try {
