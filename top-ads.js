@@ -545,6 +545,41 @@ async function processPayment() {
         return;
     }
     
+    // Kontrola, jestli už má inzerát aktivní topování
+    try {
+        const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const adRef = doc(window.firebaseDb, 'users', user.uid, 'inzeraty', selectedAd.id);
+        const adSnap = await getDoc(adRef);
+        
+        if (adSnap.exists()) {
+            const adData = adSnap.data();
+            const isTop = adData.isTop === true;
+            const topExpiresAt = adData.topExpiresAt;
+            
+            if (isTop && topExpiresAt) {
+                // Zkontrolovat, jestli topování ještě nevypršelo
+                const expiresDate = topExpiresAt.toDate ? topExpiresAt.toDate() : new Date(topExpiresAt);
+                const now = new Date();
+                
+                if (expiresDate > now) {
+                    // Inzerát má aktivní topování
+                    const remainingDays = Math.ceil((expiresDate - now) / (24 * 60 * 60 * 1000));
+                    const expiresDateFormatted = expiresDate.toLocaleDateString('cs-CZ', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    });
+                    
+                    alert(`Tento inzerát má již aktivní topování, které vyprší ${expiresDateFormatted} (zbývá ${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'}).\n\nNemůžete zaplatit topování pro inzerát, který už je aktivně topovaný. Počkejte, až současné topování vyprší, nebo zrušte současné topování v sekci "Mé inzeráty".`);
+                    return;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Chyba při kontrole aktivního topování:', error);
+        // Pokračovat dál, pokud kontrola selže (nechceme blokovat platbu kvůli chybě)
+    }
+    
     // Kontrola balíčku před topováním
     const packageCheck = await checkPackageForTop(selectedPricing.duration);
     if (!packageCheck.valid) {

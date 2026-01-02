@@ -4043,3 +4043,112 @@ Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.
     }
   });
 
+// ============================================
+// STRIPE CUSTOMER PORTAL SESSION
+// ============================================
+/**
+ * Vytvoří Stripe Customer Portal session pro správu předplatného
+ */
+export const createBillingPortalSession = functions
+  .region("europe-west1")
+  .https.onRequest(async (req, res) => {
+    corsHandler(req, res, async () => {
+      try {
+        // Kontrola metody
+        if (req.method !== "POST") {
+          res.status(405).json({ error: "Method not allowed" });
+          return;
+        }
+
+        // Získat return URL z requestu
+        const { returnUrl, uid } = req.body;
+        if (!returnUrl) {
+          res.status(400).json({ error: "Missing returnUrl parameter" });
+          return;
+        }
+
+        // Získat UID z Authorization header nebo z requestu
+        let userId: string | null = uid || null;
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          try {
+            const token = authHeader.split("Bearer ")[1];
+            const decodedToken = await admin.auth().verifyIdToken(token);
+            userId = decodedToken.uid;
+          } catch (error) {
+            functions.logger.warn("⚠️ Could not verify token", { error });
+          }
+        }
+
+        if (!userId) {
+          res.status(401).json({ error: "Unauthorized - missing user ID" });
+          return;
+        }
+
+        // Získat Stripe customer ID z Firestore
+        const db = admin.firestore();
+        const customerDoc = await db.collection("customers").doc(userId).get();
+        
+        if (!customerDoc.exists) {
+          res.status(404).json({ error: "Customer not found" });
+          return;
+        }
+
+        const customerData = customerDoc.data() as AnyObj;
+        const stripeCustomerId = customerData?.id || customerData?.stripeCustomerId;
+
+        if (!stripeCustomerId) {
+          res.status(404).json({ error: "Stripe customer ID not found" });
+          return;
+        }
+
+        // Získat Stripe Secret Key z environment variables nebo secrets
+        // Podporujeme oba způsoby: process.env (pro secrets) nebo functions.config (pro legacy)
+        const stripeSecretKey = 
+          process.env.STRIPE_SECRET_KEY || 
+          (functions.config().stripe?.secret_key as string | undefined);
+        if (!stripeSecretKey) {
+          functions.logger.error("❌ STRIPE_SECRET_KEY not set in environment variables or functions.config");
+          res.status(500).json({ error: "Stripe configuration error" });
+          return;
+        }
+
+        // Vytvořit billing portal session přes Stripe API
+        const stripeResponse = await axios.post(
+          "https://api.stripe.com/v1/billing_portal/sessions",
+          new URLSearchParams({
+            customer: stripeCustomerId,
+            return_url: returnUrl,
+          }),
+          {
+            headers: {
+              Authorization: `Bearer ${stripeSecretKey}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+
+        const portalUrl = stripeResponse.data.url;
+
+        if (!portalUrl) {
+          res.status(500).json({ error: "Failed to create portal session" });
+          return;
+        }
+
+        functions.logger.info("✅ Billing portal session created", {
+          uid: userId,
+          stripeCustomerId,
+          returnUrl,
+        });
+
+        res.status(200).json({ url: portalUrl });
+      } catch (error: any) {
+        functions.logger.error("❌ Chyba při vytváření billing portal session", {
+          error: error?.message,
+          stack: error?.stack,
+        });
+        res.status(500).json({ error: error?.message || "Internal server error" });
+      }
+    });
+  });
+
