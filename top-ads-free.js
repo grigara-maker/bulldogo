@@ -687,7 +687,7 @@ async function processPayment() {
                     discounts: [{
                         promotion_code: PROMO_CODE_7DAYS // Automaticky aplikovat promo kód pro 7denní topování
                     }]
-                } : {})
+                } : {}),
                 // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                 invoice_creation: {
                     enabled: true, // Povolit automatické vytváření faktur
