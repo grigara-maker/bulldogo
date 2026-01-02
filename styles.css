@@ -5341,25 +5341,26 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 .footer-section {
-    flex: 1;
+    flex: 1 1 0%;
     min-width: 0;
+    max-width: 25%;
 }
 
-/* Footer na PC - všechny sekce v jednom řádku */
+/* Footer na PC - všechny sekce v jednom řádku, rovnoměrně rozprostřené */
 @media (min-width: 769px) {
     .footer-content {
         flex-wrap: nowrap !important;
         display: flex !important;
         flex-direction: row !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
         align-items: flex-start !important;
         gap: 2rem !important;
     }
     
     .footer-section {
-        flex: 1 1 auto !important;
+        flex: 1 1 0% !important;
         min-width: 0 !important;
-        max-width: none !important;
+        max-width: calc(25% - 1.5rem) !important;
         width: auto !important;
     }
 }
@@ -5370,12 +5371,15 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
         flex-wrap: nowrap !important;
         flex-direction: row !important;
         display: flex !important;
+        justify-content: flex-start !important;
+        gap: 2rem !important;
     }
     
     .footer-section {
         flex: 1 1 0% !important;
         width: auto !important;
-        max-width: none !important;
+        max-width: calc(25% - 1.5rem) !important;
+        min-width: 0 !important;
     }
 }
 
