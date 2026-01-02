@@ -6757,17 +6757,15 @@ body.profile-plan-page .plan-info {
     
     .tool-bubble i {
         font-size: 1.4rem;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        position: relative;
         margin: 0 !important;
         padding: 0 !important;
-        display: block;
-        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 1em;
         height: 1em;
-        text-align: center;
+        line-height: 1;
     }
     
     .hero-title {
