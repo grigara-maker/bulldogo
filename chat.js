@@ -675,27 +675,70 @@ async function sendMessage() {
     try {
         const { collection, addDoc, doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
+        // Nahrát obrázky, pokud existují
+        const imageUrls = [];
+        if (selectedFiles.length > 0 && window.firebaseStorage) {
+            try {
+                const { ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js');
+                
+                const uploadPromises = selectedFiles.map(async (file) => {
+                    const timestamp = Date.now();
+                    const fileName = `chat/${currentConversationId}/${timestamp}_${file.name}`;
+                    const storageRef = ref(window.firebaseStorage, fileName);
+                    
+                    await uploadBytes(storageRef, file);
+                    const downloadURL = await getDownloadURL(storageRef);
+                    return downloadURL;
+                });
+                
+                imageUrls.push(...await Promise.all(uploadPromises));
+                console.log('✅ Obrázky nahrány:', imageUrls.length);
+            } catch (uploadError) {
+                console.error('❌ Chyba při nahrávání obrázků:', uploadError);
+                showError('Nepodařilo se nahrát obrázky. Zkuste to znovu.');
+                return;
+            }
+        }
+        
         // Přidat zprávu
         const messagesRef = collection(window.firebaseDb, 'conversations', currentConversationId, 'messages');
-        const messageDocRef = await addDoc(messagesRef, {
+        const messageData = {
             senderId: currentUser.uid,
-            text: text,
+            text: text || '',
             createdAt: serverTimestamp()
-        });
+        };
+        
+        if (imageUrls.length > 0) {
+            messageData.images = imageUrls;
+        }
+        
+        const messageDocRef = await addDoc(messagesRef, messageData);
         
         console.log('✅ Zpráva uložena:', messageDocRef.id);
         
-        // Aktualizovat konverzaci
+        // Aktualizovat konverzaci (zpráva s obrázky nebo textem)
+        const lastMessageText = imageUrls.length > 0 
+            ? (text || `📷 ${imageUrls.length} obrázek${imageUrls.length > 1 ? 'ů' : ''}`)
+            : text;
+        
         const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
         await updateDoc(conversationRef, {
-            lastMessage: text,
+            lastMessage: lastMessageText,
             lastMessageAt: serverTimestamp()
         });
         
         console.log('✅ Konverzace aktualizována:', currentConversationId);
         
-        // Vyčistit input
+        // Vyčistit input a přílohy
         if (input) input.value = '';
+        selectedFiles = [];
+        const fileInput = q('igFiles');
+        if (fileInput) fileInput.value = '';
+        const previewContainer = q('igFilePreview');
+        if (previewContainer) {
+            previewContainer.innerHTML = '';
+            previewContainer.style.display = 'none';
+        }
     } catch (error) {
         console.error('❌ Chyba při odesílání zprávy:', error);
         if (error.code === 'permission-denied') {
