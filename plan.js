@@ -339,9 +339,11 @@ async function openStripeCustomerPortal() {
                 const { addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 
                 // Vytvořit billing portal session přes Firebase Extension
-                // Firebase Extension automaticky rozpozná billing portal když není price ani mode
-                // Použijeme prázdný objekt s return_url - extension to rozpozná jako billing portal request
+                // Firebase Extension potřebuje success_url a return_url pro billing portal
                 const portalData = {
+                    mode: 'subscription', // Explicitně označit jako subscription mode
+                    success_url: `${window.location.origin}/profile-plan.html`,
+                    cancel_url: `${window.location.origin}/profile-plan.html`,
                     return_url: `${window.location.origin}/profile-plan.html`
                 };
                 
