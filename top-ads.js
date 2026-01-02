@@ -558,6 +558,8 @@ async function processPayment() {
         oneweek: "price_1Sf29n1aQBd6ajy20hbq5x6L",
         onemonth: "price_1Sf2AQ1aQBd6ajy2IpqtOstt"
     };
+    // Promo kód pro 7denní topování (100% sleva) - "bulldogotop"
+    const PROMO_CODE_7DAYS = 'promo_1SlHGn1aQBd6ajy2QHBxTL2u';
     // Pokus o dynamické zjištění priceId z Firestore (funguje v TEST i LIVE módu)
     async function resolveStripePriceIdForTopAd(key) {
         try {
@@ -642,6 +644,12 @@ async function processPayment() {
                 cancel_url: cancelUrl,
                 metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
                 allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
+                // Pro 7denní topování automaticky aplikovat promo kód "bulldogotop" (100% sleva)
+                ...(topAdKey === 'oneweek' ? {
+                    discounts: [{
+                        promotion_code: PROMO_CODE_7DAYS // Automaticky aplikovat promo kód pro 7denní topování
+                    }]
+                } : {})
                 // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                 invoice_creation: {
                     enabled: true, // Povolit automatické vytváření faktur
