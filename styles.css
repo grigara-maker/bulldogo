@@ -12276,6 +12276,16 @@ input[type="tel"]:focus {
         padding-bottom: 0 !important;
     }
     
+    /* Pro topované inzeráty: tlačítka pod lokací */
+    .ad-card.is-top .ad-actions {
+        position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin-top: 12px !important;
+        margin-bottom: 12px !important;
+    }
+    
     .ad-actions button {
         width: 42px;
         height: 42px;
@@ -12312,6 +12322,16 @@ input[type="tel"]:focus {
         padding: 0 !important;
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
+    }
+    
+    /* Pro topované inzeráty: tlačítka pod lokací */
+    .ad-card.is-top .ad-actions {
+        position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin-top: 12px !important;
+        margin-bottom: 12px !important;
     }
     
     .ad-actions button {
@@ -12354,6 +12374,19 @@ article .ad-actions {
     padding: 0 !important;
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
+}
+
+/* Pro topované inzeráty na mobilu: tlačítka pod lokací, ne absolutně pozicovaná */
+@media (max-width: 768px) {
+    .ad-card.is-top .ad-actions,
+    .ad-card.is-top article .ad-actions {
+        position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
+        margin-top: 12px !important;
+        margin-bottom: 12px !important;
+    }
 }
 
 .ad-actions button {
