@@ -4109,8 +4109,9 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     top: 50%;
     transform: translate(-50%, -50%);
     animation: bubbleLaunch 12.8s ease-out infinite;
-    /* Zajistit, aby absolutně pozicované děti byly relativně k této bublince */
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bubble-bg {
