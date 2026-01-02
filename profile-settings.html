@@ -945,60 +945,22 @@
                 const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
                 await reauthenticateWithCredential(currentUser, credential);
 
-                // Změna emailu v Auth (pokud je vyplněn)
-                let emailUpdatedInAuth = false;
+                // Změna emailu v Auth (pokud je vyplněn) - bez ověřování
                 if (newEmail) {
-                    const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                    
-                    // Zkus použít verifyBeforeUpdateEmail (pokud je dostupné), jinak updateEmail
-                    if (authModule.verifyBeforeUpdateEmail) {
-                        try {
-                            await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
-                            showMessage('📧 Ověřovací email byl odeslán na novou adresu. Po ověření bude email změněn.', 'success');
-                            // Email se změní až po ověření, takže zatím uložíme jen do Firestore
-                            emailUpdatedInAuth = false; // Email se změní až po ověření
-                        } catch (verifyError) {
-                            // Pokud verifyBeforeUpdateEmail selže, zkus updateEmail
-                            if (verifyError?.code === 'auth/operation-not-allowed') {
-                                throw new Error('Firebase vyžaduje ověření nového emailu před změnou. Ověřovací email byl odeslán na novou adresu.');
-                            }
-                            // Jinak zkus updateEmail jako fallback
-                            try {
-                                await authModule.updateEmail(currentUser, newEmail);
-                                try { await authModule.sendEmailVerification(currentUser); } catch (e) { /* noop */ }
-                                emailUpdatedInAuth = true;
-                            } catch (updateError) {
-                                throw updateError;
-                            }
-                        }
-                    } else {
-                        // Fallback na updateEmail pokud verifyBeforeUpdateEmail není dostupné
-                        try {
-                            await authModule.updateEmail(currentUser, newEmail);
-                            try { await authModule.sendEmailVerification(currentUser); } catch (e) { /* noop */ }
-                            emailUpdatedInAuth = true;
-                        } catch (updateError) {
-                            if (updateError?.code === 'auth/operation-not-allowed') {
-                                throw new Error('Firebase vyžaduje ověření nového emailu před změnou. Kontaktujte podporu na support@bulldogo.cz');
-                            }
-                            throw updateError;
-                        }
-                    }
+                    const { updateEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    await updateEmail(currentUser, newEmail);
                 }
 
                 // Aktualizace v databázi
-                const { setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 const uid = currentUser.uid;
-                const updateData = { updatedAt: new Date() };
+                const updateData = { updatedAt: serverTimestamp() };
                 
-                // Email uložíme do Firestore i když se ještě nezměnil v Auth (čeká na ověření)
+                // Email uložíme do Firestore
                 if (newEmail) {
                     updateData.email = newEmail;
-                    // Pokud email ještě není změněn v Auth (čeká na ověření), přidáme poznámku
-                    if (!emailUpdatedInAuth) {
-                        updateData.emailPendingVerification = true;
-                    }
                 }
+                // Telefon uložíme do Firestore (důležité pro detekci změny v Cloud Function)
                 if (normalizedPhone) {
                     updateData.phone = normalizedPhone;
                 }
@@ -1108,12 +1070,9 @@
                 const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
                 await reauthenticateWithCredential(currentUser, credential);
 
-                // Změna emailu v Auth
-                const { updateEmail, sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                // Změna emailu v Auth - bez ověřování
+                const { updateEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
                 await updateEmail(currentUser, newEmail);
-
-                // Volitelné: poslat ověřovací email (pokud máš ověřování zapnuté)
-                try { await sendEmailVerification(currentUser); } catch (e) { /* noop */ }
 
                 // Propsat změnu i do Firestore (root + profile)
                 try {

@@ -2719,7 +2719,7 @@ function formatValue(value: any): string {
 /**
  * Porovná dva objekty a vrátí změněná pole
  */
-function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any }> {
+function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string; label: string; oldValue: any; newValue: any; isPasswordChange?: boolean }> {
   const photoRelatedFields = ["photoURL", "avatarUrl", "avatar", "avatarUpdatedAt"];
   
   // Zkontrolovat, zda se mění nějaké foto-related pole
@@ -2756,7 +2756,7 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
   }
   
   // Jinak pokračovat normálně a shromáždit všechny změny
-  const changes: Array<{ field: string; label: string; oldValue: any; newValue: any }> = [];
+  const changes: Array<{ field: string; label: string; oldValue: any; newValue: any; isPasswordChange?: boolean }> = [];
   
   for (const key of allKeys) {
     if (ignoredFields.includes(key)) continue;
@@ -2789,11 +2789,13 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
     if (oldNormalized !== newNormalized) {
       // Speciální zpracování pro passwordChangedAt - zobrazit jako změnu hesla bez specifických údajů
       if (key === 'passwordChangedAt') {
+        // Pro heslo zobrazíme jen jednoduchou zprávu bez technických údajů
         changes.push({
           field: key,
           label: "Heslo",
-          oldValue: "—",
-          newValue: "Změněno",
+          oldValue: null, // Explicitně null, aby se nezobrazovalo
+          newValue: null, // Explicitně null, aby se nezobrazovalo
+          isPasswordChange: true, // Flag pro speciální zobrazení
         });
       } else {
         changes.push({
@@ -2812,10 +2814,10 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
 /**
  * Generuje HTML šablonu emailu o změně údajů
  */
-function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field: string; label: string; oldValue: any; newValue: any }>): string {
+function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field: string; label: string; oldValue: any; newValue: any; isPasswordChange?: boolean }>): string {
   const changesHTML = changes.map((change) => {
     // Speciální zobrazení pro změnu hesla - jen zpráva bez hodnot
-    if (change.field === 'passwordChangedAt') {
+    if (change.field === 'passwordChangedAt' || change.isPasswordChange) {
       return `
     <tr>
       <td colspan="3" class="email-text-dark email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
