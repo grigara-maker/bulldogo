@@ -17,6 +17,10 @@ inzerio-inzerce-*.json
 
 # Build outputs
 functions/lib/
+lib/
+src/
+stubs/
+typescript/
 *.js.map
 dist/
 build/
