@@ -4109,6 +4109,8 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     top: 50%;
     transform: translate(-50%, -50%);
     animation: bubbleLaunch 12.8s ease-out infinite;
+    /* Zajistit, aby absolutně pozicované děti byly relativně k této bublince */
+    position: relative;
 }
 
 .bubble-bg {
@@ -4119,6 +4121,7 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     height: 100%;
     object-fit: contain;
     z-index: 1;
+    pointer-events: none;
 }
 
 .tool-bubble i {
@@ -4132,11 +4135,12 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     margin: 0 !important;
     padding: 0 !important;
-    display: block;
+    display: inline-block;
     line-height: 1;
     width: 1em;
     height: 1em;
     text-align: center;
+    vertical-align: middle;
 }
 
 .bubble-1 { animation-delay: 0s; }
@@ -6761,8 +6765,9 @@ body.profile-plan-page .plan-info {
         padding: 0 !important;
         display: block;
         line-height: 1;
-        width: auto;
-        height: auto;
+        width: 1em;
+        height: 1em;
+        text-align: center;
     }
     
     .hero-title {
