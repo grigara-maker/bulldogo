@@ -1141,7 +1141,17 @@ function filterServices() {
         const matchesSearch = !searchTerm || title.includes(searchTerm) || desc.includes(searchTerm) || loc.includes(searchTerm);
         const matchesCategory = !categoryFilter || (service?.category === categoryFilter);
         // Pokud je vybrán kraj, musí se shodovat. Pokud kraj není vybrán, zobrazit všechny.
-        const matchesRegion = !regionCode ? true : (locCode && locCode === regionCode);
+        // Speciální hodnoty: "Kdekoliv" a "CelaCeskaRepublika" zobrazí všechny inzeráty
+        let matchesRegion = true;
+        if (regionFilter && regionFilter.trim()) {
+            if (regionFilter === 'Kdekoliv' || regionFilter === 'CelaCeskaRepublika') {
+                // Zobrazit všechny inzeráty, které mají "Kdekoliv" nebo "CelaCeskaRepublika" nebo konkrétní kraj
+                const serviceLoc = storedLocRaw.toString().trim();
+                matchesRegion = serviceLoc === 'Kdekoliv' || serviceLoc === 'CelaCeskaRepublika' || serviceLoc === regionFilter || (locCode && locCode === regionCode);
+            } else if (regionCode) {
+                matchesRegion = locCode && locCode === regionCode;
+            }
+        }
         // Ve veřejném katalogu zobrazujeme jen aktivní inzeráty
         // Pokud status není nastaven, považujeme ho za aktivní
         const status = service?.status || 'active';
