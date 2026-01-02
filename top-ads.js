@@ -330,6 +330,26 @@ async function loadUserAdsFromFirebase(preSelectedAdId = null) {
             const adId = docSnap.id;
             console.log('📝 Processing ad:', adId, 'title:', ad.title);
 
+            // Kontrola aktivního topování
+            const isTop = ad.isTop === true;
+            const topExpiresAt = ad.topExpiresAt;
+            let topInfo = '';
+            if (isTop && topExpiresAt) {
+                const expiresDate = topExpiresAt.toDate ? topExpiresAt.toDate() : new Date(topExpiresAt);
+                const now = new Date();
+                if (expiresDate > now) {
+                    const remainingDays = Math.ceil((expiresDate - now) / (24 * 60 * 60 * 1000));
+                    const expiresDateFormatted = expiresDate.toLocaleDateString('cs-CZ', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    });
+                    topInfo = `<div class="ad-meta" style="margin-top: 8px; color: #ff8a00; font-weight: bold;">
+                        <i class="fas fa-fire"></i> TOP aktivní do ${expiresDateFormatted} (zbývá ${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'})
+                    </div>`;
+                }
+            }
+
             const article = document.createElement('article');
             article.className = 'ad-card selectable';
             article.setAttribute('data-ad-id', adId);
@@ -343,6 +363,7 @@ async function loadUserAdsFromFirebase(preSelectedAdId = null) {
                         <span>${ad.location || ''}</span> • <span>${categoryNames[ad.category] || ad.category || ''}</span>
                     </div>
                     ${ad.price ? `<div class="ad-meta" style="margin-top: 8px;"><strong>Cena:</strong> ${ad.price}</div>` : ''}
+                    ${topInfo}
                 </div>
             `;
 
