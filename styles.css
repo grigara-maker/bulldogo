@@ -5360,6 +5360,22 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
         flex: 1 1 auto !important;
         min-width: 0 !important;
         max-width: none !important;
+        width: auto !important;
+    }
+}
+
+/* Explicitní pravidlo pro PC - vyšší priorita */
+@media (min-width: 1025px) {
+    .footer-content {
+        flex-wrap: nowrap !important;
+        flex-direction: row !important;
+        display: flex !important;
+    }
+    
+    .footer-section {
+        flex: 1 1 0% !important;
+        width: auto !important;
+        max-width: none !important;
     }
 }
 
