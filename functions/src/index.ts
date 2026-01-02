@@ -2787,13 +2787,13 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
     }
     
     if (oldNormalized !== newNormalized) {
-      // Speciální zpracování pro passwordChangedAt - zobrazit jako změnu hesla
+      // Speciální zpracování pro passwordChangedAt - zobrazit jako změnu hesla bez specifických údajů
       if (key === 'passwordChangedAt') {
         changes.push({
           field: key,
-          label: fieldLabels[key] || "Heslo",
-          oldValue: oldVal ? "Změněno" : "—",
-          newValue: newVal ? "Změněno" : "—",
+          label: "Heslo",
+          oldValue: "—",
+          newValue: "Změněno",
         });
       } else {
         changes.push({
@@ -2813,7 +2813,19 @@ function getChangedFields(before: AnyObj, after: AnyObj): Array<{ field: string;
  * Generuje HTML šablonu emailu o změně údajů
  */
 function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field: string; label: string; oldValue: any; newValue: any }>): string {
-  const changesHTML = changes.map((change) => `
+  const changesHTML = changes.map((change) => {
+    // Speciální zobrazení pro změnu hesla - jen zpráva bez hodnot
+    if (change.field === 'passwordChangedAt') {
+      return `
+    <tr>
+      <td colspan="3" class="email-text-dark email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
+        <strong style="color: #1a1a2e;">${change.label}</strong>: <span style="color: #22c55e; font-weight: 600;">Vaše heslo bylo změněno</span>
+      </td>
+    </tr>
+  `;
+    }
+    // Normální zobrazení pro ostatní změny
+    return `
     <tr>
       <td class="email-text-dark email-border" style="padding: 12px 15px; border-bottom: 1px solid #f0f0f0;">
         <strong style="color: #1a1a2e;">${change.label}</strong>
@@ -2825,7 +2837,8 @@ function generateProfileChangeEmailHTML(userName: string, changes: Array<{ field
         ${formatValue(change.newValue)}
       </td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
 
   return `
 <!DOCTYPE html>
@@ -3179,7 +3192,12 @@ export const sendProfileChangeEmail = functions
       to: email,
       subject: "🔐 Změna údajů ve vašem účtu - Bulldogo.cz",
       html: generateProfileChangeEmailHTML(userName, changes),
-      text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2026 BULLDOGO`,
+      text: `Ahoj ${userName}!\n\nVe vašem účtu na Bulldogo.cz byly právě provedeny následující změny:\n\n${changes.map((c) => {
+        if (c.field === 'passwordChangedAt') {
+          return `${c.label}: Vaše heslo bylo změněno`;
+        }
+        return `${c.label}: ${formatValue(c.oldValue)} → ${formatValue(c.newValue)}`;
+      }).join("\n")}\n\nPokud jste tyto změny neprovedli vy, okamžitě nás kontaktujte na support@bulldogo.cz nebo na tel. +420 605 121 023.\n\n© 2026 BULLDOGO`,
     };
     
     try {

@@ -946,10 +946,44 @@
                 await reauthenticateWithCredential(currentUser, credential);
 
                 // Změna emailu v Auth (pokud je vyplněn)
+                let emailUpdatedInAuth = false;
                 if (newEmail) {
-                    const { updateEmail, sendEmailVerification } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-                    await updateEmail(currentUser, newEmail);
-                    try { await sendEmailVerification(currentUser); } catch (e) { /* noop */ }
+                    const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+                    
+                    // Zkus použít verifyBeforeUpdateEmail (pokud je dostupné), jinak updateEmail
+                    if (authModule.verifyBeforeUpdateEmail) {
+                        try {
+                            await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
+                            showMessage('📧 Ověřovací email byl odeslán na novou adresu. Po ověření bude email změněn.', 'success');
+                            // Email se změní až po ověření, takže zatím uložíme jen do Firestore
+                            emailUpdatedInAuth = false; // Email se změní až po ověření
+                        } catch (verifyError) {
+                            // Pokud verifyBeforeUpdateEmail selže, zkus updateEmail
+                            if (verifyError?.code === 'auth/operation-not-allowed') {
+                                throw new Error('Firebase vyžaduje ověření nového emailu před změnou. Ověřovací email byl odeslán na novou adresu.');
+                            }
+                            // Jinak zkus updateEmail jako fallback
+                            try {
+                                await authModule.updateEmail(currentUser, newEmail);
+                                try { await authModule.sendEmailVerification(currentUser); } catch (e) { /* noop */ }
+                                emailUpdatedInAuth = true;
+                            } catch (updateError) {
+                                throw updateError;
+                            }
+                        }
+                    } else {
+                        // Fallback na updateEmail pokud verifyBeforeUpdateEmail není dostupné
+                        try {
+                            await authModule.updateEmail(currentUser, newEmail);
+                            try { await authModule.sendEmailVerification(currentUser); } catch (e) { /* noop */ }
+                            emailUpdatedInAuth = true;
+                        } catch (updateError) {
+                            if (updateError?.code === 'auth/operation-not-allowed') {
+                                throw new Error('Firebase vyžaduje ověření nového emailu před změnou. Kontaktujte podporu na support@bulldogo.cz');
+                            }
+                            throw updateError;
+                        }
+                    }
                 }
 
                 // Aktualizace v databázi
@@ -957,8 +991,13 @@
                 const uid = currentUser.uid;
                 const updateData = { updatedAt: new Date() };
                 
+                // Email uložíme do Firestore i když se ještě nezměnil v Auth (čeká na ověření)
                 if (newEmail) {
                     updateData.email = newEmail;
+                    // Pokud email ještě není změněn v Auth (čeká na ověření), přidáme poznámku
+                    if (!emailUpdatedInAuth) {
+                        updateData.emailPendingVerification = true;
+                    }
                 }
                 if (normalizedPhone) {
                     updateData.phone = normalizedPhone;
@@ -987,7 +1026,7 @@
             } catch (error) {
                 console.error('❌ Chyba při změně emailu/telefonu:', error);
                 let errorMessage = 'Nepodařilo se změnit údaje';
-                if (error?.code === 'auth/wrong-password') {
+                if (error?.code === 'auth/wrong-password' || error?.code === 'auth/invalid-credential') {
                     errorMessage = 'Současné heslo je nesprávné';
                 } else if (error?.code === 'auth/invalid-email') {
                     errorMessage = 'Neplatný email';
@@ -995,6 +1034,10 @@
                     errorMessage = 'Tento email už je používán jiným účtem';
                 } else if (error?.code === 'auth/requires-recent-login') {
                     errorMessage = 'Pro změnu údajů se musíte znovu přihlásit';
+                } else if (error?.code === 'auth/operation-not-allowed') {
+                    errorMessage = error.message || 'Firebase vyžaduje ověření nového emailu před změnou. Kontaktujte podporu.';
+                } else if (error?.message) {
+                    errorMessage = error.message;
                 }
                 showMessage(errorMessage, 'error');
             }
@@ -2584,7 +2627,7 @@
 
         // CSS pro animace a toggle switch
         const settingsStyle = document.createElement('style');
-        style.textContent = `
+        settingsStyle.textContent = `
             @keyframes slideIn {
                 from { transform: translateX(100%); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
