@@ -5322,75 +5322,70 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     margin-top: 0.75rem;
 }
 
-/* Footer - Moderní a kompaktní design */
+/* ===== FOOTER - KOMPLETNÍ PŘEPRACOVÁNÍ ===== */
+footer.footer,
 .footer {
     background: #ffffff;
     color: #1f2937;
     padding: 2.5rem 0 1rem;
     border-top: 1px solid #e5e7eb;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.footer-content {
+footer.footer .container,
+.footer .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    box-sizing: border-box;
+}
+
+footer.footer .footer-content,
+.footer .footer-content {
     display: flex;
     flex-direction: column;
     gap: 2rem;
     margin-bottom: 2rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.footer-section {
-    min-width: 0;
+footer.footer .footer-section,
+.footer .footer-section {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Footer na PC - 4 sloupce vedle sebe v jednom řádku pomocí flexboxu */
-@media (min-width: 769px) {
-    .footer {
-        padding: 2.5rem 0 1rem;
-    }
-    
-    .footer-content {
+/* PC - 4 sloupce vedle sebe */
+@media screen and (min-width: 769px) {
+    footer.footer .footer-content,
+    .footer .footer-content {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         justify-content: space-between !important;
         align-items: flex-start !important;
         gap: 2.5rem !important;
-        margin-bottom: 2rem !important;
     }
     
-    .footer-section {
+    footer.footer .footer-section,
+    .footer .footer-section {
         display: flex !important;
         flex-direction: column !important;
         flex: 1 1 0% !important;
-        min-width: 0 !important;
-        max-width: none !important;
         width: auto !important;
-    }
-    
-    .footer-section h3 {
-        margin-top: 0 !important;
-        margin-bottom: 0.875rem !important;
+        max-width: none !important;
+        min-width: 0 !important;
     }
 }
 
-/* Explicitní pravidlo pro větší obrazovky */
-@media (min-width: 1024px) {
-    .footer-content {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 3rem !important;
-    }
-    
-    .footer-section {
-        flex: 1 1 0% !important;
-    }
-}
-
-/* Pro větší obrazovky - více prostoru */
-@media (min-width: 1200px) {
-    .footer-content {
+@media screen and (min-width: 1024px) {
+    footer.footer .footer-content,
+    .footer .footer-content {
         gap: 3rem !important;
     }
 }
