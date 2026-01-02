@@ -3563,239 +3563,28 @@ export const sendNewMessageEmail = functions
  * Firestore Trigger - Odešle fakturu při aktivaci Stripe subscription
  */
 /**
- * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
- * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
- * Stripe automaticky vytvoří fakturu při:
- * - Začátku trial období (0 Kč)
- * - Konci trial období (plná cena)
- * - Každém měsíčním obnovení předplatného
+ * VYPNUTO - Stripe automaticky generuje a posílá faktury
+ * Tato funkce byla odstraněna - faktury se posílají automaticky přes Stripe
  */
-export const sendStripeInvoice = functions
-  .region("europe-west1")
-  .firestore.document("customers/{userId}/subscriptions/{subscriptionId}")
-  .onCreate(async (snap, context) => {
-    // VYPNUTO - Stripe automaticky generuje faktury
-    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
-    /*
-    const subscriptionData = snap.data() as AnyObj;
-    const userId = context.params.userId;
-    const subscriptionId = context.params.subscriptionId;
-    
-    const status = subscriptionData?.status;
-    
-    // Odeslat fakturu pouze když je subscription aktivní nebo v trial období
-    if (status === "active" || status === "trialing") {
-      try {
-        // Zkontrolovat, zda už jsme fakturu neodeslali (ochrana před duplicitami)
-        const invoiceSent = subscriptionData?.invoiceSent;
-        if (invoiceSent) {
-          functions.logger.info("Faktura už byla odeslána", { subscriptionId, userId });
-          return null;
-        }
-        
-        await sendStripeInvoiceEmail(subscriptionId, userId, subscriptionData);
-        
-        // Označit, že faktura byla odeslána
-        await snap.ref.update({
-          invoiceSent: true,
-          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        
-        functions.logger.info("✅ Faktura odeslána pro Stripe subscription", { 
-          subscriptionId, 
-          userId,
-          status 
-        });
-      } catch (error: any) {
-        functions.logger.error("❌ Chyba při odesílání faktury pro Stripe subscription", { 
-          subscriptionId,
-          userId,
-          error: error?.message 
-        });
-      }
-    }
-    */
-    
-    return null;
-  });
+// export const sendStripeInvoice = functions... (ODSTRANĚNO)
 
 /**
- * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
- * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
- * Stripe automaticky vytvoří fakturu při úspěšné platbě za topování
+ * VYPNUTO - Stripe automaticky generuje a posílá faktury
+ * Tato funkce byla odstraněna - faktury se posílají automaticky přes Stripe
  */
-export const sendTopAdInvoiceOnCreate = functions
-  .region("europe-west1")
-  .firestore.document("customers/{userId}/checkout_sessions/{sessionId}")
-  .onCreate(async (snap, context) => {
-    // VYPNUTO - Stripe automaticky generuje faktury
-    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
-    /*
-    const checkoutData = snap.data() as AnyObj;
-    const userId = context.params.userId;
-    const sessionId = context.params.sessionId;
-    
-    // Kontrola, zda je platba úspěšná
-    const paymentStatus = checkoutData?.payment_status;
-    
-    // Zkontrolovat, zda jde o topování (má metadata s adId)
-    const metadata = checkoutData?.metadata || {};
-    const adId = metadata?.adId;
-    
-    // Odeslat fakturu pouze když:
-    // 1. Platba je úspěšně zaplacena (payment_status === 'paid')
-    // 2. Jde o topování (metadata obsahuje adId)
-    // 3. Faktura ještě nebyla odeslána
-    if (paymentStatus === "paid" && adId && !checkoutData?.invoiceSent) {
-      try {
-        await sendTopAdInvoiceEmail(sessionId, userId, checkoutData);
-        
-        // Označit, že faktura byla odeslána
-        await snap.ref.update({
-          invoiceSent: true,
-          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        
-        functions.logger.info("✅ Faktura za topování odeslána (onCreate)", { 
-          sessionId, 
-          userId,
-          adId,
-          paymentStatus
-        });
-      } catch (error: any) {
-        functions.logger.error("❌ Chyba při odesílání faktury za topování (onCreate)", { 
-          sessionId,
-          userId,
-          adId,
-          error: error?.message 
-        });
-      }
-    }
-    */
-    
-    return null;
-  });
+// export const sendTopAdInvoiceOnCreate = functions... (ODSTRANĚNO)
 
 /**
- * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
- * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
- * Stripe automaticky vytvoří fakturu při úspěšné platbě za topování
+ * VYPNUTO - Stripe automaticky generuje a posílá faktury
+ * Tato funkce byla odstraněna - faktury se posílají automaticky přes Stripe
  */
-export const sendTopAdInvoice = functions
-  .region("europe-west1")
-  .firestore.document("customers/{userId}/checkout_sessions/{sessionId}")
-  .onUpdate(async (change, context) => {
-    // VYPNUTO - Stripe automaticky generuje faktury
-    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
-    /*
-    const before = change.before.data() as AnyObj;
-    const after = change.after.data() as AnyObj;
-    const userId = context.params.userId;
-    const sessionId = context.params.sessionId;
-    
-    // Kontrola, zda je platba úspěšná
-    const paymentStatusBefore = before?.payment_status;
-    const paymentStatusAfter = after?.payment_status;
-    
-    // Zkontrolovat, zda jde o topování (má metadata s adId)
-    const metadata = after?.metadata || {};
-    const adId = metadata?.adId;
-    
-    // Odeslat fakturu pouze když:
-    // 1. Platba byla úspěšně zaplacena (payment_status se změnil na 'paid')
-    // 2. Jde o topování (metadata obsahuje adId)
-    // 3. Faktura ještě nebyla odeslána
-    if (paymentStatusAfter === "paid" && adId && !after?.invoiceSent) {
-      try {
-        await sendTopAdInvoiceEmail(sessionId, userId, after);
-        
-        // Označit, že faktura byla odeslána
-        await change.after.ref.update({
-          invoiceSent: true,
-          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        
-        functions.logger.info("✅ Faktura za topování odeslána", { 
-          sessionId, 
-          userId,
-          adId,
-          paymentStatusBefore,
-          paymentStatusAfter
-        });
-      } catch (error: any) {
-        functions.logger.error("❌ Chyba při odesílání faktury za topování", { 
-          sessionId,
-          userId,
-          adId,
-          error: error?.message 
-        });
-      }
-    }
-    */
-    
-    return null;
-  });
+// export const sendTopAdInvoice = functions... (ODSTRANĚNO)
 
 /**
- * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
- * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
- * Stripe automaticky vytvoří fakturu při:
- * - Začátku trial období (0 Kč)
- * - Konci trial období (plná cena)
- * - Každém měsíčním obnovení předplatného
+ * VYPNUTO - Stripe automaticky generuje a posílá faktury
+ * Tato funkce byla odstraněna - faktury se posílají automaticky přes Stripe
  */
-export const sendStripeInvoiceOnUpdate = functions
-  .region("europe-west1")
-  .firestore.document("customers/{userId}/subscriptions/{subscriptionId}")
-  .onUpdate(async (change, context) => {
-    // VYPNUTO - Stripe automaticky generuje faktury
-    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
-    /*
-    const before = change.before.data() as AnyObj;
-    const after = change.after.data() as AnyObj;
-    const userId = context.params.userId;
-    const subscriptionId = context.params.subscriptionId;
-    
-    const statusBefore = before?.status;
-    const statusAfter = after?.status;
-    
-    // Odeslat fakturu pouze když se status změní na aktivní nebo trialing
-    if ((statusBefore !== "active" && statusBefore !== "trialing") && 
-        (statusAfter === "active" || statusAfter === "trialing")) {
-      try {
-        // Zkontrolovat, zda už jsme fakturu neodeslali
-        const invoiceSent = after?.invoiceSent;
-        if (invoiceSent) {
-          functions.logger.info("Faktura už byla odeslána", { subscriptionId, userId });
-          return null;
-        }
-        
-        await sendStripeInvoiceEmail(subscriptionId, userId, after);
-        
-        // Označit, že faktura byla odeslána
-        await change.after.ref.update({
-          invoiceSent: true,
-          invoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        
-        functions.logger.info("✅ Faktura odeslána pro Stripe subscription (update)", { 
-          subscriptionId, 
-          userId,
-          statusBefore,
-          statusAfter
-        });
-      } catch (error: any) {
-        functions.logger.error("❌ Chyba při odesílání faktury pro Stripe subscription (update)", { 
-          subscriptionId,
-          userId,
-          error: error?.message 
-        });
-      }
-    }
-    */
-    
-    return null;
-  });
+// export const sendStripeInvoiceOnUpdate = functions... (ODSTRANĚNO)
 
 /**
  * Firebase Auth Trigger - Odešle uvítací email při vytvoření nového uživatele
