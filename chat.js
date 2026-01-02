@@ -519,6 +519,9 @@ function renderMessages() {
     
     // Pokud není vybraná konverzace, zobrazit zprávu a skrýt input
     if (!currentConversationId) {
+        // Na mobilu odebrat třídu pro zobrazení chatu
+        document.body.classList.remove('chat-active');
+        
         container.innerHTML = `
             <div class="ig-empty-state">
                 <div class="ig-empty-icon">
