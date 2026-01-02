@@ -632,8 +632,6 @@ async function processPayment() {
             const { addDoc, collection, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
             const successUrl = `${window.location.origin}/top-ads.html?payment=success`;
             const cancelUrl = `${window.location.origin}/top-ads.html?payment=canceled`;
-            // Pro 100% slevu použijeme coupon ID místo promotion_code
-            // Firebase Extension podporuje discounts s coupon ID
             const checkoutData = {
                 price: priceId,
                 mode: 'payment',
@@ -642,9 +640,9 @@ async function processPayment() {
                 metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
                 allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
                 // Automaticky aplikovat promo code 100OFF (100% sleva na topování)
-                // Použijeme coupon ID místo promotion_code (Firebase Extension podporuje discounts s coupon)
+                // Použijeme stejný formát jako v packages.js
                 discounts: [{
-                    coupon: 'FREE_TOP' // Coupon ID (ne promotion code ID)
+                    promotion_code: 'promo_1SlGEN1aQBd6ajy2vmVfxG6S' // Promotion code ID pro 100OFF
                 }],
                 // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                 invoice_creation: {
