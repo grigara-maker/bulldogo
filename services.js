@@ -816,10 +816,18 @@ function createAdCard(service, showActions = true) {
     }
     
     const status = (service?.status || 'active').toString().trim().toLowerCase();
+    const imageUrl = service.images && service.images.length > 0 ? service.images[0].url : '/fotky/vychozi-inzerat.png';
+    const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+    const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
+    const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
+    
     return `
         <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle}>
             <div class="ad-thumb">
-                <img src="${service.images && service.images.length > 0 ? service.images[0].url : '/fotky/vychozi-inzerat.png'}" alt="Inzerát" loading="lazy" decoding="async">
+                <picture>
+                    <source srcset="${escapedWebpUrl}" type="image/webp">
+                    <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async">
+                </picture>
             </div>
             <div class="ad-body" data-location="${getLocationName(service.location || '') || 'Neuvedeno'}">
                 <div class="ad-meta"><span>${getCategoryName(service.category || '')}</span></div>

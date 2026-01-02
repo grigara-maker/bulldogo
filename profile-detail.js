@@ -763,7 +763,16 @@ function createServiceCard(service) {
     console.log('🔗 Image URL type:', typeof imageUrl);
     console.log('🔗 Image URL length:', imageUrl.length);
     
-    let imageHtml = `<img src="${imageUrl}" alt="${service.title}" loading="lazy" decoding="async" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">`;
+    // Vytvořit WebP fallback
+    const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+    const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
+    const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
+    const escapedTitle = (service.title || '').replace(/"/g, '&quot;');
+    
+    let imageHtml = `<picture>
+        <source srcset="${escapedWebpUrl}" type="image/webp">
+        <img src="${escapedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+    </picture>`;
     imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
     
     return `
