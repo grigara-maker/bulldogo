@@ -950,35 +950,52 @@
                 if (newEmail) {
                     const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
                     
-                    // Zkus použít verifyBeforeUpdateEmail (Firebase vyžaduje ověření)
-                    if (authModule.verifyBeforeUpdateEmail) {
-                        // Odešle ověřovací email na novou adresu, email se změní až po ověření
-                        await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
-                    } else {
-                        // Fallback na updateEmail pokud verifyBeforeUpdateEmail není dostupné
-                        await authModule.updateEmail(currentUser, newEmail);
+                    if (!authModule.verifyBeforeUpdateEmail) {
+                        throw new Error('Ověření emailu není dostupné. Kontaktujte podporu.');
                     }
+                    
+                    // Odešle ověřovací email na novou adresu
+                    // Email se změní v Auth až po kliknutí na odkaz v ověřovacím emailu
+                    await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
+                    
+                    // Uložit nový email do Firestore jako pending (čeká na ověření)
+                    const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const uid = currentUser.uid;
+                    
+                    // Uložit nový email jako pending - změní se až po ověření
+                    await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), {
+                        emailPending: newEmail,
+                        emailPendingAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                    
+                    // Zobrazit upozornění
+                    showMessage('📧 Ověřovací email byl odeslán na novou adresu ' + newEmail + '. Email se změní až po ověření kliknutím na odkaz v emailu.', 'success');
+                    
+                    // Vyčistit formulář
+                    document.getElementById('newEmail').value = '';
+                    document.getElementById('confirmEmail').value = '';
+                    document.getElementById('currentPasswordForChange').value = '';
+                    
+                    // NEPOKRAČOVAT dál - email se změní až po ověření
+                    return;
                 }
 
-                // Aktualizace v databázi
-                const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                const uid = currentUser.uid;
-                const updateData = { updatedAt: serverTimestamp() };
-                
-                // Email uložíme do Firestore
-                if (newEmail) {
-                    updateData.email = newEmail;
-                }
-                // Telefon uložíme do Firestore (důležité pro detekci změny v Cloud Function)
+                // Aktualizace telefonu v databázi (pokud není změna emailu)
                 if (normalizedPhone) {
-                    updateData.phone = normalizedPhone;
-                }
+                    const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const uid = currentUser.uid;
+                    const updateData = { 
+                        phone: normalizedPhone,
+                        updatedAt: serverTimestamp() 
+                    };
 
-                // Aktualizace v root users dokumentu
-                await setDoc(doc(window.firebaseDb, 'users', uid), updateData, { merge: true });
-                
-                // Aktualizace v profilu
-                await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), updateData, { merge: true });
+                    // Aktualizace v root users dokumentu
+                    await setDoc(doc(window.firebaseDb, 'users', uid), updateData, { merge: true });
+                    
+                    // Aktualizace v profilu
+                    await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), updateData, { merge: true });
+                }
 
                 // Vyčistit formulář
                 document.getElementById('newEmail').value = '';
@@ -1083,22 +1100,27 @@
                 // Firebase vyžaduje ověření, použijeme verifyBeforeUpdateEmail
                 const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
                 
-                // Zkus použít verifyBeforeUpdateEmail (Firebase vyžaduje ověření)
-                if (authModule.verifyBeforeUpdateEmail) {
-                    // Odešle ověřovací email na novou adresu, email se změní až po ověření
-                    await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
-                } else {
-                    // Fallback na updateEmail pokud verifyBeforeUpdateEmail není dostupné
-                    await authModule.updateEmail(currentUser, newEmail);
+                if (!authModule.verifyBeforeUpdateEmail) {
+                    throw new Error('Ověření emailu není dostupné. Kontaktujte podporu.');
                 }
-
-                // Propsat změnu i do Firestore (root + profile)
-                try {
-                    const { setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-                    const uid = currentUser.uid;
-                    await setDoc(doc(window.firebaseDb, 'users', uid), { email: newEmail }, { merge: true });
-                    await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), { email: newEmail, updatedAt: new Date() }, { merge: true });
-                } catch (e) { /* noop */ }
+                
+                // Odešle ověřovací email na novou adresu
+                // Email se změní v Auth až po kliknutí na odkaz v ověřovacím emailu
+                await authModule.verifyBeforeUpdateEmail(currentUser, newEmail);
+                
+                // Uložit nový email do Firestore jako pending (čeká na ověření)
+                const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const uid = currentUser.uid;
+                
+                // Uložit nový email jako pending - změní se až po ověření
+                await setDoc(doc(window.firebaseDb, 'users', uid, 'profile', 'profile'), {
+                    emailPending: newEmail,
+                    emailPendingAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+                
+                // Zobrazit upozornění
+                showMessage('📧 Ověřovací email byl odeslán na novou adresu ' + newEmail + '. Email se změní až po ověření kliknutím na odkaz v emailu.', 'success');
 
                 // Vyčistit formulář
                 const a = document.getElementById('newEmail'); if (a) a.value = '';
@@ -1866,11 +1888,59 @@
 
             // Automatické načítání při změně auth stavu
             if (window.firebaseAuth) {
-                window.firebaseAuth.onAuthStateChanged((user) => {
+                let previousEmail = null;
+                window.firebaseAuth.onAuthStateChanged(async (user) => {
                     if (user && isInitialized) {
+                        // Zkontrolovat, zda se změnil email v Auth (po ověření)
+                        const currentEmail = user.email;
+                        if (previousEmail && previousEmail !== currentEmail) {
+                            console.log('📧 Email se změnil v Auth, aktualizuji Firestore:', { old: previousEmail, new: currentEmail });
+                            
+                            // Aktualizovat email v Firestore
+                            try {
+                                const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                                const uid = user.uid;
+                                
+                                // Zkontrolovat, zda existuje emailPending, který odpovídá novému emailu
+                                const { getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                                const profileRef = doc(window.firebaseDb, 'users', uid, 'profile', 'profile');
+                                const profileSnap = await getDoc(profileRef);
+                                
+                                if (profileSnap.exists()) {
+                                    const profileData = profileSnap.data();
+                                    if (profileData.emailPending === currentEmail) {
+                                        // Aktualizovat email v profilu a root dokumentu
+                                        await setDoc(profileRef, {
+                                            email: currentEmail,
+                                            emailPending: null,
+                                            emailPendingAt: null,
+                                            updatedAt: serverTimestamp()
+                                        }, { merge: true });
+                                        
+                                        await setDoc(doc(window.firebaseDb, 'users', uid), {
+                                            email: currentEmail,
+                                            updatedAt: serverTimestamp()
+                                        }, { merge: true });
+                                        
+                                        showMessage('✅ Email byl úspěšně změněn!', 'success');
+                                        console.log('✅ Email aktualizován v Firestore po ověření');
+                                        
+                                        // Aktualizovat formulář
+                                        await loadUserSettings();
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('❌ Chyba při aktualizaci emailu v Firestore:', error);
+                            }
+                        }
+                        
+                        previousEmail = currentEmail;
+                        
                         console.log('🔄 Automatické načítání dat při změně auth stavu');
                         loadUserSettings();
                         loadUserData();
+                    } else if (!user) {
+                        previousEmail = null;
                     }
                 });
             }
