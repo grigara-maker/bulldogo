@@ -641,6 +641,10 @@ async function processPayment() {
                     cancel_url: cancelUrl,
                     metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
                     allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
+                    // Automaticky aplikovat promo code 100OFF (100% sleva na topování)
+                    discounts: [{
+                        promotion_code: 'promo_1SlGEN1aQBd6ajy2vmVfxG6S' // 100OFF - 100% sleva
+                    }],
                     // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                     invoice_creation: {
                         enabled: true, // Povolit automatické vytváření faktur
