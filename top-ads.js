@@ -558,12 +558,11 @@ async function processPayment() {
         oneweek: "price_1Sf29n1aQBd6ajy20hbq5x6L",
         onemonth: "price_1Sf2AQ1aQBd6ajy2IpqtOstt"
     };
-    // Ceny 0 Kč pro zdarma topování (vytvoř v Stripe Dashboardu)
-    // TODO: Nahraďte skutečnými Price IDs pro 0 Kč ceny z Stripe
+    // Ceny 0 Kč pro zdarma topování (vytvořeno v Stripe Dashboardu)
     const STRIPE_PRICE_IDS_TOPAD_FREE = {
-        oneday: null, // Zadej Price ID pro "Topování 1 den - zdarma" (0 Kč)
-        oneweek: null, // Zadej Price ID pro "Topování 7 dní - zdarma" (0 Kč)
-        onemonth: null // Zadej Price ID pro "Topování 30 dní - zdarma" (0 Kč)
+        oneday: "price_1SlH2S1aQBd6ajy21KSFpDei", // "Topování 1 den - zdarma" (0 Kč)
+        oneweek: "price_1SlH2n1aQBd6ajy2S7qWaKYH", // "Topování 7 dní - zdarma" (0 Kč)
+        onemonth: "price_1SlH371aQBd6ajy2UNsClAMB" // "Topování 30 dní - zdarma" (0 Kč)
     };
     // Pokus o dynamické zjištění priceId z Firestore (funguje v TEST i LIVE módu)
     async function resolveStripePriceIdForTopAd(key) {
