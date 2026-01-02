@@ -5322,80 +5322,72 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     margin-top: 0.75rem;
 }
 
-/* Footer */
+/* Footer - Moderní a kompaktní design */
 .footer {
     background: #ffffff;
-    color: #1f2937; /* slate-800 */
-    padding: 3rem 0 1rem;
-    border-top: 1px solid #e5e7eb; /* slate-200 */
+    color: #1f2937;
+    padding: 2.5rem 0 1rem;
+    border-top: 1px solid #e5e7eb;
 }
 
 .footer-content {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5rem;
     margin-bottom: 2rem;
+    align-items: start;
 }
 
 .footer-section {
-    flex: 1 1 0%;
     min-width: 0;
-    max-width: 25%;
 }
 
-/* Footer na PC - všechny sekce v jednom řádku, rovnoměrně rozprostřené */
+/* Footer na PC - 4 sloupce v jednom řádku */
 @media (min-width: 769px) {
+    .footer {
+        padding: 2.5rem 0 1rem;
+    }
+    
     .footer-content {
-        flex-wrap: nowrap !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
-        gap: 2rem !important;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 2.5rem !important;
+        margin-bottom: 2rem !important;
     }
     
     .footer-section {
-        flex: 1 1 0% !important;
+        width: 100% !important;
+        max-width: 100% !important;
         min-width: 0 !important;
-        max-width: calc(25% - 1.5rem) !important;
-        width: auto !important;
     }
 }
 
-/* Explicitní pravidlo pro PC - vyšší priorita */
-@media (min-width: 1025px) {
+/* Pro větší obrazovky - více prostoru */
+@media (min-width: 1200px) {
     .footer-content {
-        flex-wrap: nowrap !important;
-        flex-direction: row !important;
-        display: flex !important;
-        justify-content: flex-start !important;
-        gap: 2rem !important;
-    }
-    
-    .footer-section {
-        flex: 1 1 0% !important;
-        width: auto !important;
-        max-width: calc(25% - 1.5rem) !important;
-        min-width: 0 !important;
+        gap: 3rem !important;
     }
 }
 
 .footer-section h3 {
-    margin-bottom: 1rem;
-    color: #111827; /* gray-900 */
+    margin-bottom: 0.875rem;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .footer-section p {
-    color: #4b5563; /* gray-600 */
+    color: #4b5563;
     margin-bottom: 0.5rem;
     line-height: 1.6;
+    font-size: 0.9rem;
 }
 
 .footer-section ul {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .footer-section ul li {
@@ -5403,20 +5395,33 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 .footer-section ul li a {
-    color: #4b5563; /* gray-600 */
+    color: #4b5563;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
+    font-size: 0.9rem;
+    display: inline-block;
 }
 
 .footer-section ul li a:hover {
-    color: #111827; /* gray-900 */
+    color: #f77c00;
+}
+
+.footer-section p i {
+    margin-right: 0.5rem;
+    color: #f77c00;
+    width: 16px;
 }
 
 .footer-bottom {
     text-align: center;
-    padding-top: 2rem;
-    border-top: 1px solid #e5e7eb; /* slate-200 */
-    color: #6b7280; /* gray-500 */
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.footer-bottom p {
+    margin: 0.25rem 0;
 }
 
 /* Profile Page Styles */
@@ -15052,8 +15057,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .footer-content {
-        flex-direction: column !important;
-        flex-wrap: wrap !important;
+        display: grid !important;
+        grid-template-columns: 1fr !important;
         gap: 1.5rem !important;
         text-align: left !important;
     }
