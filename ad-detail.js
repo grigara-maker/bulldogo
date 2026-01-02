@@ -434,17 +434,14 @@ function handleThumbnailClick(e) {
     }
 }
 
-// Display no images placeholder
+// Display no images placeholder - zobrazit výchozí obrázek
 function displayNoImages() {
     const mainImage = document.getElementById('adMainImage');
     const thumbnails = document.getElementById('adThumbnails');
     
-    mainImage.innerHTML = `
-        <div class="no-image-placeholder">
-            <i class="fas fa-image"></i>
-            <span>Žádné obrázky</span>
-        </div>
-    `;
+    // Zobrazit výchozí obrázek stejně jako na stránce služeb
+    const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+    mainImage.innerHTML = `<img src="${defaultImageUrl}" alt="Výchozí obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.onerror=null; this.src='/fotky/vychozi-inzerat.png'">`;
     
     thumbnails.innerHTML = '';
 }
