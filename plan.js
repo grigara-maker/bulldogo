@@ -8,11 +8,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Poslouchat změny v auth stavu
     if (window.firebaseAuth) {
-        const { onAuthStateChanged } = require('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        onAuthStateChanged(window.firebaseAuth, (user) => {
-            if (user) {
-                loadCurrentPlan();
-            }
+        import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js').then(({ onAuthStateChanged }) => {
+            onAuthStateChanged(window.firebaseAuth, (user) => {
+                if (user) {
+                    loadCurrentPlan();
+                }
+            });
         });
     }
 });
