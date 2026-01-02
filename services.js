@@ -851,9 +851,33 @@ function createAdCard(service, showActions = true) {
     const defaultImageUrl = '/fotky/vychozi-inzerat.png';
     const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
     
+    // Optimalizace obrázků - přidat fetchpriority pro první viditelné
+    // Zjistit, zda je to první obrázek v seznamu (pro fetchpriority)
+    const isFirstVisible = typeof createAdCard.firstIndex === 'undefined';
+    if (isFirstVisible) createAdCard.firstIndex = 0;
+    const isPriorityImage = createAdCard.firstIndex < 3; // První 3 obrázky mají vysokou prioritu
+    createAdCard.firstIndex++;
+    
     // Použít WebP pouze pro lokální obrázky (ze složky /fotky/)
     // Pro obrázky z Firebase Storage nepoužívat WebP, protože neexistují
     const isLocalImage = imageUrl.startsWith('/fotky/') || imageUrl.startsWith('./fotky/');
+    
+    // Optimalizovat Firebase Storage URL - přidat parametry pro rychlejší načítání
+    let optimizedImageUrl = escapedImageUrl;
+    if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
+        // Přidat parametry pro optimalizaci (pokud ještě nejsou)
+        if (!imageUrl.includes('alt=media')) {
+            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+        } else {
+            optimizedImageUrl = escapedImageUrl;
+        }
+    }
+    
+    // Atributy pro optimalizaci
+    const loadingAttr = isPriorityImage ? 'eager' : 'lazy';
+    const fetchPriorityAttr = isPriorityImage ? ' fetchpriority="high"' : '';
+    const widthHeightAttr = ' width="400" height="300"'; // Standardní rozměry pro karty
+    
     let imageHtml;
     if (isLocalImage) {
         const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
@@ -861,12 +885,12 @@ function createAdCard(service, showActions = true) {
         imageHtml = `
                 <picture>
                     <source srcset="${escapedWebpUrl}" type="image/webp">
-                    <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
+                    <img src="${escapedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
                 </picture>
             `;
     } else {
-        // Pro Firebase Storage obrázky použít pouze <img> bez WebP
-        imageHtml = `<img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
+        // Pro Firebase Storage obrázky použít optimalizovanou URL
+        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
     }
     
     return `

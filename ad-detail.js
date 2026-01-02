@@ -682,9 +682,16 @@ function displayOtherAds(ads) {
         const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
         const escapedTitle = (ad.title || '').replace(/"/g, '&quot;');
         
+        // Optimalizovat Firebase Storage URL
+        let optimizedImageUrl = escapedImageUrl;
+        if (imageUrl.includes('firebasestorage.googleapis.com') && !imageUrl.includes('alt=media')) {
+            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+            optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+        }
+        
         let imageHtml = `<picture>
             <source srcset="${escapedWebpUrl}" type="image/webp">
-            <img src="${escapedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
         </picture>`;
         imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
         
