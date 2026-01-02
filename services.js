@@ -816,7 +816,17 @@ function createAdCard(service, showActions = true) {
     }
     
     const status = (service?.status || 'active').toString().trim().toLowerCase();
-    const imageUrl = service.images && service.images.length > 0 ? service.images[0].url : '/fotky/vychozi-inzerat.png';
+    
+    // Získat URL obrázku - může být string nebo objekt s .url
+    let imageUrl = '/fotky/vychozi-inzerat.png';
+    if (service.images && service.images.length > 0) {
+        const firstImg = service.images[0];
+        if (typeof firstImg === 'string') {
+            imageUrl = firstImg;
+        } else if (firstImg && firstImg.url) {
+            imageUrl = firstImg.url;
+        }
+    }
     const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
     
     // Použít WebP pouze pro lokální obrázky (ze složky /fotky/)
