@@ -4109,9 +4109,6 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
     top: 50%;
     transform: translate(-50%, -50%);
     animation: bubbleLaunch 12.8s ease-out infinite;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .bubble-bg {
@@ -4126,19 +4123,20 @@ select.search-input::-ms-expand { /* skrytí defaultní šipky v IE/Edge */
 }
 
 .tool-bubble i {
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 2;
     font-size: 1.8rem;
     color: #2c3e50;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     margin: 0 !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1em;
-    height: 1em;
+    display: block;
     line-height: 1;
+    width: auto;
+    height: auto;
 }
 
 .bubble-1 { animation-delay: 0s; }
