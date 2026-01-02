@@ -12927,6 +12927,17 @@ html body .ad-actions {
     .ad-main-image {
         height: 250px !important;
         width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .ad-main-image .ad-main-img {
+        object-fit: contain !important;
+        object-position: center !important;
+        max-height: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
     }
     
     .ad-thumbnail {
