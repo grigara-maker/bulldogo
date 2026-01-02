@@ -1,7 +1,38 @@
+# Dependencies
 node_modules/
 functions/node_modules/
+
+# System files
 .DS_Store
-public/
+*.log
+*.swp
+*.swo
+*~
+
+# Firebase
 inzerio-inzerce-*.json
 *.serviceaccount.json
+.firebase/
+.firebaserc
+
+# Build outputs
+functions/lib/
+*.js.map
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Temporary files
+*.tmp
+*.temp
+public/
 
