@@ -484,7 +484,14 @@ async function processPayment() {
             mode: 'subscription',
             success_url: successUrl,
             cancel_url: cancelUrl,
-            allow_promotion_codes: true // Povolit zadání promo kódu (kupónu) v checkoutu
+            allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
+            // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
+            invoice_creation: {
+                enabled: true, // Povolit automatické vytváření faktur
+                invoice_data: {
+                    description: planId === 'business' ? 'Měsíční předplatné - Firma' : 'Měsíční předplatné - Hobby uživatel'
+                }
+            }
         };
         // Nastavit 30denní trial pro Hobby i Firmu
         if (planId === 'hobby' || planId === 'business') {

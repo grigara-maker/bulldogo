@@ -3604,12 +3604,17 @@ export const sendStripeInvoice = functions
   });
 
 /**
- * Firestore Trigger - Odešle fakturu za topování po úspěšné platbě přes Stripe checkout (onCreate)
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při úspěšné platbě za topování
  */
 export const sendTopAdInvoiceOnCreate = functions
   .region("europe-west1")
   .firestore.document("customers/{userId}/checkout_sessions/{sessionId}")
   .onCreate(async (snap, context) => {
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
     const checkoutData = snap.data() as AnyObj;
     const userId = context.params.userId;
     const sessionId = context.params.sessionId;
@@ -3650,17 +3655,23 @@ export const sendTopAdInvoiceOnCreate = functions
         });
       }
     }
+    */
     
     return null;
   });
 
 /**
- * Firestore Trigger - Odešle fakturu za topování po úspěšné platbě přes Stripe checkout (onUpdate)
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při úspěšné platbě za topování
  */
 export const sendTopAdInvoice = functions
   .region("europe-west1")
   .firestore.document("customers/{userId}/checkout_sessions/{sessionId}")
   .onUpdate(async (change, context) => {
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
     const before = change.before.data() as AnyObj;
     const after = change.after.data() as AnyObj;
     const userId = context.params.userId;
@@ -3704,17 +3715,26 @@ export const sendTopAdInvoice = functions
         });
       }
     }
+    */
     
     return null;
   });
 
 /**
- * Firestore Trigger - Odešle fakturu při změně statusu subscription na aktivní
+ * Firestore Trigger - VYPNUTO - Stripe nyní automaticky generuje a posílá faktury
+ * Faktury se generují automaticky přes Stripe invoice_creation v checkout session
+ * Stripe automaticky vytvoří fakturu při:
+ * - Začátku trial období (0 Kč)
+ * - Konci trial období (plná cena)
+ * - Každém měsíčním obnovení předplatného
  */
 export const sendStripeInvoiceOnUpdate = functions
   .region("europe-west1")
   .firestore.document("customers/{userId}/subscriptions/{subscriptionId}")
   .onUpdate(async (change, context) => {
+    // VYPNUTO - Stripe automaticky generuje faktury
+    // Pokud potřebuješ vlastní faktury, odkomentuj kód níže
+    /*
     const before = change.before.data() as AnyObj;
     const after = change.after.data() as AnyObj;
     const userId = context.params.userId;
@@ -3756,6 +3776,7 @@ export const sendStripeInvoiceOnUpdate = functions
         });
       }
     }
+    */
     
     return null;
   });

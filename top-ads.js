@@ -640,7 +640,14 @@ async function processPayment() {
                     success_url: successUrl,
                     cancel_url: cancelUrl,
                     metadata: { adId: selectedAd.id, duration: selectedPricing.duration },
-                    allow_promotion_codes: true // Povolit zadání promo kódu (kupónu) v checkoutu
+                    allow_promotion_codes: true, // Povolit zadání promo kódu (kupónu) v checkoutu
+                    // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
+                    invoice_creation: {
+                        enabled: true, // Povolit automatické vytváření faktur
+                        invoice_data: {
+                            description: `Topování inzerátu - ${selectedPricing.duration} ${selectedPricing.duration === 1 ? 'den' : selectedPricing.duration === 7 ? 'dní' : 'dní'}`
+                        }
+                    }
                 }
             );
             // doplň checkoutSessionId do pending pro případné budoucí dohledání
