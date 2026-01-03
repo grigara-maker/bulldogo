@@ -4155,8 +4155,16 @@ export const createBillingPortalSession = functions
         const stripeSecretKey = 
           process.env.STRIPE_SECRET_KEY || 
           (functions.config().stripe?.secret_key as string | undefined);
-        if (!stripeSecretKey) {
+        if (!stripeSecretKey || typeof stripeSecretKey !== 'string' || stripeSecretKey.trim().length === 0) {
           functions.logger.error("❌ STRIPE_SECRET_KEY not set in environment variables or functions.config");
+          res.status(500).json({ error: "Stripe configuration error" });
+          return;
+        }
+
+        // Ověřit, že secret key má správný formát (začíná sk_)
+        const cleanedSecretKey = stripeSecretKey.trim();
+        if (!cleanedSecretKey.startsWith('sk_')) {
+          functions.logger.error("❌ STRIPE_SECRET_KEY has invalid format");
           res.status(500).json({ error: "Stripe configuration error" });
           return;
         }
@@ -4170,7 +4178,7 @@ export const createBillingPortalSession = functions
           }),
           {
             headers: {
-              Authorization: `Bearer ${stripeSecretKey}`,
+              Authorization: `Bearer ${cleanedSecretKey}`,
               "Content-Type": "application/x-www-form-urlencoded",
             },
           }

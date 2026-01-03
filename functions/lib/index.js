@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.stripeInvoiceWebhook = exports.setAdminStatus = exports.deleteUserAuth = exports.sendWelcomeEmail = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
+exports.createBillingPortalSession = exports.stripeInvoiceWebhook = exports.setAdminStatus = exports.deleteUserAuth = exports.sendWelcomeEmail = exports.sendNewMessageEmail = exports.sendProfileChangeEmail = exports.onPlanCancelled = exports.forceCheckExpiredPlans = exports.enforceExpiredPlanAds = exports.paymentReturn = exports.gopayNotification = exports.checkPayment = exports.createPayment = exports.cleanupInactiveUsers = exports.reportAd = exports.sendInactivityWarningEmails = exports.validateICO = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const axios_1 = __importDefault(require("axios"));
@@ -3762,5 +3762,153 @@ Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.
         });
         res.status(500).json({ error: error === null || error === void 0 ? void 0 : error.message });
     }
+});
+// ============================================
+// STRIPE CUSTOMER PORTAL SESSION
+// ============================================
+/**
+ * Vytvoří Stripe Customer Portal session pro správu předplatného
+ */
+exports.createBillingPortalSession = functions
+    .region("europe-west1")
+    .runWith({ secrets: ["STRIPE_SECRET_KEY"] })
+    .https.onRequest(async (req, res) => {
+    corsHandler(req, res, async () => {
+        var _a, _b;
+        try {
+            // Kontrola metody
+            if (req.method !== "POST") {
+                res.status(405).json({ error: "Method not allowed" });
+                return;
+            }
+            // Získat return URL z requestu
+            const { returnUrl, uid } = req.body;
+            if (!returnUrl) {
+                res.status(400).json({ error: "Missing returnUrl parameter" });
+                return;
+            }
+            // Získat UID z Authorization header nebo z requestu
+            let userId = uid || null;
+            const authHeader = req.headers.authorization;
+            if (authHeader && typeof authHeader === 'string' && authHeader.startsWith("Bearer ")) {
+                try {
+                    const token = authHeader.substring(7).trim(); // Odstranit "Bearer " a whitespace
+                    // Ověřit, že token neobsahuje neplatné znaky
+                    if (token && /^[A-Za-z0-9._-]+$/.test(token)) {
+                        const decodedToken = await admin.auth().verifyIdToken(token);
+                        userId = decodedToken.uid;
+                    }
+                    else {
+                        functions.logger.warn("⚠️ Invalid token format", { tokenLength: token === null || token === void 0 ? void 0 : token.length });
+                    }
+                }
+                catch (error) {
+                    functions.logger.warn("⚠️ Could not verify token", { error });
+                }
+            }
+            if (!userId) {
+                res.status(401).json({ error: "Unauthorized - missing user ID" });
+                return;
+            }
+            // Získat Stripe customer ID z Firestore
+            // Firebase Extension ukládá customer dokumenty s ID = Stripe customer ID, ne s UID
+            // Musíme najít customer ID z subscription nebo zkontrolovat, jestli existuje customer dokument s UID
+            const db = admin.firestore();
+            let stripeCustomerId = null;
+            // 1) Zkusit najít customer dokument s UID jako ID (pokud Extension ukládá takto)
+            const customerDocByUid = await db.collection("customers").doc(userId).get();
+            if (customerDocByUid.exists) {
+                const customerData = customerDocByUid.data();
+                stripeCustomerId = (customerData === null || customerData === void 0 ? void 0 : customerData.id) || (customerData === null || customerData === void 0 ? void 0 : customerData.stripeCustomerId) || null;
+            }
+            // 2) Pokud nenajdeme, zkusit najít z subscription (Extension ukládá subscriptions pod customers/{customerId}/subscriptions)
+            if (!stripeCustomerId) {
+                try {
+                    // Zkusit najít aktivní subscription pod customers/{uid}/subscriptions
+                    const subscriptionsRef = db.collection("customers").doc(userId).collection("subscriptions");
+                    const activeSubs = await subscriptionsRef.where("status", "in", ["trialing", "active"]).limit(1).get();
+                    if (!activeSubs.empty) {
+                        const subData = activeSubs.docs[0].data();
+                        stripeCustomerId = (subData === null || subData === void 0 ? void 0 : subData.customer) || null;
+                    }
+                }
+                catch (error) {
+                    functions.logger.warn("⚠️ Could not find customer ID from subscriptions", { error, userId });
+                }
+            }
+            // 3) Pokud stále nemáme customer ID, zkusit najít podle emailu v customers kolekci
+            if (!stripeCustomerId) {
+                try {
+                    // Získat email uživatele
+                    const userRecord = await admin.auth().getUser(userId);
+                    const userEmail = userRecord.email;
+                    if (userEmail) {
+                        // Prohledat všechny customer dokumenty (Extension může ukládat s různými ID)
+                        // Toto je náročné, ale jako fallback
+                        const allCustomers = await db.collection("customers").limit(100).get();
+                        for (const customerDoc of allCustomers.docs) {
+                            const customerData = customerDoc.data();
+                            if ((customerData === null || customerData === void 0 ? void 0 : customerData.email) === userEmail || ((_a = customerData === null || customerData === void 0 ? void 0 : customerData.metadata) === null || _a === void 0 ? void 0 : _a.firebaseUID) === userId) {
+                                stripeCustomerId = customerDoc.id; // Document ID je Stripe customer ID
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch (error) {
+                    functions.logger.warn("⚠️ Could not find customer ID by email", { error, userId });
+                }
+            }
+            if (!stripeCustomerId) {
+                functions.logger.error("❌ Stripe customer ID not found for user", { userId });
+                res.status(404).json({ error: "Stripe customer ID not found. Please ensure you have an active subscription." });
+                return;
+            }
+            // Získat Stripe Secret Key z environment variables nebo secrets
+            // Podporujeme oba způsoby: process.env (pro secrets) nebo functions.config (pro legacy)
+            const stripeSecretKey = process.env.STRIPE_SECRET_KEY ||
+                ((_b = functions.config().stripe) === null || _b === void 0 ? void 0 : _b.secret_key);
+            if (!stripeSecretKey || typeof stripeSecretKey !== 'string' || stripeSecretKey.trim().length === 0) {
+                functions.logger.error("❌ STRIPE_SECRET_KEY not set in environment variables or functions.config");
+                res.status(500).json({ error: "Stripe configuration error" });
+                return;
+            }
+            // Ověřit, že secret key má správný formát (začíná sk_)
+            const cleanedSecretKey = stripeSecretKey.trim();
+            if (!cleanedSecretKey.startsWith('sk_')) {
+                functions.logger.error("❌ STRIPE_SECRET_KEY has invalid format");
+                res.status(500).json({ error: "Stripe configuration error" });
+                return;
+            }
+            // Vytvořit billing portal session přes Stripe API
+            const stripeResponse = await axios_1.default.post("https://api.stripe.com/v1/billing_portal/sessions", new URLSearchParams({
+                customer: stripeCustomerId,
+                return_url: returnUrl,
+            }), {
+                headers: {
+                    Authorization: `Bearer ${cleanedSecretKey}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            });
+            const portalUrl = stripeResponse.data.url;
+            if (!portalUrl) {
+                res.status(500).json({ error: "Failed to create portal session" });
+                return;
+            }
+            functions.logger.info("✅ Billing portal session created", {
+                uid: userId,
+                stripeCustomerId,
+                returnUrl,
+            });
+            res.status(200).json({ url: portalUrl });
+        }
+        catch (error) {
+            functions.logger.error("❌ Chyba při vytváření billing portal session", {
+                error: error === null || error === void 0 ? void 0 : error.message,
+                stack: error === null || error === void 0 ? void 0 : error.stack,
+            });
+            res.status(500).json({ error: (error === null || error === void 0 ? void 0 : error.message) || "Internal server error" });
+        }
+    });
 });
 //# sourceMappingURL=index.js.map
