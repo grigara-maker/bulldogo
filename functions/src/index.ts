@@ -4063,8 +4063,16 @@ export const createBillingPortalSession = functions
 
         // Získat return URL z requestu
         const { returnUrl, uid } = req.body;
-        if (!returnUrl) {
-          res.status(400).json({ error: "Missing returnUrl parameter" });
+        if (!returnUrl || typeof returnUrl !== 'string' || returnUrl.trim().length === 0) {
+          res.status(400).json({ error: "Missing or invalid returnUrl parameter" });
+          return;
+        }
+
+        // Validovat, že returnUrl je validní URL
+        try {
+          new URL(returnUrl);
+        } catch (e) {
+          res.status(400).json({ error: "Invalid returnUrl format. Must be a valid URL." });
           return;
         }
 
@@ -4092,31 +4100,46 @@ export const createBillingPortalSession = functions
         }
 
         // Získat Stripe customer ID z Firestore
-        // Firebase Extension ukládá customer dokumenty s ID = Stripe customer ID, ne s UID
-        // Musíme najít customer ID z subscription nebo zkontrolovat, jestli existuje customer dokument s UID
+        // Firebase Extension ukládá subscriptions pod customers/{uid}/subscriptions, kde uid je Firebase UID
+        // Stripe customer ID je v subscription dokumentu v poli "customer"
         const db = admin.firestore();
         let stripeCustomerId: string | null = null;
 
-        // 1) Zkusit najít customer dokument s UID jako ID (pokud Extension ukládá takto)
-        const customerDocByUid = await db.collection("customers").doc(userId).get();
-        if (customerDocByUid.exists) {
-          const customerData = customerDocByUid.data() as AnyObj;
-          stripeCustomerId = customerData?.id || customerData?.stripeCustomerId || null;
+        // 1) Nejdřív zkusit najít z aktivní subscription (nejspolehlivější způsob)
+        try {
+          const subscriptionsRef = db.collection("customers").doc(userId).collection("subscriptions");
+          const activeSubs = await subscriptionsRef.where("status", "in", ["trialing", "active"]).limit(1).get();
+          
+          if (!activeSubs.empty) {
+            const subData = activeSubs.docs[0].data() as AnyObj;
+            // Customer ID může být string nebo objekt s id
+            if (typeof subData?.customer === 'string') {
+              stripeCustomerId = subData.customer;
+            } else if (subData?.customer?.id && typeof subData.customer.id === 'string') {
+              stripeCustomerId = subData.customer.id;
+            } else if (subData?.customer) {
+              // Pokud je to reference nebo jiný formát, zkusit získat ID
+              stripeCustomerId = String(subData.customer);
+            }
+          }
+        } catch (error) {
+          functions.logger.warn("⚠️ Could not find customer ID from subscriptions", { error, userId });
         }
 
-        // 2) Pokud nenajdeme, zkusit najít z subscription (Extension ukládá subscriptions pod customers/{customerId}/subscriptions)
+        // 2) Pokud nenajdeme, zkusit najít customer dokument s UID jako ID
         if (!stripeCustomerId) {
           try {
-            // Zkusit najít aktivní subscription pod customers/{uid}/subscriptions
-            const subscriptionsRef = db.collection("customers").doc(userId).collection("subscriptions");
-            const activeSubs = await subscriptionsRef.where("status", "in", ["trialing", "active"]).limit(1).get();
-            
-            if (!activeSubs.empty) {
-              const subData = activeSubs.docs[0].data() as AnyObj;
-              stripeCustomerId = subData?.customer || null;
+            const customerDocByUid = await db.collection("customers").doc(userId).get();
+            if (customerDocByUid.exists) {
+              const customerData = customerDocByUid.data() as AnyObj;
+              stripeCustomerId = customerData?.id || customerData?.stripeCustomerId || null;
+              // Pokud customer dokument existuje, ale nemá id, zkusit použít document ID (pokud vypadá jako Stripe customer ID)
+              if (!stripeCustomerId && customerDocByUid.id && customerDocByUid.id.startsWith('cus_')) {
+                stripeCustomerId = customerDocByUid.id;
+              }
             }
           } catch (error) {
-            functions.logger.warn("⚠️ Could not find customer ID from subscriptions", { error, userId });
+            functions.logger.warn("⚠️ Could not find customer document by UID", { error, userId });
           }
         }
 
@@ -4145,10 +4168,19 @@ export const createBillingPortalSession = functions
         }
 
         if (!stripeCustomerId) {
-          functions.logger.error("❌ Stripe customer ID not found for user", { userId });
-          res.status(404).json({ error: "Stripe customer ID not found. Please ensure you have an active subscription." });
+          functions.logger.error("❌ Stripe customer ID not found for user", { 
+            userId,
+            checkedSubscriptions: true,
+            checkedCustomerDoc: true
+          });
+          res.status(404).json({ 
+            error: "Stripe customer ID not found. Please ensure you have an active subscription.",
+            details: "No active subscription found for this user."
+          });
           return;
         }
+        
+        functions.logger.info("✅ Found Stripe customer ID", { userId, stripeCustomerId });
 
         // Získat Stripe Secret Key z environment variables nebo secrets
         // Podporujeme oba způsoby: process.env (pro secrets) nebo functions.config (pro legacy)
