@@ -1398,8 +1398,34 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
         const st = (card.getAttribute('data-status') || 'active').toString().trim().toLowerCase();
         const statusOk = !st || st === 'active';
         const show = matchesSearch && matchesCategory && matchesRegion && statusOk;
-        card.style.display = show ? '' : 'none';
-        if (show) visible++;
+        
+        if (show) {
+            // Zobrazit kartu a zajistit, že se zachovají všechny inline styly
+            card.style.display = 'block';
+            // Zajistit, že ad-body a ad-location mají správné styly
+            const adBody = card.querySelector('.ad-body');
+            const adLocation = card.querySelector('.ad-location');
+            if (adBody) {
+                adBody.style.width = '100%';
+                adBody.style.maxWidth = '100%';
+                adBody.style.minWidth = '0';
+                adBody.style.textAlign = 'left';
+                adBody.style.boxSizing = 'border-box';
+            }
+            if (adLocation) {
+                adLocation.style.width = '100%';
+                adLocation.style.maxWidth = '100%';
+                adLocation.style.minWidth = '0';
+                adLocation.style.textAlign = 'left';
+                adLocation.style.boxSizing = 'border-box';
+                adLocation.style.wordWrap = 'break-word';
+                adLocation.style.overflowWrap = 'break-word';
+                adLocation.style.whiteSpace = 'normal';
+            }
+            visible++;
+        } else {
+            card.style.display = 'none';
+        }
     });
 
     if (noServices) {

@@ -897,6 +897,11 @@
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid #f0f0f0;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    display: block !important;
     min-height: 320px;
     position: relative;
     width: 100% !important; /* Zajistit, aby karty měly stejnou šířku */
@@ -16835,4 +16840,69 @@ html:has(.ad-detail-content) {
         max-width: 100% !important;
         margin-left: 0 !important;
     }
+}
+
+/* ===== ZAJISTIT KONZISTENTNÍ FORMÁTOVÁNÍ PRO VŠECHNY LOKACE VČETNĚ "CELÁ ČESKÁ REPUBLIKA" ===== */
+/* Zajistit, že všechny karty mají stejné formátování bez ohledu na filtr */
+.ad-card,
+.ad-card[data-location*="Celá Česká republika"],
+.ad-card[data-location*="CelaCeskaRepublika"],
+.ad-card[style*="display: block"],
+.ad-card[style*="display:''"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+    display: block !important;
+}
+
+.ad-body,
+.ad-body[data-location*="Celá Česká republika"],
+.ad-body[data-location*="CelaCeskaRepublika"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 12px 14px 90px !important;
+}
+
+.ad-location,
+.ad-location[data-location-text*="Celá Česká republika"],
+.ad-location[data-location-text*="CelaCeskaRepublika"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    font-size: 0.85rem !important;
+    color: #6b7280 !important;
+}
+
+/* Zajistit, že grid nezpůsobuje změny formátování */
+.ads-grid .ad-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+.ads-grid .ad-card .ad-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+.ads-grid .ad-card .ad-location {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
 }
