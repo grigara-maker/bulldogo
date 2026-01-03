@@ -871,9 +871,12 @@
     position: relative;
     width: 100% !important; /* Zajistit, aby karty měly stejnou šířku */
     max-width: 100% !important; /* Zajistit, aby karty nepřesahovaly */
+    min-width: 0 !important; /* Zajistit, aby flex/grid správně fungoval */
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    text-align: left !important; /* Zajistit zarovnání vlevo pro celou kartu */
+    box-sizing: border-box !important; /* Zahrnout padding a border do šířky */
 }
 
 .ad-card:hover {
@@ -918,10 +921,15 @@
     padding: 12px 14px 90px !important; 
     position: relative;
     min-height: 160px !important;
-    text-align: left; /* Zarovnání textů vlevo */
+    text-align: left !important; /* Zarovnání textů vlevo */
     overflow: hidden !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
+    width: 100% !important; /* Zajistit plnou šířku */
+    max-width: 100% !important; /* Zajistit, aby nepřesahovalo */
+    min-width: 0 !important; /* Zajistit, aby flex/grid správně fungoval */
+    box-sizing: border-box !important; /* Zahrnout padding a border do šířky */
+    margin: 0 !important; /* Odstranit všechny marginy */
 }
 .ad-title { 
     display: block !important;
@@ -950,12 +958,17 @@
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    text-align: left; /* Zarovnání vlevo */
+    text-align: left !important; /* Zarovnání vlevo */
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
     hyphens: auto !important;
     max-width: 100% !important;
+    width: 100% !important; /* Zajistit plnou šířku */
+    min-width: 0 !important; /* Zajistit, aby flex/grid správně fungoval */
+    box-sizing: border-box !important; /* Zahrnout padding a border do šířky */
+    margin: 0 !important; /* Odstranit všechny marginy */
+    padding: 0 !important; /* Odstranit všechny paddingy */
 }
 
 /* Top badge */
@@ -7019,6 +7032,13 @@ body.profile-plan-page .plan-info {
         flex-direction: initial !important;
         justify-content: initial !important;
         margin-top: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
     }
     
     /* Pro topované inzeráty: menší padding dole, protože tlačítka jsou pod lokací */
@@ -7072,13 +7092,20 @@ body.profile-plan-page .plan-info {
         color: #6b7280 !important;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 0 !important;
         order: initial !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
         hyphens: auto !important;
         max-width: 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
         line-height: 1.4 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
     }
     
     .ad-card .ad-actions {
@@ -14472,6 +14499,13 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         justify-content: flex-start;
         position: relative;
         margin-top: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
     }
     
     /* Zobrazit všechny informace v ad-meta-details */
@@ -14582,6 +14616,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         color: #9ca3af;
         margin-top: auto;
         margin-bottom: 12px !important; /* Větší mezera před tlačítky */
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 0 !important;
         order: 2;
         text-align: left !important; /* Zarovnání vlevo */
         word-wrap: break-word !important;
@@ -14589,7 +14626,10 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         white-space: normal !important;
         hyphens: auto !important;
         max-width: 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
         line-height: 1.4 !important;
+        box-sizing: border-box !important;
     }
     
     /* Kategorie */
@@ -15327,6 +15367,11 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .ad-card {
         aspect-ratio: auto !important; /* Automatická výška podle obsahu */
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
     }
     
     .ad-card .ad-thumb {
@@ -15344,6 +15389,22 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .ad-card .ad-body {
         padding: 8px 10px 65px !important; /* Větší padding dole pro tlačítka */
         min-height: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+    }
+    
+    .ad-card .ad-location {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        text-align: left !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .ad-card .ad-actions {
