@@ -19,30 +19,25 @@
     </script>
     
     <style>
-        /* Zajistit, že body a html nemají horizontální scroll */
+        /* ÚPLNÉ ZABLOKOVÁNÍ OVERFLOW - ZMĚNA LAYOUTU NA PC */
         html, body {
             overflow-x: hidden !important;
-            max-width: 100% !important;
+            max-width: 100vw !important;
             width: 100% !important;
             position: relative !important;
         }
         
-        /* Zajistit, že pozadí nikdy nejde mimo stránku */
+        /* Main content - striktní omezení */
         .main-content {
-            width: calc(100% - 70px) !important;
-            max-width: calc(100% - 70px) !important;
+            width: calc(100vw - 70px) !important;
+            max-width: calc(100vw - 70px) !important;
             box-sizing: border-box !important;
             overflow-x: hidden !important;
             position: relative !important;
             margin-left: 70px !important;
         }
         
-        /* Zajistit, že všechny elementy uvnitř nemají overflow */
-        .main-content * {
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        
+        /* Detail content - maximální šířka */
         .ad-detail-content {
             width: 100% !important;
             max-width: 100% !important;
@@ -50,18 +45,66 @@
             overflow-x: hidden !important;
             padding: 2rem !important;
             margin: 0 !important;
+            position: relative !important;
         }
         
-        /* Zajistit, že grid nezpůsobuje overflow */
-        .profile-detail-main {
-            grid-template-columns: 1fr 1fr !important;
-            gap: 2rem !important;
-            min-width: 0 !important;
+        /* ZMĚNA: Místo gridu použít flexbox s striktními omezeními na PC */
+        @media (min-width: 769px) {
+            .profile-detail-main {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 2rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                margin: 0 0 2rem 0 !important;
+                padding: 0 !important;
+            }
+            
+            .profile-detail-left {
+                flex: 0 0 calc(50% - 1rem) !important;
+                max-width: calc(50% - 1rem) !important;
+                min-width: 0 !important;
+                width: calc(50% - 1rem) !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                padding: 2rem !important;
+                margin: 0 !important;
+            }
+            
+            .profile-detail-right {
+                flex: 0 0 calc(50% - 1rem) !important;
+                max-width: calc(50% - 1rem) !important;
+                min-width: 0 !important;
+                width: calc(50% - 1rem) !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                padding: 2rem !important;
+                margin: 0 !important;
+            }
         }
         
-        .profile-detail-left,
-        .profile-detail-right {
-            min-width: 0 !important;
+        /* Mobilní zobrazení */
+        @media (max-width: 768px) {
+            .main-content {
+                width: 100vw !important;
+                max-width: 100vw !important;
+                margin-left: 0 !important;
+            }
+            
+            .profile-detail-main {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 1.5rem !important;
+            }
+            
+            .profile-detail-left,
+            .profile-detail-right {
+                flex: 1 1 100% !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
         }
         
         /* Zajistit, že všechny obrázky a media nezpůsobují overflow */
@@ -80,38 +123,6 @@
             display: block !important;
         }
         
-        @media (max-width: 768px) {
-            .main-content {
-                width: 100% !important;
-                max-width: 100% !important;
-                margin-left: 0 !important;
-            }
-            
-            .profile-detail-main {
-                grid-template-columns: 1fr !important;
-                gap: 1.5rem !important;
-            }
-        }
-        
-        /* Všechny sekce mají stejné mezery od krajů */
-        .profile-detail-main {
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-            overflow: hidden !important;
-            margin: 0 0 2rem 0 !important;
-            padding: 0 !important;
-        }
-        
-        .profile-detail-left,
-        .profile-detail-right {
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-            overflow: hidden !important;
-            padding: 2rem !important;
-            margin: 0 !important;
-        }
         
         .ad-title-section,
         .ad-meta-section,
