@@ -1398,34 +1398,8 @@ function renderUserResults(users) {
 async function openUserProfile(uid) {
     if (!uid) return;
     
-    // Kontrola přihlášení
-    const currentUser = window.firebaseAuth?.currentUser;
-    if (!currentUser) {
-        // Pokud není přihlášen, přesměrovat na profil (původní chování)
-        window.location.href = `profile-detail.html?userId=${uid}`;
-        return;
-    }
-    
-    // Kontrola, že uživatel nekontaktuje sám sebe
-    if (uid === currentUser.uid) {
-        window.location.href = `profile-detail.html?userId=${uid}`;
-        return;
-    }
-    
-    // Automaticky vytvořit konverzaci a přesměrovat na chat
-    try {
-        // Použít contactSeller funkci, pokud je dostupná
-        if (typeof window.contactSeller === 'function') {
-            await window.contactSeller(null, uid, null);
-        } else {
-            // Fallback: přesměrovat na chat s userId
-            window.location.href = `chat.html?userId=${uid}`;
-        }
-    } catch (error) {
-        console.error('❌ Chyba při vytváření konverzace:', error);
-        // Fallback: přesměrovat na profil
-        window.location.href = `profile-detail.html?userId=${uid}`;
-    }
+    // Vždy přesměrovat na profil uživatele
+    window.location.href = `profile-detail.html?userId=${uid}`;
 }
 
 // Normalizace textu pro porovnávání bez diakritiky
