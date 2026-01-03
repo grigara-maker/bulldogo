@@ -12287,8 +12287,8 @@ input[type="tel"]:focus {
         bottom: auto !important;
         left: auto !important;
         transform: none !important;
-        margin-top: 12px !important;
-        margin-bottom: 12px !important;
+        margin-top: 20px !important;
+        margin-bottom: 16px !important;
     }
     
     .ad-actions button {
