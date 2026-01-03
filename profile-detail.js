@@ -27,10 +27,26 @@ const categoryNames = {
 
 // Získání názvu lokace s diakritikou
 function getLocationName(location) {
+    // Pokud není lokace, vrátit prázdný string
+    if (!location) return '';
+    
+    // Pokud je to objekt, zkusit získat název nebo kód
+    if (typeof location === 'object') {
+        if (location.name) location = location.name;
+        else if (location.code) location = location.code;
+        else if (location.city) location = location.city;
+        else location = String(location);
+    }
+    
+    // Převést na string a oříznout mezery
+    const locStr = String(location).trim();
+    
     const locations = {
         'Kdekoliv': 'Kdekoliv',
         'CelaCeskaRepublika': 'Celá Česká republika',
         'CelaSlovenskaRepublika': 'Celá Slovenská republika',
+        'Celá Česká republika': 'Celá Česká republika', // Podpora i formátovaného názvu
+        'Celá Slovenská republika': 'Celá Slovenská republika', // Podpora i formátovaného názvu
         'Praha': 'Hlavní město Praha',
         'Stredocesky': 'Středočeský kraj',
         'Jihocesky': 'Jihočeský kraj',
@@ -54,7 +70,14 @@ function getLocationName(location) {
         'Presovsky': 'Prešovský kraj',
         'Kosicky': 'Košický kraj'
     };
-    return locations[location] || location;
+    
+    // Zkusit najít přesnou shodu
+    if (locations[locStr]) {
+        return locations[locStr];
+    }
+    
+    // Pokud není přesná shoda, vrátit původní hodnotu (může to být už formátovaný název nebo jiný formát)
+    return locStr;
 }
 
 // Initialize page

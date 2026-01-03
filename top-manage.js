@@ -123,11 +123,57 @@ function getCategoryName(category) {
 
 // Pomocná funkce pro získání názvu lokace (stejná jako v services.js)
 function getLocationName(location) {
+    // Pokud není lokace, vrátit prázdný string
     if (!location) return '';
-    if (typeof location === 'string') return location;
-    if (location.name) return location.name;
-    if (location.city) return location.city;
-    return String(location);
+    
+    // Pokud je to objekt, zkusit získat název nebo kód
+    if (typeof location === 'object') {
+        if (location.name) location = location.name;
+        else if (location.code) location = location.code;
+        else if (location.city) location = location.city;
+        else location = String(location);
+    }
+    
+    // Převést na string a oříznout mezery
+    const locStr = String(location).trim();
+    
+    const locations = {
+        'Kdekoliv': 'Kdekoliv',
+        'CelaCeskaRepublika': 'Celá Česká republika',
+        'CelaSlovenskaRepublika': 'Celá Slovenská republika',
+        'Celá Česká republika': 'Celá Česká republika', // Podpora i formátovaného názvu
+        'Celá Slovenská republika': 'Celá Slovenská republika', // Podpora i formátovaného názvu
+        'Praha': 'Hlavní město Praha',
+        'Stredocesky': 'Středočeský kraj',
+        'Jihocesky': 'Jihočeský kraj',
+        'Plzensky': 'Plzeňský kraj',
+        'Karlovarsky': 'Karlovarský kraj',
+        'Ustecky': 'Ústecký kraj',
+        'Liberecky': 'Liberecký kraj',
+        'Kralovehradecky': 'Královéhradecký kraj',
+        'Pardubicky': 'Pardubický kraj',
+        'Vysocina': 'Kraj Vysočina',
+        'Jihomoravsky': 'Jihomoravský kraj',
+        'Olomoucky': 'Olomoucký kraj',
+        'Zlinsky': 'Zlínský kraj',
+        'Moravskoslezsky': 'Moravskoslezský kraj',
+        'Bratislavsky': 'Bratislavský kraj',
+        'Trnavsky': 'Trnavský kraj',
+        'Trenciansky': 'Trenčianský kraj',
+        'Nitriansky': 'Nitriansky kraj',
+        'Zilinsky': 'Žilinský kraj',
+        'Banskobystricky': 'Banskobystrický kraj',
+        'Presovsky': 'Prešovský kraj',
+        'Kosicky': 'Košický kraj'
+    };
+    
+    // Zkusit najít přesnou shodu
+    if (locations[locStr]) {
+        return locations[locStr];
+    }
+    
+    // Pokud není přesná shoda, vrátit původní hodnotu (může to být už formátovaný název nebo jiný formát)
+    return locStr;
 }
 
 function renderTopManageCard(ad) {
