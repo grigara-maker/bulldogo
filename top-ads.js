@@ -611,7 +611,13 @@ async function processPayment() {
                         year: 'numeric' 
                     });
                     
-                    alert(`Tento inzerát má již aktivní topování, které vyprší ${expiresDateFormatted} (zbývá ${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'}).\n\nNemůžete zaplatit topování pro inzerát, který už je aktivně topovaný. Počkejte, až současné topování vyprší, nebo zrušte současné topování v sekci "Mé inzeráty".`);
+                    const message = `⚠️ Tento inzerát má již aktivní topování!\n\n` +
+                                   `Aktuální topování vyprší: ${expiresDateFormatted}\n` +
+                                   `Zbývá: ${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'}\n\n` +
+                                   `Pro nákup nového topování musíte nejdřív počkat do konce stávajícího období.\n\n` +
+                                   `Můžete také zrušit současné topování v sekci "Spravovat topování" a poté zakoupit nové.`;
+                    
+                    alert(message);
                     return;
                 }
             }
