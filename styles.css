@@ -918,7 +918,8 @@
 
 .ad-thumb { 
     width: 100% !important; 
-    aspect-ratio: 4 / 3 !important; /* Konzistentní poměr stran pro všechny zařízení */
+    aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
+    height: auto !important; /* Automatická výška podle aspect-ratio */
     background: white !important;
     display: block !important;
     visibility: visible !important;
@@ -1036,6 +1037,9 @@
     background: #fff !important;
     border-radius: 10px 10px 0 0 !important;
     overflow: hidden !important;
+    aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
+    height: auto !important;
+    width: 100% !important;
 }
 
 .ad-card.is-top .ad-thumb img {
@@ -1043,6 +1047,7 @@
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
+    object-position: center !important;
 }
 
 /* Odstraněny animace - pouze rámeček a badge */
@@ -7024,7 +7029,6 @@ body.profile-plan-page .plan-info {
     .ad-card {
         padding: 0 !important;
         min-height: 320px !important;
-        aspect-ratio: auto !important;
         display: block !important;
         flex-direction: initial !important;
         gap: 0 !important;
@@ -7032,7 +7036,7 @@ body.profile-plan-page .plan-info {
     
     .ad-card .ad-thumb {
         width: 100% !important;
-        aspect-ratio: 4 / 3 !important; /* Konzistentní poměr stran pro všechny zařízení */
+        aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
         height: auto !important;
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
@@ -12662,8 +12666,9 @@ body:has(.ad-detail-content) .ad-detail-main,
 }
 
 .ad-main-image {
-    width: 100%;
-    aspect-ratio: 4 / 3 !important; /* Konzistentní poměr stran pro všechny zařízení */
+    width: 100% !important;
+    aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
+    height: auto !important; /* Automatická výška podle aspect-ratio */
     background: #f8f9fa;
     border-radius: 12px;
     display: flex;
@@ -13389,7 +13394,7 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-main-image {
-        aspect-ratio: 4 / 3 !important; /* Konzistentní poměr stran pro všechny zařízení */
+        aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
         height: auto !important;
         width: 100% !important;
         display: flex !important;
@@ -14524,7 +14529,6 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .ad-card {
         padding: 0;
         min-height: auto;
-        aspect-ratio: auto !important; /* Automatická výška podle obsahu */
         display: flex;
         flex-direction: column;
         gap: 0 !important; /* Žádný gap mezi prvky */
@@ -14533,19 +14537,20 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card .ad-thumb {
-        width: 100%;
-        aspect-ratio: 4 / 3 !important; /* Konzistentní poměr stran pro všechny zařízení */
+        width: 100% !important;
+        aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
+        height: auto !important;
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
         flex-shrink: 0;
         background: white; /* Bílý background místo béžového */
         border-radius: 12px 12px 0 0 !important; /* Zaoblené rohy nahoře */
-        overflow: hidden; /* Zajistit, aby obrázek nepřesahoval */
+        overflow: hidden !important; /* Zajistit, aby obrázek nepřesahoval */
     }
     
     .ad-card .ad-thumb img {
-        width: 100%;
-        height: 100%;
+        width: 100% !important;
+        height: 100% !important;
         object-fit: cover !important; /* Přizpůsobit obrázek poměru stran */
         object-position: center !important; /* Vycentrovat obrázek */
         border-radius: 12px 12px 0 0 !important; /* Zaoblené rohy nahoře */
@@ -15430,7 +15435,6 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card {
-        aspect-ratio: auto !important; /* Automatická výška podle obsahu */
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -15440,7 +15444,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .ad-card .ad-thumb {
         width: 100% !important;
-        aspect-ratio: 4 / 3 !important; /* Stejný poměr stran jako na PC */
+        aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
         height: auto !important;
         overflow: hidden !important;
     }
@@ -16912,4 +16916,52 @@ html:has(.ad-detail-content) {
     min-width: 0 !important;
     text-align: left !important;
     float: none !important;
+}
+
+/* ===== FIXNÍ POMĚR STRAN PRO VŠECHNY OBRÁZKY - STEJNÝ VŠUDE ===== */
+/* Zajistit, že všechny obrázky mají stejný poměr stran 4:3 na všech zařízeních */
+.ad-thumb,
+.ad-card .ad-thumb,
+.ad-card.is-top .ad-thumb,
+#servicesGrid .ad-card .ad-thumb,
+.ads-grid .ad-card .ad-thumb {
+    aspect-ratio: 4 / 3 !important;
+    height: auto !important;
+    width: 100% !important;
+}
+
+.ad-thumb img,
+.ad-card .ad-thumb img,
+.ad-card.is-top .ad-thumb img,
+#servicesGrid .ad-card .ad-thumb img,
+.ads-grid .ad-card .ad-thumb img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+}
+
+.ad-main-image {
+    aspect-ratio: 4 / 3 !important;
+    height: auto !important;
+    width: 100% !important;
+}
+
+.ad-main-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+}
+
+.ad-thumbnail {
+    aspect-ratio: 4 / 3 !important;
+    height: auto !important;
+}
+
+.ad-thumbnail img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
 }
