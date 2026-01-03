@@ -5711,6 +5711,11 @@ footer.footer .footer-section,
     transform: translateY(-3px);
     box-shadow: 0 6px 16px rgba(247, 124, 0, 0.25), 0 0 0 2px rgba(247, 124, 0, 0.15);
 }
+
+.tab-btn:active {
+    transform: none;
+    color: inherit;
+}
 .tab-btn.active {
     background: linear-gradient(135deg, #f77c00 0%, #fdf002 100%);
     color: white !important;
@@ -5728,7 +5733,8 @@ footer.footer .footer-section,
 }
 
 .tab-btn:active {
-    color: white !important;
+    color: inherit !important;
+    transform: none;
 }
 
 /* Zvýraznění akčních pilulek v manage sekcích (balíček / topování) */
@@ -15137,11 +15143,17 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         border-radius: 10px !important;
     }
     
-    .tab-btn:hover,
-    .tab-btn:active {
+    .tab-btn:hover {
         opacity: 1;
         box-shadow: 0 3px 8px rgba(247, 124, 0, 0.2) !important;
         transform: translateY(-1px);
+    }
+    
+    .tab-btn:active {
+        opacity: 1;
+        box-shadow: 0 3px 8px rgba(247, 124, 0, 0.2) !important;
+        transform: none;
+        color: inherit !important;
     }
     
     .tab-btn.active {
