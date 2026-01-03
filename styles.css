@@ -12535,9 +12535,12 @@ html body .ad-actions {
 
 @media (max-width: 768px) {
     .main-content:has(.ad-detail-content) {
+        width: 100% !important;
+        max-width: 100% !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
         overflow-x: hidden !important;
+        margin-left: 0 !important;
     }
 }
 
@@ -13254,9 +13257,9 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
-    /* Profile detail page mobile optimization */
+    /* Profile detail page mobile optimization - stejné jako profil */
     .ad-detail-content {
-        padding: 1rem !important;
+        padding: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -13346,9 +13349,9 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
         position: static !important;
         top: auto !important;
-        background: white !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
     }
     
     .ad-detail-right {
@@ -13363,9 +13366,9 @@ body:has(.ad-detail-content) .ad-detail-main,
         margin-bottom: 1rem !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
-        background: white !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
     }
     
     .ad-title-section,
@@ -16965,6 +16968,15 @@ html:has(.ad-detail-content) {
         width: 100% !important;
         max-width: 100% !important;
         margin-left: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    .ad-detail-content {
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
     }
 }
 
