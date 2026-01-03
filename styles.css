@@ -13293,11 +13293,11 @@ body:has(.ad-detail-content) .ad-detail-main,
         z-index: 3000 !important;
     }
     
-    /* Main container - stejné jako profile-detail-main */
+    /* Main container - flexbox column, obrázek nahoře, text dole */
     .ad-detail-main {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -13308,15 +13308,15 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
-    /* Levý a pravý sloupec - IDENTICKÉ jako profile-detail-left/right */
-    .ad-detail-left,
-    .ad-detail-right {
+    /* Levý sloupec - obrázek nahoře, plná šířka s malým okrajem */
+    .ad-detail-left {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 1rem !important;
+        padding: 0.5rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         position: static !important;
@@ -13324,16 +13324,34 @@ body:has(.ad-detail-content) .ad-detail-main,
         background: transparent !important;
         border-radius: 0 !important;
         box-shadow: none !important;
+        order: 1 !important;
     }
     
-    /* ===== HLAVNÍ OBRÁZEK - STEJNÝ JAKO U PROFILU ===== */
-    .ad-main-image {
+    /* Pravý sloupec - text pod obrázkem, plná šířka s malým okrajem */
+    .ad-detail-right {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
+        padding: 0.5rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        order: 2 !important;
+    }
+    
+    /* ===== HLAVNÍ OBRÁZEK - PLNÁ ŠÍŘKA S MALÝM OKRAJEM ===== */
+    .ad-main-image {
+        width: calc(100% - 1rem) !important;
+        max-width: calc(100% - 1rem) !important;
+        min-width: 0 !important;
         aspect-ratio: 4 / 3 !important;
         height: auto !important;
-        margin-bottom: 1.5rem !important;
+        margin: 0 auto 0.5rem auto !important;
         border-radius: 12px !important;
         overflow: hidden !important;
         display: block !important;
@@ -13351,10 +13369,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     
     /* Thumbnaily */
     .ad-thumbnails {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 0.75rem 0 !important;
-        margin-bottom: 1.5rem !important;
+        width: calc(100% - 1rem) !important;
+        max-width: calc(100% - 1rem) !important;
+        padding: 0.5rem 0 !important;
+        margin: 0 auto 0.5rem auto !important;
         display: flex !important;
         gap: 0.5rem !important;
         overflow-x: auto !important;
@@ -13386,18 +13404,18 @@ body:has(.ad-detail-content) .ad-detail-main,
         object-position: center !important;
     }
     
-    /* ===== SEKCE - IDENTICKÉ JAKO U PROFILU ===== */
+    /* ===== SEKCE - PLNÁ ŠÍŘKA S MALÝM OKRAJEM ===== */
     .ad-title-section,
     .ad-meta-section,
     .ad-description-section,
     .ad-contact-section,
     .ad-actions,
     .ad-chat-section {
-        width: 100% !important;
-        max-width: 100% !important;
+        width: calc(100% - 1rem) !important;
+        max-width: calc(100% - 1rem) !important;
         min-width: 0 !important;
         padding: 0 !important;
-        margin-bottom: 1.5rem !important;
+        margin: 0 auto 1rem auto !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
@@ -13406,6 +13424,10 @@ body:has(.ad-detail-content) .ad-detail-main,
         border-radius: 0 !important;
         box-shadow: none !important;
         border-bottom: none !important;
+    }
+    
+    .ad-title-section {
+        margin-top: 0.5rem !important;
     }
     
     .ad-title-section {
