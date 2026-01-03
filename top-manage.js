@@ -139,9 +139,10 @@ function getLocationName(location) {
     
     const locations = {
         'Kdekoliv': 'Kdekoliv',
-        'CelaCeskaRepublika': 'Celá Česká republika',
+        'CelaCeskaRepublika': 'Celá ČR',
         'CelaSlovenskaRepublika': 'Celá Slovenská republika',
-        'Celá Česká republika': 'Celá Česká republika', // Podpora i formátovaného názvu
+        'Celá Česká republika': 'Celá ČR', // Podpora i formátovaného názvu
+        'Celá ČR': 'Celá ČR', // Podpora zkratky
         'Celá Slovenská republika': 'Celá Slovenská republika', // Podpora i formátovaného názvu
         'Praha': 'Hlavní město Praha',
         'Stredocesky': 'Středočeský kraj',

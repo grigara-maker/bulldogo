@@ -979,9 +979,10 @@ function getLocationName(location) {
     
     const locations = {
         'Kdekoliv': 'Kdekoliv',
-        'CelaCeskaRepublika': 'Celá Česká republika',
+        'CelaCeskaRepublika': 'Celá ČR',
         'CelaSlovenskaRepublika': 'Celá Slovenská republika',
-        'Celá Česká republika': 'Celá Česká republika', // Podpora i formátovaného názvu
+        'Celá Česká republika': 'Celá ČR', // Podpora i formátovaného názvu
+        'Celá ČR': 'Celá ČR', // Podpora zkratky
         'Celá Slovenská republika': 'Celá Slovenská republika', // Podpora i formátovaného názvu
         'Praha': 'Hlavní město Praha',
         'Stredocesky': 'Středočeský kraj',
@@ -1273,12 +1274,17 @@ function filterServices() {
                 const normalizedFormatted = serviceLocFormatted.toLowerCase().trim();
                 matchesRegion = serviceLoc === 'CelaCeskaRepublika' || 
                                serviceLoc === 'Celá Česká republika' ||
+                               serviceLoc === 'Celá ČR' ||
                                normalizedServiceLoc === 'celá česká republika' ||
+                               normalizedServiceLoc === 'celá čr' ||
                                normalizedServiceLoc === 'celaceskarepublika' ||
                                loc === 'Celá Česká republika' ||
+                               loc === 'Celá ČR' ||
                                loc === 'CelaCeskaRepublika' ||
                                serviceLocFormatted === 'Celá Česká republika' ||
+                               serviceLocFormatted === 'Celá ČR' ||
                                normalizedFormatted === 'celá česká republika' ||
+                               normalizedFormatted === 'celá čr' ||
                                locCode === 'CelaCeskaRepublika';
             } else if (regionFilter === 'CelaSlovenskaRepublika') {
                 matchesRegion = serviceLoc === 'CelaSlovenskaRepublika' || 
@@ -1376,8 +1382,10 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
                 // Porovnat všechny možné formáty
                 const normalizedServiceLoc = serviceLoc.toLowerCase().trim();
                 matchesRegion = serviceLoc === 'Celá Česká republika' || 
+                               serviceLoc === 'Celá ČR' ||
                                serviceLoc === 'CelaCeskaRepublika' || 
                                normalizedServiceLoc === 'celá česká republika' ||
+                               normalizedServiceLoc === 'celá čr' ||
                                normalizedServiceLoc === 'celaceskarepublika' ||
                                locationCode === 'CelaCeskaRepublika' ||
                                locationCodeFromFormatted === 'CelaCeskaRepublika';
