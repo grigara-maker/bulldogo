@@ -19,13 +19,36 @@
     </script>
     
     <style>
+        /* Zajistit, že body a html nemají horizontální scroll */
+        html, body {
+            overflow-x: hidden !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            position: relative !important;
+        }
+        
         /* Zajistit, že pozadí nikdy nejde mimo stránku */
+        .main-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+            position: relative !important;
+        }
+        
+        /* Zajistit, že všechny elementy uvnitř nemají overflow */
+        .main-content * {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
         .ad-detail-content {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
             overflow-x: hidden !important;
             padding: 2rem !important;
+            margin: 0 !important;
         }
         
         /* Všechny sekce mají stejné mezery od krajů */
@@ -35,6 +58,7 @@
             box-sizing: border-box !important;
             overflow: hidden !important;
             margin: 0 0 2rem 0 !important;
+            padding: 0 !important;
         }
         
         .profile-detail-left,
@@ -44,6 +68,7 @@
             box-sizing: border-box !important;
             overflow: hidden !important;
             padding: 2rem !important;
+            margin: 0 !important;
         }
         
         .ad-title-section,
@@ -54,6 +79,8 @@
             max-width: 100% !important;
             box-sizing: border-box !important;
             overflow: hidden !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
         }
         
         /* Sekce další služby a recenze */
@@ -71,6 +98,8 @@
             max-width: 100% !important;
             box-sizing: border-box !important;
             overflow: hidden !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
         }
         
         /* Zajistit, že všechny sekce mají stejné mezery */

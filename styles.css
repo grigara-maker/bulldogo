@@ -12486,38 +12486,42 @@ html body .ad-actions {
     padding: 2rem;
     box-sizing: border-box;
     background: #ffffff;
+    overflow-x: hidden !important;
 }
 
 /* Zajistit, že main-content neomezuje šířku pro ad-detail */
 .main-content:has(.ad-detail-content) {
-    max-width: 100vw !important;
-    width: 100vw !important;
+    max-width: 100% !important;
+    width: 100% !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     box-sizing: border-box !important;
+    overflow-x: hidden !important;
 }
 
 @media (max-width: 768px) {
     .main-content:has(.ad-detail-content) {
         padding-left: 0 !important;
         padding-right: 0 !important;
+        overflow-x: hidden !important;
     }
 }
 
 /* Zajistit, že ad-detail-content má plnou šířku */
 body:has(.ad-detail-content) .main-content .ad-detail-content,
 .main-content .ad-detail-content {
-    max-width: 100vw !important;
-    width: 100vw !important;
+    max-width: 100% !important;
+    width: 100% !important;
     box-sizing: border-box !important;
+    overflow-x: hidden !important;
 }
 
 @media (max-width: 768px) {
     body:has(.ad-detail-content) .main-content .ad-detail-content,
     .main-content .ad-detail-content {
-        max-width: 100vw !important;
-        width: 100vw !important;
-        min-width: 100vw !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        overflow-x: hidden !important;
     }
 }
 
