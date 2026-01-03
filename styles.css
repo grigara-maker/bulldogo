@@ -1002,57 +1002,10 @@
     object-fit: cover !important;
 }
 
+/* Odstraněny animace - pouze rámeček a badge */
+.ad-card.is-top::before,
 .ad-card.is-top::after {
-    content: '';
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: linear-gradient(90deg, 
-        transparent 0%, transparent 45%,
-        rgba(192, 192, 192, 0.2) 48%, rgba(255, 255, 255, 0.4) 50%, rgba(192, 192, 192, 0.2) 52%,
-        transparent 55%, transparent 100%) !important;
-    border-radius: 13px !important;
-    background-size: 200% 200% !important;
-    z-index: 10 !important;
-    animation: diagonalSilverStripe 3s linear infinite !important;
-    pointer-events: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    transform-origin: center center !important;
-}
-
-.ad-card.is-top::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    background: linear-gradient(90deg, 
-        transparent 0%, transparent 5%,
-        #ffd700 50%, #ffed4e 60%, #ffd700 70%,
-        transparent 98%, transparent 100%);
-    border-radius: 19px;
-    z-index: -1;
-    animation: borderLightMove 2s linear infinite;
-}
-
-.ad-card.is-top::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(255, 215, 0, 0.05), rgba(255, 165, 0, 0.08), 
-        rgba(255, 138, 0, 0.05), rgba(255, 215, 0, 0.05));
-    background-size: 150% 150%;
-    border-radius: 16px;
-    z-index: -1;
-    animation: permanentShimmer 5s ease-in-out infinite;
+    display: none !important;
 }
 
 @keyframes permanentGlow {
@@ -7528,41 +7481,10 @@ html {
     object-fit: cover !important;
 }
 
+/* Odstraněny animace - pouze rámeček a badge */
+.service-item.top::before,
 .service-item.top::after {
-    content: '';
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: linear-gradient(90deg, 
-        transparent 0%, transparent 45%,
-        rgba(192, 192, 192, 0.2) 48%, rgba(255, 255, 255, 0.4) 50%, rgba(192, 192, 192, 0.2) 52%,
-        transparent 55%, transparent 100%) !important;
-    border-radius: 13px !important;
-    background-size: 200% 200% !important;
-    z-index: 10 !important;
-    animation: diagonalSilverStripe 3s linear infinite !important;
-    pointer-events: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    transform-origin: center center !important;
-}
-
-.service-item.top::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    background: linear-gradient(90deg, 
-        transparent 0%, transparent 5%,
-        #ffd700 50%, #ffed4e 60%, #ffd700 70%,
-        transparent 98%, transparent 100%);
-    border-radius: 19px;
-    z-index: -1;
-    animation: borderLightMove 2s linear infinite;
+    display: none !important;
 }
 
 .modal {
