@@ -12449,11 +12449,18 @@ html body .ad-actions {
 
 /* Zajistit, že main-content neomezuje šířku pro ad-detail */
 .main-content:has(.ad-detail-content) {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .main-content:has(.ad-detail-content) {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
 }
 
 /* Zajistit, že ad-detail-content má plnou šířku */
@@ -13125,8 +13132,11 @@ body:has(.ad-detail-content) .ad-detail-main,
     /* Profile detail page mobile optimization */
     .ad-detail-content {
         padding: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         box-sizing: border-box !important;
     }
     
@@ -13185,9 +13195,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     .ad-detail-main {
         grid-template-columns: 1fr !important;
         gap: 1.5rem !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 0 1rem !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
@@ -13205,9 +13216,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-detail-left {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 1.5rem 1rem !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        padding: 1.5rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
@@ -13217,9 +13229,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-detail-right {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 1.5rem 1rem !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        padding: 1.5rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
@@ -13442,9 +13455,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-user-profile {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 1.5rem 1rem !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 100vw !important;
+        padding: 1.5rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-top: 0 !important;
