@@ -12482,21 +12482,25 @@ html body .ad-actions {
 .ad-detail-content {
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0;
-    padding: 2rem;
-    box-sizing: border-box;
-    background: #ffffff;
+    margin: 0 !important;
+    padding: 2rem !important;
+    box-sizing: border-box !important;
+    background: #ffffff !important;
     overflow-x: hidden !important;
+    overflow-y: visible !important;
+    position: relative !important;
 }
 
 /* Zajistit, že main-content neomezuje šířku pro ad-detail */
 .main-content:has(.ad-detail-content) {
-    max-width: 100% !important;
-    width: 100% !important;
+    max-width: calc(100% - 70px) !important;
+    width: calc(100% - 70px) !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
+    overflow-y: visible !important;
+    position: relative !important;
 }
 
 @media (max-width: 768px) {
@@ -12514,6 +12518,8 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
     width: 100% !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
+    overflow-y: visible !important;
+    position: relative !important;
 }
 
 @media (max-width: 768px) {
@@ -12939,41 +12945,45 @@ body:has(.ad-detail-content) .ad-detail-main,
 
 /* Profile Detail Page - Modern Layout */
 .profile-detail-main {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
-    width: 100%;
-    max-width: 100%;
-    padding: 0;
-    box-sizing: border-box;
-    overflow: hidden;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 2rem !important;
+    margin-bottom: 2rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    position: relative !important;
 }
 
 .profile-detail-left {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    height: fit-content;
-    position: sticky;
-    top: 2rem;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    height: fit-content !important;
+    position: sticky !important;
+    top: 2rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
 }
 
 .profile-detail-right {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    height: fit-content;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    height: fit-content !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
 }
 
 .profile-header-info {
@@ -13048,15 +13058,17 @@ body:has(.ad-detail-content) .ad-detail-main,
 }
 
 .ad-user-profile {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin-top: 2rem;
-    overflow: hidden;
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 2rem !important;
+    overflow: hidden !important;
+    position: relative !important;
 }
 
 .user-profile-header {
@@ -16699,5 +16711,98 @@ div[class*="mc-"] button {
     div[class*="mailchimp"] p {
         font-size: 0.75rem !important;
         margin-bottom: 0.4rem !important;
+    }
+}
+
+/* ===== AGRESIVNÍ OPRAVA PROFILE-DETAIL OVERFLOW ===== */
+/* Zajistit, že pozadí NIKDY nejde mimo stránku */
+body:has(.ad-detail-content),
+html:has(.ad-detail-content) {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.main-content:has(.ad-detail-content) {
+    width: calc(100% - 70px) !important;
+    max-width: calc(100% - 70px) !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+}
+
+.ad-detail-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    padding: 2rem !important;
+    margin: 0 !important;
+}
+
+.profile-detail-main,
+.ad-detail-content .profile-detail-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    gap: 2rem !important;
+}
+
+.profile-detail-left,
+.profile-detail-right,
+.ad-detail-content .profile-detail-left,
+.ad-detail-content .profile-detail-right {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 2rem !important;
+}
+
+.ad-user-profile,
+.ad-detail-content .ad-user-profile {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 2rem !important;
+    margin: 2rem 0 0 0 !important;
+}
+
+.user-other-ads,
+.ad-detail-content .user-other-ads {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.ad-title-section,
+.ad-meta-section,
+.ad-description-section,
+.ad-contact-section,
+.ad-detail-content .ad-title-section,
+.ad-detail-content .ad-meta-section,
+.ad-detail-content .ad-description-section,
+.ad-detail-content .ad-contact-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+@media (max-width: 768px) {
+    .main-content:has(.ad-detail-content) {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
     }
 }
