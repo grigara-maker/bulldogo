@@ -1,5 +1,5 @@
 // Service Worker pro Bulldogo.cz - Optimalizovaná caching strategie
-const CACHE_VERSION = 'v1.1.8';
+const CACHE_VERSION = 'v1.1.9';
 const CACHE_NAME = `bulldogo-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
