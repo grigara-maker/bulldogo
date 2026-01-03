@@ -12531,19 +12531,46 @@ body:has(.ad-detail-content) .ad-detail-main,
 
 /* Pro PC - zajistit, že levý sloupec je vlevo a pravý vpravo */
 @media (min-width: 769px) {
+    /* Globální pravidla pro PC - zabránit horizontálnímu scrollu */
+    html,
+    body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .main-content {
+        width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Všechny elementy uvnitř detail stránek */
+    .ad-detail-content *,
+    .profile-detail-main * {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+    }
+    
     /* Ad Detail - zajistit, že nic nejde mimo stránku */
+    body:has(.ad-detail-content),
     body:has(.ad-detail-content) .main-content,
     .main-content:has(.ad-detail-content) {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 100vw !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         padding: 0 !important;
+        margin: 0 !important;
     }
     
     .ad-detail-content {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: calc(100vw - 70px) !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         padding: 2rem !important;
@@ -12552,14 +12579,15 @@ body:has(.ad-detail-content) .ad-detail-main,
     
     .ad-detail-main {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
         gap: 2rem !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
         padding: 0 !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
     }
     
     .ad-detail-left {
@@ -12567,8 +12595,10 @@ body:has(.ad-detail-content) .ad-detail-main,
         grid-column: 1 !important;
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
         border: 1px solid #e5e7eb !important;
     }
     
@@ -12577,8 +12607,10 @@ body:has(.ad-detail-content) .ad-detail-main,
         grid-column: 2 !important;
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
         border: 1px solid #e5e7eb !important;
     }
     
@@ -12589,48 +12621,77 @@ body:has(.ad-detail-content) .ad-detail-main,
     .ad-actions {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
     }
     
     .ad-detail-title,
     .ad-detail-price,
-    .ad-description {
+    .ad-description,
+    .ad-meta-item,
+    .contact-item {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        word-break: break-word !important;
+    }
+    
+    .ad-detail-title *,
+    .ad-detail-price *,
+    .ad-description *,
+    .ad-meta-item *,
+    .contact-item * {
+        max-width: 100% !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
     }
     
     /* Profile Detail - zajistit, že nic nejde mimo stránku */
+    body:has(.profile-detail-main),
     body:has(.profile-detail-main) .main-content,
     .main-content:has(.profile-detail-main) {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 100vw !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .ad-detail-content:has(.profile-detail-main) {
+        width: 100% !important;
+        max-width: calc(100vw - 70px) !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        padding: 2rem !important;
+        margin: 0 auto !important;
     }
     
     .profile-detail-main {
         display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
         gap: 2rem !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         padding: 0 !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
     }
     
     .profile-detail-left {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
@@ -12640,6 +12701,7 @@ body:has(.ad-detail-content) .ad-detail-main,
     .profile-detail-right {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
@@ -12651,6 +12713,7 @@ body:has(.ad-detail-content) .ad-detail-main,
     .user-reviews-section {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
@@ -12661,20 +12724,20 @@ body:has(.ad-detail-content) .ad-detail-main,
     .user-reviews-grid {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
     }
     
-    /* Zajistit, že všechny texty jsou viditelné a nejsou mimo stránku */
-    .ad-detail-title,
-    .ad-detail-price,
-    .ad-description,
-    .ad-meta-item,
-    .contact-item {
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
+    .profile-header-info *,
+    .user-services-section *,
+    .user-reviews-section *,
+    .user-services-grid *,
+    .user-reviews-grid * {
         max-width: 100% !important;
-        box-sizing: border-box !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        word-break: break-word !important;
     }
 }
 
