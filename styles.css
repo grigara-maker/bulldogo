@@ -12938,7 +12938,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     gap: 2rem;
     margin-bottom: 2rem;
     width: 100%;
+    max-width: 100%;
     padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .profile-detail-left {
@@ -12949,6 +12952,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     height: fit-content;
     position: sticky;
     top: 2rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .profile-detail-right {
@@ -12957,6 +12964,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     padding: 2rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     height: fit-content;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .profile-header-info {
@@ -13036,8 +13047,10 @@ body:has(.ad-detail-content) .ad-detail-main,
     padding: 2rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     margin-top: 2rem;
+    overflow: hidden;
 }
 
 .user-profile-header {
@@ -13505,13 +13518,12 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-user-profile {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
+        width: 100% !important;
+        max-width: 100% !important;
         padding: 1.5rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-top: 0 !important;
+        margin-top: 1.5rem !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
     }

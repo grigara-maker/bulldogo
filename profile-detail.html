@@ -19,29 +19,83 @@
     </script>
     
     <style>
-        /* Override styles to make profile content full width */
-        .ad-detail-main {
+        /* Zajistit, že pozadí nikdy nejde mimo stránku */
+        .ad-detail-content {
             width: 100% !important;
-            max-width: none !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+            padding: 2rem !important;
         }
         
-        .ad-detail-right {
+        /* Všechny sekce mají stejné mezery od krajů */
+        .profile-detail-main {
             width: 100% !important;
-            max-width: none !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            margin: 0 0 2rem 0 !important;
+        }
+        
+        .profile-detail-left,
+        .profile-detail-right {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            padding: 2rem !important;
         }
         
         .ad-title-section,
         .ad-meta-section,
         .ad-description-section,
-        .ad-contact-section,
-        .ad-actions {
+        .ad-contact-section {
             width: 100% !important;
-            max-width: none !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
         }
         
-        .ad-detail-content {
+        /* Sekce další služby a recenze */
+        .ad-user-profile {
             width: 100% !important;
-            max-width: none !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            padding: 2rem !important;
+            margin: 2rem 0 0 0 !important;
+        }
+        
+        .user-other-ads {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+        }
+        
+        /* Zajistit, že všechny sekce mají stejné mezery */
+        @media (min-width: 769px) {
+            .ad-detail-content {
+                padding: 2rem !important;
+            }
+            
+            .profile-detail-left,
+            .profile-detail-right,
+            .ad-user-profile {
+                padding: 2rem !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ad-detail-content {
+                padding: 1rem !important;
+            }
+            
+            .profile-detail-left,
+            .profile-detail-right,
+            .ad-user-profile {
+                padding: 1.5rem !important;
+            }
         }
         
         /* Start Chat Button Styles */
