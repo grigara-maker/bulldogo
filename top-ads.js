@@ -573,6 +573,17 @@ async function checkPackageForTop(durationDays) {
 }
 
 async function processPayment() {
+    // Kontrola souhlasu s obchodními podmínkami
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    if (!termsCheckbox || !termsCheckbox.checked) {
+        alert("Pro pokračování musíte souhlasit s obchodními podmínkami.");
+        if (termsCheckbox) {
+            termsCheckbox.focus();
+            termsCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+    
     // Kontroly výběrů
     if (!selectedPricing || !selectedAd) {
         alert("Prosím nejdříve vyberte inzerát a délku topování");

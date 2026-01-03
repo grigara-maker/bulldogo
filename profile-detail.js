@@ -786,24 +786,44 @@ function createServiceCard(service) {
     console.log('🔗 Image URL type:', typeof imageUrl);
     console.log('🔗 Image URL length:', imageUrl.length);
     
-    // Vytvořit WebP fallback
-    const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+    // Ověřit, že imageUrl je platná URL nebo cesta
+    if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null') {
+        imageUrl = './fotky/team.jpg';
+    }
+    
     const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
-    const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
     const escapedTitle = (service.title || '').replace(/"/g, '&quot;');
+    const defaultImageUrl = './fotky/team.jpg';
+    const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
+    
+    // Zjistit, zda je to lokální obrázek (ze složky /fotky/)
+    const isLocalImage = imageUrl.startsWith('/fotky/') || imageUrl.startsWith('./fotky/');
     
     // Optimalizovat Firebase Storage URL
     let optimizedImageUrl = escapedImageUrl;
-    if (imageUrl.includes('firebasestorage.googleapis.com') && !imageUrl.includes('alt=media')) {
-        optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
-        optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+    if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
+        // Přidat parametry pro optimalizaci (pokud ještě nejsou)
+        if (!imageUrl.includes('alt=media')) {
+            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+            optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+        }
     }
     
-    let imageHtml = `<picture>
-        <source srcset="${escapedWebpUrl}" type="image/webp">
-        <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
-    </picture>`;
-    imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
+    let imageHtml;
+    if (isLocalImage) {
+        // Pro lokální obrázky použít WebP fallback
+        const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+        const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
+        imageHtml = `
+            <picture>
+                <source srcset="${escapedWebpUrl}" type="image/webp">
+                <img src="${escapedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
+            </picture>
+        `;
+    } else {
+        // Pro Firebase Storage obrázky použít optimalizovanou URL
+        imageHtml = `<img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
+    }
     
     return `
         <div class="ad-card" onclick="viewService('${service.id}', '${currentProfileUser.id}')">

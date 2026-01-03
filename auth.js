@@ -1123,6 +1123,23 @@ function createAuthModal() {
                     </div>
                 </div>
 
+                <!-- Souhlas s GDPR (pouze při registraci) -->
+                <div class="form-group gdpr-consent" style="display: none; margin-top: 16px; padding: 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; user-select: none; font-size: 13px; line-height: 1.5; color: #374151;">
+                        <input type="checkbox" id="gdprConsent" required style="
+                            width: 18px;
+                            height: 18px;
+                            margin-top: 2px;
+                            cursor: pointer;
+                            accent-color: #f77c00;
+                            flex-shrink: 0;
+                        ">
+                        <span>
+                            Registrací berete na vědomí zpracování osobních údajů dle <a href="terms.html" target="_blank" style="color: #f77c00; text-decoration: underline; font-weight: 600;">Zásad ochrany osobních údajů</a>.
+                        </span>
+                    </label>
+                </div>
+
                 <div class="form-group">
                     <button type="submit" class="auth-submit-btn btn btn-primary">Přihlásit se</button>
                     <button type="button" id="btnAuthSubmit" class="btn btn-primary" style="display: none;">Dokončit registraci</button>
@@ -1292,6 +1309,16 @@ function showAuthModal(type = 'login') {
     const authPhone = modal.querySelector('#authPhone');
     const phoneRow = modal.querySelector('#phoneRow');
 
+    // Skrýt GDPR souhlas při přihlášení
+    const gdprConsent = modal.querySelector('.gdpr-consent');
+    if (gdprConsent) {
+        gdprConsent.style.display = 'none';
+    }
+    const gdprCheckbox = modal.querySelector('#gdprConsent');
+    if (gdprCheckbox) {
+        gdprCheckbox.required = false;
+    }
+    
     if (type === 'login') {
         console.log('🔧 Nastavuji modal pro přihlášení');
         modal.setAttribute('data-mode', 'login');
@@ -1340,6 +1367,15 @@ function showAuthModal(type = 'login') {
         companyForm.style.display = 'none';
         companyForm.classList.add('hidden');
         companyForm.classList.remove('visible');
+        
+        // Zobrazit GDPR souhlas při registraci
+        if (gdprConsent) {
+            gdprConsent.style.display = 'block';
+        }
+        if (gdprCheckbox) {
+            gdprCheckbox.required = true;
+            gdprCheckbox.checked = false;
+        }
         
         // Přepnout tlačítka a kroky
         if (btnSendPhoneCode) btnSendPhoneCode.style.display = '';
@@ -2372,6 +2408,18 @@ function setupEventListeners() {
             try {
                 const title = (document.querySelector('#authModal .modal-title')?.textContent || '').trim();
                 if (title !== 'Registrace') return; // jen v režimu registrace
+                
+                // Kontrola GDPR souhlasu
+                const gdprCheckbox = document.getElementById('gdprConsent');
+                if (!gdprCheckbox || !gdprCheckbox.checked) {
+                    showMessage('Pro dokončení registrace musíte souhlasit se zpracováním osobních údajů.', 'error');
+                    if (gdprCheckbox) {
+                        gdprCheckbox.focus();
+                        gdprCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+                
                 const raw = (document.getElementById('phoneCode')?.value || '').toString().trim();
                 // Povolit 4–8 číslic, odstranit mezery a nečíselné znaky
                 const code = raw.replace(/\s+/g, '').replace(/[^0-9]/g, '');

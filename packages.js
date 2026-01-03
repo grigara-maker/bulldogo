@@ -405,6 +405,17 @@ function updatePaymentSummary() {
 }
 
 async function processPayment() {
+    // Kontrola souhlasu s obchodními podmínkami
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    if (!termsCheckbox || !termsCheckbox.checked) {
+        showMessage("Pro pokračování musíte souhlasit s obchodními podmínkami.", "error");
+        if (termsCheckbox) {
+            termsCheckbox.focus();
+            termsCheckbox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+    
     // Kontrola výběru plánu
     if (!window.selectedPlan || !window.selectedPlan.plan) {
         showMessage("Prosím nejdříve vyberte balíček", "error");

@@ -12531,22 +12531,150 @@ body:has(.ad-detail-content) .ad-detail-main,
 
 /* Pro PC - zajistit, že levý sloupec je vlevo a pravý vpravo */
 @media (min-width: 769px) {
+    /* Ad Detail - zajistit, že nic nejde mimo stránku */
+    body:has(.ad-detail-content) .main-content,
+    .main-content:has(.ad-detail-content) {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
+    }
+    
+    .ad-detail-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        padding: 2rem !important;
+        margin: 0 auto !important;
+    }
+    
     .ad-detail-main {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 2rem !important;
         width: 100% !important;
         max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
     }
     
     .ad-detail-left {
         order: 1 !important;
         grid-column: 1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        border: 1px solid #e5e7eb !important;
     }
     
     .ad-detail-right {
         order: 2 !important;
         grid-column: 2 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        border: 1px solid #e5e7eb !important;
+    }
+    
+    .ad-title-section,
+    .ad-meta-section,
+    .ad-description-section,
+    .ad-contact-section,
+    .ad-actions {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        overflow: hidden !important;
+    }
+    
+    .ad-detail-title,
+    .ad-detail-price,
+    .ad-description {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        overflow: hidden !important;
+    }
+    
+    /* Profile Detail - zajistit, že nic nejde mimo stránku */
+    body:has(.profile-detail-main) .main-content,
+    .main-content:has(.profile-detail-main) {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
+    }
+    
+    .profile-detail-main {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 2rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+    }
+    
+    .profile-detail-left {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        border: 1px solid #e5e7eb !important;
+    }
+    
+    .profile-detail-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        border: 1px solid #e5e7eb !important;
+    }
+    
+    .profile-header-info,
+    .user-services-section,
+    .user-reviews-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        overflow-x: hidden !important;
+    }
+    
+    .user-services-grid,
+    .user-reviews-grid {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Zajistit, že všechny texty jsou viditelné a nejsou mimo stránku */
+    .ad-detail-title,
+    .ad-detail-price,
+    .ad-description,
+    .ad-meta-item,
+    .contact-item {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
 }
 
@@ -15185,8 +15313,6 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .tab-btn.active:hover {
         color: white !important;
-    }
-        order: 0 !important;
     }
     
     /* Chat mobile */
