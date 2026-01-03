@@ -171,10 +171,39 @@ function resetMobileMenu() {
     }
 }
 
+// Automaticky nastavit aktivní stav navigace podle aktuální stránky
+function setActiveNavLink() {
+    const currentPath = window.location.pathname;
+    const currentPage = currentPath.split('/').pop() || 'index.html';
+    
+    // Najít všechny navigační odkazy
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        
+        // Odstranit aktivní stav ze všech odkazů
+        link.classList.remove('active');
+        
+        // Zkontrolovat, zda odkaz odpovídá aktuální stránce
+        if (href === currentPage || 
+            (currentPage === '' && href === 'index.html') ||
+            (currentPage === 'index.html' && href === 'index.html')) {
+            link.classList.add('active');
+        } else if (href.includes(currentPage) && currentPage !== 'index.html') {
+            link.classList.add('active');
+        }
+    });
+}
+
 // Close mobile menu when clicking on a link
 document.addEventListener('DOMContentLoaded', () => {
     // Reset menu state on page load
     resetMobileMenu();
+    
+    // Nastavit aktivní stav navigace
+    setActiveNavLink();
     
     // Use event delegation for nav links (works for dynamically added links)
     document.addEventListener('click', (e) => {
