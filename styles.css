@@ -13293,11 +13293,11 @@ body:has(.ad-detail-content) .ad-detail-main,
         z-index: 3000 !important;
     }
     
-    /* Main container - PŘESNĚ STEJNÝ jako profile-detail-main */
+    /* Main container - flexbox column pro oddělení fotky a textu */
     .ad-detail-main {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 1rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -13308,7 +13308,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
-    /* Levý sloupec - obrázek nahoře, PŘESNĚ STEJNÝ jako profile-detail-left */
+    /* Levý sloupec - FOTKA SAMOSTATNĚ nahoře */
     .ad-detail-left {
         width: 100% !important;
         max-width: 100% !important;
@@ -13316,6 +13316,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         position: static !important;
@@ -13323,9 +13324,10 @@ body:has(.ad-detail-content) .ad-detail-main,
         background: transparent !important;
         border-radius: 0 !important;
         box-shadow: none !important;
+        order: 1 !important;
     }
     
-    /* Pravý sloupec - popis pod obrázkem, PŘESNĚ STEJNÝ jako profile-detail-right */
+    /* Pravý sloupec - TEXT SAMOSTATNĚ pod fotkou */
     .ad-detail-right {
         width: 100% !important;
         max-width: 100% !important;
@@ -13333,11 +13335,15 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         background: transparent !important;
         border-radius: 0 !important;
         box-shadow: none !important;
+        order: 2 !important;
+        border-top: 1px solid #e5e7eb !important;
     }
     
     /* Profil uživatele pod popisem - PŘESNĚ STEJNÝ jako .ad-user-profile v profilu */
@@ -13353,14 +13359,14 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
-    /* ===== HLAVNÍ OBRÁZEK - STEJNÝ JAKO U PROFILU ===== */
+    /* ===== HLAVNÍ OBRÁZEK - SAMOSTATNÁ SEKCE ===== */
     .ad-main-image {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
         aspect-ratio: 4 / 3 !important;
         height: auto !important;
-        margin-bottom: 1.5rem !important;
+        margin: 0 0 1rem 0 !important;
         border-radius: 12px !important;
         overflow: hidden !important;
         display: block !important;
@@ -13376,12 +13382,12 @@ body:has(.ad-detail-content) .ad-detail-main,
         box-sizing: border-box !important;
     }
     
-    /* Thumbnaily */
+    /* Thumbnaily - součást sekce s fotkou */
     .ad-thumbnails {
         width: 100% !important;
         max-width: 100% !important;
         padding: 0.75rem 0 !important;
-        margin-bottom: 1.5rem !important;
+        margin: 0 !important;
         display: flex !important;
         gap: 0.5rem !important;
         overflow-x: auto !important;
@@ -13413,7 +13419,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         object-position: center !important;
     }
     
-    /* ===== SEKCE - PŘESNĚ STEJNÉ JAKO U PROFILU ===== */
+    /* ===== SEKCE TEXTU - SAMOSTATNĚ POD FOTKOU ===== */
     .ad-title-section,
     .ad-meta-section,
     .ad-description-section,
@@ -13436,6 +13442,7 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-title-section {
+        margin-top: 0 !important;
         margin-bottom: 1.5rem !important;
     }
     
