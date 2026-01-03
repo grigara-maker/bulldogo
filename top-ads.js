@@ -611,13 +611,7 @@ async function processPayment() {
                         year: 'numeric' 
                     });
                     
-                    const message = `⚠️ Tento inzerát má již aktivní topování!\n\n` +
-                                   `Aktuální topování vyprší: ${expiresDateFormatted}\n` +
-                                   `Zbývá: ${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'}\n\n` +
-                                   `Pro nákup nového topování musíte nejdřív počkat do konce stávajícího období.\n\n` +
-                                   `Můžete také zrušit současné topování v sekci "Spravovat topování" a poté zakoupit nové.`;
-                    
-                    alert(message);
+                    showTopWarningModal(expiresDateFormatted, remainingDays);
                     return;
                 }
             }
@@ -922,6 +916,87 @@ function checkAuthForChat() {
 }
 
 // Zobrazení modalu s upozorněním o balíčku
+// Zobrazení modalu pro varování o aktivním topování
+function showTopWarningModal(expiresDateFormatted, remainingDays) {
+    // Odstranit existující modal, pokud existuje
+    const existingModal = document.getElementById('topWarningModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Vytvořit modal
+    const modal = document.createElement('div');
+    modal.id = 'topWarningModal';
+    modal.className = 'modal-top-warning';
+    modal.innerHTML = `
+        <div class="modal-top-warning-overlay"></div>
+        <div class="modal-top-warning-content">
+            <div class="modal-top-warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="modal-top-warning-title">Tento inzerát má již aktivní topování!</h2>
+            <div class="modal-top-warning-message" style="text-align: left;">
+                <div style="background: rgba(255, 138, 0, 0.1); padding: 16px; border-radius: 10px; margin-bottom: 16px; border-left: 4px solid #ff8a00;">
+                    <div style="margin-bottom: 12px;">
+                        <strong style="color: #111827; display: block; margin-bottom: 4px;">Aktuální topování vyprší:</strong>
+                        <span style="color: #f77c00; font-weight: 700; font-size: 18px;">${expiresDateFormatted}</span>
+                    </div>
+                    <div>
+                        <strong style="color: #111827; display: block; margin-bottom: 4px;">Zbývá:</strong>
+                        <span style="color: #f77c00; font-weight: 700; font-size: 18px;">${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 12px 0; color: #6b7280; line-height: 1.6;">Pro nákup nového topování musíte nejdřív počkat do konce stávajícího období.</p>
+                    <p style="margin: 0; color: #6b7280; line-height: 1.6;">Můžete také zrušit současné topování v sekci "Spravovat topování" a poté zakoupit nové.</p>
+                </div>
+            </div>
+            <div class="modal-top-warning-actions">
+                <button class="btn btn-primary" onclick="closeTopWarningModal(); window.location.href='profile-top.html';" style="background: linear-gradient(135deg, #ff8a00 0%, #ff6b35 100%); color: #ffffff; border: none; padding: 12px 24px; font-size: 16px; font-weight: 600; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 138, 0, 0.3); transition: all 0.3s ease; min-width: 180px;">
+                    <i class="fas fa-fire"></i> Spravovat topování
+                </button>
+                <button class="btn btn-secondary" onclick="closeTopWarningModal()" style="background: #f3f4f6; color: #374151; border: none; padding: 12px 24px; font-size: 16px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; min-width: 140px;">
+                    Zavřít
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Zobrazit modal s animací
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Zavřít při kliknutí na overlay
+    modal.querySelector('.modal-top-warning-overlay').addEventListener('click', closeTopWarningModal);
+    
+    // Zavřít při stisknutí ESC
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeTopWarningModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+}
+
+// Zavření modalu
+function closeTopWarningModal() {
+    const modal = document.getElementById('topWarningModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Expose functions
+window.showTopWarningModal = showTopWarningModal;
+window.closeTopWarningModal = closeTopWarningModal;
+
 function showPackageWarningModal(message) {
     // Vytvořit modal, pokud ještě neexistuje
     let modal = document.getElementById('packageWarningModal');

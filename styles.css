@@ -919,6 +919,9 @@
     position: relative;
     min-height: 160px !important;
     text-align: left; /* Zarovnání textů vlevo */
+    overflow: hidden !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
 }
 .ad-title { 
     display: block !important;
@@ -948,6 +951,11 @@
     visibility: visible !important;
     opacity: 1 !important;
     text-align: left; /* Zarovnání vlevo */
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    hyphens: auto !important;
+    max-width: 100% !important;
 }
 
 /* Top badge */
@@ -7065,6 +7073,12 @@ body.profile-plan-page .plan-info {
         margin-top: 0 !important;
         margin-bottom: 0 !important;
         order: initial !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        hyphens: auto !important;
+        max-width: 100% !important;
+        line-height: 1.4 !important;
     }
     
     .ad-card .ad-actions {
@@ -14570,6 +14584,12 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
         margin-bottom: 12px !important; /* Větší mezera před tlačítky */
         order: 2;
         text-align: left !important; /* Zarovnání vlevo */
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        hyphens: auto !important;
+        max-width: 100% !important;
+        line-height: 1.4 !important;
     }
     
     /* Kategorie */
