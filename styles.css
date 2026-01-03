@@ -12608,6 +12608,8 @@ body:has(.ad-detail-content) .ad-detail-main,
     padding: 0;
     align-items: start;
     grid-auto-flow: row !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
 }
 
 .ad-detail-left {

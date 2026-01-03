@@ -29,11 +29,12 @@
         
         /* Zajistit, že pozadí nikdy nejde mimo stránku */
         .main-content {
-            width: 100% !important;
-            max-width: 100% !important;
+            width: calc(100% - 70px) !important;
+            max-width: calc(100% - 70px) !important;
             box-sizing: border-box !important;
             overflow-x: hidden !important;
             position: relative !important;
+            margin-left: 70px !important;
         }
         
         /* Zajistit, že všechny elementy uvnitř nemají overflow */
@@ -49,6 +50,47 @@
             overflow-x: hidden !important;
             padding: 2rem !important;
             margin: 0 !important;
+        }
+        
+        /* Zajistit, že grid nezpůsobuje overflow */
+        .profile-detail-main {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 2rem !important;
+            min-width: 0 !important;
+        }
+        
+        .profile-detail-left,
+        .profile-detail-right {
+            min-width: 0 !important;
+        }
+        
+        /* Zajistit, že všechny obrázky a media nezpůsobují overflow */
+        .ad-detail-content img,
+        .ad-detail-content video,
+        .ad-detail-content iframe {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        
+        /* Zajistit, že všechny tabulky a pre nezpůsobují overflow */
+        .ad-detail-content table,
+        .ad-detail-content pre {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            display: block !important;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-left: 0 !important;
+            }
+            
+            .profile-detail-main {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+            }
         }
         
         /* Všechny sekce mají stejné mezery od krajů */
