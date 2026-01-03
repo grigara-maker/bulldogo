@@ -893,16 +893,19 @@ function createAdCard(service, showActions = true) {
         imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
     }
     
+    // Získat formátovanou lokaci
+    const formattedLocation = getLocationName(service.location || '') || 'Neuvedeno';
+    
     return `
-        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle}>
+        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle} style="width: 100%; max-width: 100%; min-width: 0; text-align: left; box-sizing: border-box;">
             <div class="ad-thumb">
                 ${imageHtml}
             </div>
-            <div class="ad-body" data-location="${getLocationName(service.location || '') || 'Neuvedeno'}">
+            <div class="ad-body" data-location="${formattedLocation}" style="width: 100%; max-width: 100%; min-width: 0; text-align: left; box-sizing: border-box; margin: 0;">
                 <div class="ad-meta"><span>${getCategoryName(service.category || '')}</span></div>
                 <h3 class="ad-title">${service.title || 'Bez názvu'}</h3>
                 ${formattedPrice ? `<div class="ad-price">${formattedPrice}</div>` : ''}
-                <div class="ad-location">${getLocationName(service.location || '') || 'Neuvedeno'}</div>
+                <div class="ad-location" style="width: 100%; max-width: 100%; min-width: 0; text-align: left; box-sizing: border-box; margin: 0; padding: 0; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${formattedLocation}</div>
             </div>
             ${service.isTop ? `
             <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
@@ -1253,11 +1256,18 @@ function filterServices() {
             if (regionFilter === 'Kdekoliv') {
                 matchesRegion = serviceLoc === 'Kdekoliv' || loc === 'Kdekoliv' || serviceLocFormatted === 'Kdekoliv';
             } else if (regionFilter === 'CelaCeskaRepublika') {
+                // Porovnat všechny možné formáty
+                const normalizedServiceLoc = serviceLoc.toLowerCase().trim();
+                const normalizedFormatted = serviceLocFormatted.toLowerCase().trim();
                 matchesRegion = serviceLoc === 'CelaCeskaRepublika' || 
                                serviceLoc === 'Celá Česká republika' ||
+                               normalizedServiceLoc === 'celá česká republika' ||
+                               normalizedServiceLoc === 'celaceskarepublika' ||
                                loc === 'Celá Česká republika' ||
                                loc === 'CelaCeskaRepublika' ||
-                               serviceLocFormatted === 'Celá Česká republika';
+                               serviceLocFormatted === 'Celá Česká republika' ||
+                               normalizedFormatted === 'celá česká republika' ||
+                               locCode === 'CelaCeskaRepublika';
             } else if (regionFilter === 'CelaSlovenskaRepublika') {
                 matchesRegion = serviceLoc === 'CelaSlovenskaRepublika' || 
                                serviceLoc === 'Celá Slovenská republika' ||
@@ -1351,8 +1361,12 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
             if (regionFilter === 'Kdekoliv') {
                 matchesRegion = serviceLoc === 'Kdekoliv' || locationCode === 'Kdekoliv' || locationCodeFromFormatted === 'Kdekoliv';
             } else if (regionFilter === 'CelaCeskaRepublika') {
+                // Porovnat všechny možné formáty
+                const normalizedServiceLoc = serviceLoc.toLowerCase().trim();
                 matchesRegion = serviceLoc === 'Celá Česká republika' || 
                                serviceLoc === 'CelaCeskaRepublika' || 
+                               normalizedServiceLoc === 'celá česká republika' ||
+                               normalizedServiceLoc === 'celaceskarepublika' ||
                                locationCode === 'CelaCeskaRepublika' ||
                                locationCodeFromFormatted === 'CelaCeskaRepublika';
             } else if (regionFilter === 'CelaSlovenskaRepublika') {
