@@ -3836,7 +3836,7 @@ exports.createBillingPortalSession = functions
             }
             // Získat Stripe customer ID z Firestore
             // Firebase Extension ukládá subscriptions pod customers/{uid}/subscriptions, kde uid je Firebase UID
-            // Stripe customer ID je v subscription dokumentu v poli "customer"
+            // Stripe customer ID je v subscription dokumentu v poli "customer" a MUSÍ začínat na "cus_"
             const db = admin.firestore();
             let stripeCustomerId = null;
             // 1) Nejdřív zkusit najít z aktivní subscription (nejspolehlivější způsob)
@@ -3853,32 +3853,21 @@ exports.createBillingPortalSession = functions
                     functions.logger.info("📄 Subscription data", {
                         hasCustomer: !!(subData === null || subData === void 0 ? void 0 : subData.customer),
                         customerType: typeof (subData === null || subData === void 0 ? void 0 : subData.customer),
-                        customerValue: (subData === null || subData === void 0 ? void 0 : subData.customer) ? (typeof subData.customer === 'string' ? subData.customer.substring(0, 20) : 'object') : 'null'
+                        customerValue: (subData === null || subData === void 0 ? void 0 : subData.customer) ? (typeof subData.customer === 'string' ? subData.customer.substring(0, 30) : 'object') : 'null',
+                        fullSubData: JSON.stringify(subData).substring(0, 500)
                     });
                     // Customer ID může být string nebo objekt s id
-                    if (typeof (subData === null || subData === void 0 ? void 0 : subData.customer) === 'string') {
+                    if (typeof (subData === null || subData === void 0 ? void 0 : subData.customer) === 'string' && subData.customer.startsWith('cus_')) {
                         stripeCustomerId = subData.customer;
                     }
-                    else if (((_a = subData === null || subData === void 0 ? void 0 : subData.customer) === null || _a === void 0 ? void 0 : _a.id) && typeof subData.customer.id === 'string') {
+                    else if (((_a = subData === null || subData === void 0 ? void 0 : subData.customer) === null || _a === void 0 ? void 0 : _a.id) && typeof subData.customer.id === 'string' && subData.customer.id.startsWith('cus_')) {
                         stripeCustomerId = subData.customer.id;
                     }
                     else if (subData === null || subData === void 0 ? void 0 : subData.customer) {
                         // Pokud je to reference nebo jiný formát, zkusit získat ID
-                        stripeCustomerId = String(subData.customer);
-                    }
-                    // Pokud stále nemáme customer ID, zkusit použít document ID z customer kolekce
-                    // Firebase Extension může ukládat customer dokumenty s UID jako ID
-                    // a Stripe customer ID může být stejné jako UID nebo v customer dokumentu
-                    if (!stripeCustomerId) {
-                        // Zkusit najít customer dokument s UID jako ID
-                        const customerDoc = await db.collection("customers").doc(userId).get();
-                        if (customerDoc.exists) {
-                            const customerData = customerDoc.data();
-                            stripeCustomerId = (customerData === null || customerData === void 0 ? void 0 : customerData.id) || (customerData === null || customerData === void 0 ? void 0 : customerData.stripeCustomerId) || null;
-                            // Pokud customer dokument existuje, ale nemá id, zkusit použít document ID (pokud vypadá jako Stripe customer ID)
-                            if (!stripeCustomerId && customerDoc.id && customerDoc.id.startsWith('cus_')) {
-                                stripeCustomerId = customerDoc.id;
-                            }
+                        const customerStr = String(subData.customer);
+                        if (customerStr.startsWith('cus_')) {
+                            stripeCustomerId = customerStr;
                         }
                     }
                 }
@@ -3887,14 +3876,26 @@ exports.createBillingPortalSession = functions
                 functions.logger.warn("⚠️ Could not find customer ID from subscriptions", { error, userId });
             }
             // 2) Pokud nenajdeme, zkusit najít customer dokument s UID jako ID
-            if (!stripeCustomerId) {
+            // Firebase Extension může ukládat customer dokumenty s UID jako ID
+            if (!stripeCustomerId || !stripeCustomerId.startsWith('cus_')) {
                 try {
                     const customerDocByUid = await db.collection("customers").doc(userId).get();
                     if (customerDocByUid.exists) {
                         const customerData = customerDocByUid.data();
-                        stripeCustomerId = (customerData === null || customerData === void 0 ? void 0 : customerData.id) || (customerData === null || customerData === void 0 ? void 0 : customerData.stripeCustomerId) || null;
-                        // Pokud customer dokument existuje, ale nemá id, zkusit použít document ID (pokud vypadá jako Stripe customer ID)
-                        if (!stripeCustomerId && customerDocByUid.id && customerDocByUid.id.startsWith('cus_')) {
+                        functions.logger.info("📄 Customer document data", {
+                            hasId: !!(customerData === null || customerData === void 0 ? void 0 : customerData.id),
+                            idValue: (customerData === null || customerData === void 0 ? void 0 : customerData.id) ? customerData.id.substring(0, 30) : null,
+                            hasStripeCustomerId: !!(customerData === null || customerData === void 0 ? void 0 : customerData.stripeCustomerId),
+                            docId: customerDocByUid.id,
+                            docIdStartsWithCus: customerDocByUid.id.startsWith('cus_')
+                        });
+                        // Zkusit získat customer ID z dokumentu
+                        const candidateId = (customerData === null || customerData === void 0 ? void 0 : customerData.id) || (customerData === null || customerData === void 0 ? void 0 : customerData.stripeCustomerId);
+                        if (candidateId && typeof candidateId === 'string' && candidateId.startsWith('cus_')) {
+                            stripeCustomerId = candidateId;
+                        }
+                        else if (customerDocByUid.id && customerDocByUid.id.startsWith('cus_')) {
+                            // Document ID je Stripe customer ID (Extension ukládá customer dokumenty s Stripe customer ID jako ID)
                             stripeCustomerId = customerDocByUid.id;
                         }
                     }
@@ -3904,18 +3905,17 @@ exports.createBillingPortalSession = functions
                 }
             }
             // 3) Pokud stále nemáme customer ID, zkusit najít podle emailu v customers kolekci
-            if (!stripeCustomerId) {
+            if (!stripeCustomerId || !stripeCustomerId.startsWith('cus_')) {
                 try {
                     // Získat email uživatele
                     const userRecord = await admin.auth().getUser(userId);
                     const userEmail = userRecord.email;
                     if (userEmail) {
-                        // Prohledat všechny customer dokumenty (Extension může ukládat s různými ID)
-                        // Toto je náročné, ale jako fallback
+                        // Prohledat všechny customer dokumenty (Extension ukládá customer dokumenty s Stripe customer ID jako ID)
                         const allCustomers = await db.collection("customers").limit(100).get();
                         for (const customerDoc of allCustomers.docs) {
                             const customerData = customerDoc.data();
-                            if ((customerData === null || customerData === void 0 ? void 0 : customerData.email) === userEmail || ((_b = customerData === null || customerData === void 0 ? void 0 : customerData.metadata) === null || _b === void 0 ? void 0 : _b.firebaseUID) === userId) {
+                            if (((customerData === null || customerData === void 0 ? void 0 : customerData.email) === userEmail || ((_b = customerData === null || customerData === void 0 ? void 0 : customerData.metadata) === null || _b === void 0 ? void 0 : _b.firebaseUID) === userId) && customerDoc.id.startsWith('cus_')) {
                                 stripeCustomerId = customerDoc.id; // Document ID je Stripe customer ID
                                 break;
                             }
@@ -3925,6 +3925,14 @@ exports.createBillingPortalSession = functions
                 catch (error) {
                     functions.logger.warn("⚠️ Could not find customer ID by email", { error, userId });
                 }
+            }
+            // 4) Validovat, že customer ID má správný formát (musí začínat na "cus_")
+            if (stripeCustomerId && !stripeCustomerId.startsWith('cus_')) {
+                functions.logger.error("❌ Invalid Stripe customer ID format", {
+                    customerId: stripeCustomerId,
+                    userId
+                });
+                stripeCustomerId = null; // Resetovat, protože není validní
             }
             if (!stripeCustomerId) {
                 functions.logger.error("❌ Stripe customer ID not found for user", {
@@ -3955,18 +3963,34 @@ exports.createBillingPortalSession = functions
                 res.status(500).json({ error: "Stripe configuration error" });
                 return;
             }
+            // Validovat customer ID před voláním Stripe API
+            if (!stripeCustomerId || !stripeCustomerId.startsWith('cus_')) {
+                functions.logger.error("❌ Invalid Stripe customer ID before API call", {
+                    customerId: stripeCustomerId,
+                    userId,
+                    isValid: stripeCustomerId ? stripeCustomerId.startsWith('cus_') : false
+                });
+                res.status(400).json({
+                    error: "Invalid Stripe customer ID. Customer ID must start with 'cus_'.",
+                    details: "No valid Stripe customer found for this user."
+                });
+                return;
+            }
             // Vytvořit billing portal session přes Stripe API
             functions.logger.info("🔄 Calling Stripe API", {
                 stripeCustomerId,
                 returnUrl,
-                hasSecretKey: !!cleanedSecretKey
+                hasSecretKey: !!cleanedSecretKey,
+                customerIdLength: stripeCustomerId.length,
+                customerIdPrefix: stripeCustomerId.substring(0, 10)
             });
             let stripeResponse;
             try {
-                stripeResponse = await axios_1.default.post("https://api.stripe.com/v1/billing_portal/sessions", new URLSearchParams({
-                    customer: stripeCustomerId,
-                    return_url: returnUrl,
-                }), {
+                // Stripe API vyžaduje form-urlencoded data
+                const formData = new URLSearchParams();
+                formData.append('customer', stripeCustomerId);
+                formData.append('return_url', returnUrl);
+                stripeResponse = await axios_1.default.post("https://api.stripe.com/v1/billing_portal/sessions", formData.toString(), {
                     headers: {
                         Authorization: `Bearer ${cleanedSecretKey}`,
                         "Content-Type": "application/x-www-form-urlencoded",
