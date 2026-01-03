@@ -1402,15 +1402,28 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
         if (show) {
             // Zobrazit kartu a zajistit, že se zachovají všechny inline styly
             card.style.display = 'block';
+            card.style.width = '100%';
+            card.style.maxWidth = '100%';
+            card.style.minWidth = '0';
+            card.style.textAlign = 'left';
+            card.style.boxSizing = 'border-box';
+            card.style.margin = '0';
+            card.style.padding = '0';
+            
             // Zajistit, že ad-body a ad-location mají správné styly
             const adBody = card.querySelector('.ad-body');
             const adLocation = card.querySelector('.ad-location');
+            const adTitle = card.querySelector('.ad-title');
+            const adMeta = card.querySelector('.ad-meta');
+            const adPrice = card.querySelector('.ad-price');
+            
             if (adBody) {
                 adBody.style.width = '100%';
                 adBody.style.maxWidth = '100%';
                 adBody.style.minWidth = '0';
                 adBody.style.textAlign = 'left';
                 adBody.style.boxSizing = 'border-box';
+                adBody.style.margin = '0';
             }
             if (adLocation) {
                 adLocation.style.width = '100%';
@@ -1421,6 +1434,17 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
                 adLocation.style.wordWrap = 'break-word';
                 adLocation.style.overflowWrap = 'break-word';
                 adLocation.style.whiteSpace = 'normal';
+                adLocation.style.margin = '0';
+                adLocation.style.padding = '0';
+            }
+            if (adTitle) {
+                adTitle.style.textAlign = 'left';
+            }
+            if (adMeta) {
+                adMeta.style.textAlign = 'left';
+            }
+            if (adPrice) {
+                adPrice.style.textAlign = 'left';
             }
             visible++;
         } else {

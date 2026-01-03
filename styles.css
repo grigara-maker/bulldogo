@@ -868,12 +868,13 @@
 
 .ads-grid {
     display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-    max-width: 1600px; /* Maximální šířka gridu */
-    margin: 0 auto;
-    width: 100%; /* Plná šířka containeru */
-    justify-content: center; /* Vycentrovat grid */
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 24px !important;
+    max-width: 1600px !important; /* Maximální šířka gridu */
+    margin: 0 auto !important;
+    width: 100% !important; /* Plná šířka containeru */
+    justify-content: start !important; /* Zarovnat grid vlevo, nevycentrovat */
+    align-items: start !important; /* Zarovnat karty nahoru */
 }
 
 /* Na hlavní stránce zmenšit grid, aby inzeráty nebyly až u kraje */
@@ -892,26 +893,25 @@
 
 .ad-card {
     background: white !important;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #f0f0f0;
+    border-radius: 15px !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    border: 1px solid #f0f0f0 !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
     display: block !important;
-    min-height: 320px;
-    position: relative;
-    width: 100% !important; /* Zajistit, aby karty měly stejnou šířku */
-    max-width: 100% !important; /* Zajistit, aby karty nepřesahovaly */
-    min-width: 0 !important; /* Zajistit, aby flex/grid správně fungoval */
-    display: block !important;
+    min-height: 320px !important;
+    position: relative !important;
     visibility: visible !important;
     opacity: 1 !important;
-    text-align: left !important; /* Zajistit zarovnání vlevo pro celou kartu */
-    box-sizing: border-box !important; /* Zahrnout padding a border do šířky */
+    text-align: left !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    clear: both !important;
 }
 
 .ad-card:hover {
@@ -15715,8 +15715,8 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     margin: 2rem 0;
 }
 
-/* Ads Grid for Admin */
-.ads-grid {
+/* Ads Grid for Admin - POUZE pokud není použito na stránce služeb */
+.ads-grid:not(#servicesGrid) {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
@@ -16843,23 +16843,27 @@ html:has(.ad-detail-content) {
 }
 
 /* ===== ZAJISTIT KONZISTENTNÍ FORMÁTOVÁNÍ PRO VŠECHNY LOKACE VČETNĚ "CELÁ ČESKÁ REPUBLIKA" ===== */
-/* Zajistit, že všechny karty mají stejné formátování bez ohledu na filtr */
-.ad-card,
-.ad-card[data-location*="Celá Česká republika"],
-.ad-card[data-location*="CelaCeskaRepublika"],
-.ad-card[style*="display: block"],
-.ad-card[style*="display:''"] {
+/* Zajistit, že všechny karty mají stejné formátování bez ohledu na filtr nebo lokaci */
+#servicesGrid .ad-card,
+#servicesGrid .ad-card[data-location*="Celá Česká republika"],
+#servicesGrid .ad-card[data-location*="CelaCeskaRepublika"],
+#servicesGrid .ad-card[data-location*="Kdekoliv"],
+#servicesGrid .ad-card[data-location*="Celá Slovenská republika"] {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     text-align: left !important;
     box-sizing: border-box !important;
     display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    clear: both !important;
 }
 
-.ad-body,
-.ad-body[data-location*="Celá Česká republika"],
-.ad-body[data-location*="CelaCeskaRepublika"] {
+#servicesGrid .ad-card .ad-body,
+#servicesGrid .ad-card .ad-body[data-location*="Celá Česká republika"],
+#servicesGrid .ad-card .ad-body[data-location*="CelaCeskaRepublika"] {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -16868,11 +16872,13 @@ html:has(.ad-detail-content) {
     display: block !important;
     margin: 0 !important;
     padding: 12px 14px 90px !important;
+    float: none !important;
+    clear: both !important;
 }
 
-.ad-location,
-.ad-location[data-location-text*="Celá Česká republika"],
-.ad-location[data-location-text*="CelaCeskaRepublika"] {
+#servicesGrid .ad-card .ad-location,
+#servicesGrid .ad-card .ad-location[data-location-text*="Celá Česká republika"],
+#servicesGrid .ad-card .ad-location[data-location-text*="CelaCeskaRepublika"] {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -16886,23 +16892,31 @@ html:has(.ad-detail-content) {
     white-space: normal !important;
     font-size: 0.85rem !important;
     color: #6b7280 !important;
+    float: none !important;
+    clear: both !important;
 }
 
 /* Zajistit, že grid nezpůsobuje změny formátování */
-.ads-grid .ad-card {
+#servicesGrid.ads-grid .ad-card {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    text-align: left !important;
+    float: none !important;
 }
 
-.ads-grid .ad-card .ad-body {
+#servicesGrid.ads-grid .ad-card .ad-body {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    text-align: left !important;
+    float: none !important;
 }
 
-.ads-grid .ad-card .ad-location {
+#servicesGrid.ads-grid .ad-card .ad-location {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    text-align: left !important;
+    float: none !important;
 }
