@@ -40,10 +40,45 @@ async function loadCurrentPlan() {
         if (snap.exists()) {
             const data = snap.data();
             plan = data.plan || 'none';
-            planPeriodEnd = data.planPeriodEnd ? (data.planPeriodEnd.toDate ? data.planPeriodEnd.toDate() : new Date(data.planPeriodEnd)) : null;
-            planPeriodStart = data.planPeriodStart ? (data.planPeriodStart.toDate ? data.planPeriodStart.toDate() : new Date(data.planPeriodStart)) : null;
+            
+            // Správný převod Firestore Timestamp na Date
+            if (data.planPeriodEnd) {
+                if (data.planPeriodEnd.toDate && typeof data.planPeriodEnd.toDate === 'function') {
+                    planPeriodEnd = data.planPeriodEnd.toDate();
+                } else if (data.planPeriodEnd.seconds) {
+                    planPeriodEnd = new Date(data.planPeriodEnd.seconds * 1000);
+                } else if (data.planPeriodEnd instanceof Date) {
+                    planPeriodEnd = data.planPeriodEnd;
+                } else {
+                    planPeriodEnd = new Date(data.planPeriodEnd);
+                }
+            }
+            
+            if (data.planPeriodStart) {
+                if (data.planPeriodStart.toDate && typeof data.planPeriodStart.toDate === 'function') {
+                    planPeriodStart = data.planPeriodStart.toDate();
+                } else if (data.planPeriodStart.seconds) {
+                    planPeriodStart = new Date(data.planPeriodStart.seconds * 1000);
+                } else if (data.planPeriodStart instanceof Date) {
+                    planPeriodStart = data.planPeriodStart;
+                } else {
+                    planPeriodStart = new Date(data.planPeriodStart);
+                }
+            }
+            
             planDurationDays = data.planDurationDays || null;
-            planCancelAt = data.planCancelAt ? (data.planCancelAt.toDate ? data.planCancelAt.toDate() : new Date(data.planCancelAt)) : null;
+            
+            if (data.planCancelAt) {
+                if (data.planCancelAt.toDate && typeof data.planCancelAt.toDate === 'function') {
+                    planCancelAt = data.planCancelAt.toDate();
+                } else if (data.planCancelAt.seconds) {
+                    planCancelAt = new Date(data.planCancelAt.seconds * 1000);
+                } else if (data.planCancelAt instanceof Date) {
+                    planCancelAt = data.planCancelAt;
+                } else {
+                    planCancelAt = new Date(data.planCancelAt);
+                }
+            }
         }
         
         // Aktualizovat UI
@@ -90,13 +125,39 @@ function updatePlanUI(plan, planPeriodEnd, planPeriodStart, planDurationDays, pl
         }
     }
     
-    // Zbývá
+    // Zbývá - správný výpočet celých dní
     if (pRemaining) {
         if (planPeriodEnd) {
             const now = new Date();
-            const remaining = Math.ceil((planPeriodEnd.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
-            if (remaining > 0) {
-                pRemaining.textContent = `${remaining} dní`;
+            // Nastavit čas na půlnoc pro správný výpočet dní
+            const endDate = new Date(planPeriodEnd);
+            endDate.setHours(23, 59, 59, 999); // Konec dne
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0); // Začátek dne
+            
+            // Vypočítat rozdíl v milisekundách a převést na dny
+            const diffMs = endDate.getTime() - today.getTime();
+            const remainingDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+            
+            console.log('📅 Výpočet zbývajících dní:', {
+                planPeriodEnd: planPeriodEnd,
+                endDate: endDate,
+                today: today,
+                diffMs: diffMs,
+                remainingDays: remainingDays
+            });
+            
+            if (remainingDays > 0) {
+                pRemaining.textContent = `${remainingDays} ${remainingDays === 1 ? 'den' : remainingDays < 5 ? 'dny' : 'dní'}`;
+            } else if (remainingDays === 0) {
+                // Pokud je to dnes, zkontrolovat, zda ještě nevypršelo
+                const endOfToday = new Date(today);
+                endOfToday.setHours(23, 59, 59, 999);
+                if (now.getTime() <= endOfToday.getTime()) {
+                    pRemaining.textContent = 'Dnes končí';
+                } else {
+                    pRemaining.textContent = 'Vypršelo';
+                }
             } else {
                 pRemaining.textContent = 'Vypršelo';
             }
