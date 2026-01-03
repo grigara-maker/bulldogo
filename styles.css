@@ -836,6 +836,36 @@
     opacity: 1 !important;
 }
 
+/* Zajistit konzistentní formátování pro všechny lokace včetně "Celá Česká republika" */
+.ad-card[data-location*="Celá Česká republika"],
+.ad-card[data-location*="CelaCeskaRepublika"],
+.ad-body[data-location*="Celá Česká republika"],
+.ad-body[data-location*="CelaCeskaRepublika"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+    display: block !important;
+}
+
+/* Konkrétní pravidlo pro .ad-location s dlouhým textem - včetně "Celá Česká republika" */
+.ad-location,
+.ad-location[data-location-text*="Celá Česká republika"],
+.ad-location[data-location-text*="CelaCeskaRepublika"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    text-align: left !important;
+    box-sizing: border-box !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .ads-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr);

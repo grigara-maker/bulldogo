@@ -906,16 +906,19 @@ function createAdCard(service, showActions = true) {
     // Styly pro ad-location - STEJNÉ pro všechny lokace
     const adLocationStyle = 'width: 100% !important; max-width: 100% !important; min-width: 0 !important; text-align: left !important; box-sizing: border-box !important; margin: 0 !important; padding: 0 !important; word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; display: block !important; font-size: 0.85rem !important; color: #6b7280 !important;';
     
+    // Zajistit, že pro "Celá Česká republika" jsou styly stejné jako pro ostatní lokace
+    const escapedLocation = formattedLocation.replace(/"/g, '&quot;');
+    
     return `
-        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle}>
-            <div class="ad-thumb" style="width: 100% !important; height: 200px !important; display: block !important;">
+        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" data-location="${escapedLocation}" ${topStyle}>
+            <div class="ad-thumb" style="width: 100% !important; height: 200px !important; display: block !important; overflow: hidden !important;">
                 ${imageHtml}
             </div>
-            <div class="ad-body" data-location="${formattedLocation}" style="${adBodyStyle}">
+            <div class="ad-body" data-location="${escapedLocation}" style="${adBodyStyle}">
                 <div class="ad-meta" style="text-align: left !important; display: block !important; margin: 0 0 6px 0 !important;"><span>${getCategoryName(service.category || '')}</span></div>
-                <h3 class="ad-title" style="text-align: left !important; margin: 0 0 6px 0 !important; font-size: 1rem !important; color: #111827 !important; display: block !important;">${service.title || 'Bez názvu'}</h3>
+                <h3 class="ad-title" style="text-align: left !important; margin: 0 0 6px 0 !important; font-size: 1rem !important; color: #111827 !important; display: block !important; word-wrap: break-word !important; overflow-wrap: break-word !important;">${service.title || 'Bez názvu'}</h3>
                 ${formattedPrice ? `<div class="ad-price" style="text-align: left !important; display: block !important; margin: 0 0 6px 0 !important;">${formattedPrice}</div>` : ''}
-                <div class="ad-location" style="${adLocationStyle}">${formattedLocation}</div>
+                <div class="ad-location" data-location-text="${escapedLocation}" style="${adLocationStyle}">${formattedLocation}</div>
             </div>
             ${service.isTop ? `
             <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
