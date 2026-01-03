@@ -1155,31 +1155,38 @@
 
         // Update statistics with real data
         function updateStatistics(userAds, userProfile) {
-            console.log('📊 Updating statistics:', { userAds, userProfile });
+            console.log('📊 Updating statistics:', { userAds: userAds?.length, userProfile });
             
-            // Active ads count
-            const activeAds = userAds ? userAds.filter(ad => ad.status === 'active').length : 0;
+            // Active ads count - podpora různých polí stavu
+            let activeAds = 0;
+            if (userAds && Array.isArray(userAds)) {
+                activeAds = userAds.filter(ad => {
+                    // Zkontrolovat různé způsoby, jak může být inzerát aktivní
+                    if (ad.status === 'active') return true;
+                    if (ad.status === 'inactive' || ad.status === 'deleted') return false;
+                    // Pokud není status, zkontrolovat další pole
+                    if (typeof ad.active === 'boolean') return ad.active === true;
+                    if (typeof ad.isActive === 'boolean') return ad.isActive === true;
+                    // Pokud není žádný status, považuj za aktivní (pokud není explicitně deaktivován)
+                    if (ad.inactiveReason) return false;
+                    return true; // Výchozí: považuj za aktivní
+                }).length;
+            }
+            
             const activeAdsElement = document.querySelector('.stat-card:nth-child(1) .stat-number');
             if (activeAdsElement) {
-                activeAdsElement.textContent = activeAds > 0 ? activeAds : '-';
+                activeAdsElement.textContent = activeAds > 0 ? String(activeAds) : '-';
                 console.log('📝 Updated active ads:', activeAds);
+            } else {
+                console.warn('⚠️ Active ads element not found');
             }
 
-            // Rating (if available)
-            // Calculate average rating from reviews
-            const reviews = userProfile?.reviews || [];
-            const avgRating = reviews.length > 0 ? 
-                (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length) : 0;
-            const totalReviews = reviews.length;
-            
+            // Rating se aktualizuje později v updateRatingFromReviews po načtení reviews
+            // Zde jen nastavíme výchozí hodnotu
             const ratingElement = document.querySelector('.stat-card:nth-child(2) .stat-number');
-            if (ratingElement) {
-                if (totalReviews > 0) {
-                    ratingElement.textContent = avgRating.toFixed(1);
-                } else {
-                    ratingElement.textContent = '-';
-                }
-                console.log('📝 Updated rating:', avgRating.toFixed(1), 'reviews:', totalReviews);
+            if (ratingElement && ratingElement.textContent === '-') {
+                // Necháme "-" dokud se nenačtou reviews
+                console.log('📝 Rating will be updated after reviews are loaded');
             }
             
             console.log('✅ Statistics updated');
@@ -1381,18 +1388,27 @@
         function updateRatingFromReviews(reviews) {
             console.log('🔄 Updating rating from reviews:', reviews.length);
             
+            if (!reviews || !Array.isArray(reviews)) {
+                console.warn('⚠️ Invalid reviews data');
+                return;
+            }
+            
             // Calculate average rating
-            const avgRating = reviews.length > 0 ? 
-                (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length) : 0;
+            const validReviews = reviews.filter(r => r.rating && typeof r.rating === 'number' && r.rating > 0);
+            const avgRating = validReviews.length > 0 ? 
+                (validReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / validReviews.length) : 0;
             
             const ratingElement = document.querySelector('.stat-card:nth-child(2) .stat-number');
             if (ratingElement) {
-                if (reviews.length > 0) {
+                if (validReviews.length > 0) {
                     ratingElement.textContent = avgRating.toFixed(1);
+                    console.log('✅ Updated rating from reviews:', avgRating.toFixed(1), 'from', validReviews.length, 'reviews');
                 } else {
                     ratingElement.textContent = '-';
+                    console.log('📝 No valid reviews found, rating set to "-"');
                 }
-                console.log('📝 Updated rating from reviews:', avgRating.toFixed(1), 'reviews:', reviews.length);
+            } else {
+                console.error('❌ Rating element not found!');
             }
         }
 
