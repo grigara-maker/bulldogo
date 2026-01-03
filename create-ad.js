@@ -1,5 +1,10 @@
 /* eslint-disable no-console */
 (function() {
+    // Globální proměnné pro image cropper
+    let cropperInstance = null;
+    let currentCropFile = null;
+    let currentCropInput = null;
+    
     // Globální pomocné funkce pro publikovat tlačítko a validaci (dostupné i před init)
     function disablePublish(disabled){
         const btn = document.getElementById('publishSideBtn');
@@ -361,9 +366,9 @@
             previewImageInput.addEventListener('change', function(e) {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => { imgPreview.src = ev.target.result; };
-                reader.readAsDataURL(file);
+                currentCropFile = file;
+                currentCropInput = previewImageInput;
+                openImageCropModal(file);
             });
         }
         if (noPreviewCheckbox && previewImageInput && imgPreview) {

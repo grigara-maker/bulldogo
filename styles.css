@@ -13244,15 +13244,26 @@ body:has(.ad-detail-content) .ad-detail-main,
 
 /* Responzivní design pro ad detail */
 @media (max-width: 768px) {
+    /* Main content - odstranit margin-left na mobilu */
+    .main-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+    
     /* Profile detail page mobile optimization */
     .ad-detail-content {
-        padding: 0 !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
+        padding: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
+        overflow-x: hidden !important;
     }
     
     .ad-detail-header {
@@ -13310,48 +13321,43 @@ body:has(.ad-detail-content) .ad-detail-main,
     .ad-detail-main {
         grid-template-columns: 1fr !important;
         gap: 1.5rem !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
         padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
         display: grid !important;
+        overflow-x: hidden !important;
     }
     
     .ad-detail-left {
         grid-column: 1 !important;
         order: 1 !important;
-    }
-    
-    .ad-detail-right {
-        grid-column: 1 !important;
-        order: 2 !important;
-    }
-    
-    .ad-detail-left {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
-        padding: 1.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
         position: static !important;
         top: auto !important;
     }
     
     .ad-detail-right {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 100vw !important;
-        padding: 1.5rem !important;
+        grid-column: 1 !important;
+        order: 2 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
     }
     
     .ad-title-section,
@@ -13361,29 +13367,36 @@ body:has(.ad-detail-content) .ad-detail-main,
     .ad-actions {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0 !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
+        overflow-x: hidden !important;
     }
     
     .ad-title-section {
-        padding-bottom: 1.5rem !important;
+        padding-bottom: 1rem !important;
+        padding-top: 0 !important;
     }
     
     .ad-meta-section {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1rem !important;
+        padding-top: 0 !important;
     }
     
     .ad-description-section {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1rem !important;
+        padding-top: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
     }
     
     .ad-contact-section {
-        margin-bottom: 1.5rem !important;
-        padding: 1.5rem 1rem !important;
+        margin-bottom: 1rem !important;
+        padding: 1rem !important;
     }
     
     .ad-chat-section {
@@ -13528,24 +13541,27 @@ body:has(.ad-detail-content) .ad-detail-main,
     /* Profile Detail Page - Mobile */
     .profile-detail-main {
         grid-template-columns: 1fr !important;
-        gap: 1.5rem !important;
+        gap: 1rem !important;
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
         display: grid !important;
+        overflow-x: hidden !important;
     }
     
     .profile-detail-left {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 1.5rem 1rem !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
         position: static !important;
         top: auto !important;
     }
@@ -13553,11 +13569,12 @@ body:has(.ad-detail-content) .ad-detail-main,
     .profile-detail-right {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 1.5rem 1rem !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
     }
     
     .profile-header-info {
@@ -13578,29 +13595,34 @@ body:has(.ad-detail-content) .ad-detail-main,
     .ad-user-profile {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 1.5rem !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-top: 1.5rem !important;
+        margin-top: 1rem !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
     }
     
     .user-other-ads {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         padding: 1rem 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
     }
     
     .ads-grid {
         width: 100% !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
-        overflow: hidden !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
     
     .user-other-ads h4 {
@@ -17059,5 +17081,237 @@ html:has(.ad-detail-content) {
         max-height: none !important;
         min-height: 0 !important;
         padding-bottom: 0 !important;
+    }
+}
+
+/* ===== OPTIMALIZACE NAČÍTÁNÍ OBRÁZKŮ ===== */
+/* Shimmer efekt pro placeholder při načítání */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Smooth transition pro obrázky */
+.ad-thumb img,
+.ad-main-img,
+.ad-thumbnail img {
+    transition: opacity 0.3s ease-in-out;
+    will-change: opacity;
+}
+
+/* Optimalizace pro lazy loading */
+.ad-thumb img[loading="lazy"] {
+    content-visibility: auto;
+}
+
+/* Preload kritické obrázky - fetchpriority se nastavuje v HTML atributu, ne v CSS */
+.ad-thumb img[loading="eager"],
+.ad-main-img[loading="eager"] {
+    /* fetchpriority se nastavuje jako HTML atribut fetchpriority="high" */
+}
+
+/* Error handling - zajistit, že se zobrazí placeholder při chybě */
+.ad-thumb img:not([src]),
+.ad-main-img:not([src]),
+.ad-thumbnail img:not([src]) {
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Optimalizace pro rychlejší rendering */
+.ad-thumb,
+.ad-main-image,
+.ad-thumbnail {
+    contain: layout style paint;
+}
+
+/* ===== IMAGE CROPPER MODAL ===== */
+.crop-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.crop-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.crop-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.crop-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #111827;
+}
+
+.crop-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.crop-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.crop-modal-body {
+    padding: 20px;
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.crop-container {
+    width: 100%;
+    max-width: 800px;
+    height: 600px;
+    position: relative;
+    background: #f9fafb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.crop-info {
+    margin-top: 16px;
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+.crop-modal-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .crop-modal-content {
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .crop-container {
+        height: 400px;
+        max-width: 100%;
+    }
+    
+    .crop-modal-header,
+    .crop-modal-body,
+    .crop-modal-footer {
+        padding: 16px;
+    }
+    
+    /* ===== MOBILNÍ OPTIMALIZACE PRO PROFIL A INZERÁT ===== */
+    /* Zajistit, že html a body nemají horizontální scroll */
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        position: relative !important;
+    }
+    
+    /* Všechny sekce musí být viditelné */
+    .ad-title-section,
+    .ad-meta-section,
+    .ad-description-section,
+    .ad-contact-section,
+    .ad-user-profile,
+    .profile-header-info,
+    .profile-header-text {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Zajistit správné zobrazení obrázků */
+    .ad-main-image,
+    .ad-thumbnails {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Tlačítka musí být viditelná a klikatelná */
+    .ad-actions,
+    .contact-actions,
+    .btn-contact,
+    .btn-profile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+    
+    /* Zajistit, že všechny texty jsou viditelné */
+    .ad-detail-title,
+    .ad-detail-price,
+    .ad-meta-item,
+    .ad-description,
+    .contact-item {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Thumbnaily obrázků */
+    .ad-thumbnails {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        padding: 0.5rem 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-thumbnail {
+        flex-shrink: 0 !important;
+        width: 80px !important;
+        height: 60px !important;
     }
 }

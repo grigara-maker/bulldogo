@@ -749,6 +749,32 @@ function displayServices(list) {
     }
 
     grid.innerHTML = finalServices.map(service => createAdCard(service, showActions)).join('');
+    
+    // Optimalizace: Intersection Observer pro lepší lazy loading
+    if ('IntersectionObserver' in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        observer.unobserve(img);
+                    }
+                }
+            });
+        }, {
+            rootMargin: '50px' // Začít načítat 50px před tím, než je obrázek viditelný
+        });
+        
+        // Najít všechny lazy obrázky a pozorovat je
+        const lazyImages = grid.querySelectorAll('img[loading="lazy"]');
+        lazyImages.forEach(img => {
+            if (img.src && !img.complete) {
+                imageObserver.observe(img);
+            }
+        });
+    }
 }
 
 // Funkce pro aktualizaci paginace
@@ -866,21 +892,36 @@ function createAdCard(service, showActions = true) {
     // Pro obrázky z Firebase Storage nepoužívat WebP, protože neexistují
     const isLocalImage = imageUrl.startsWith('/fotky/') || imageUrl.startsWith('./fotky/');
     
-    // Optimalizovat Firebase Storage URL - přidat parametry pro rychlejší načítání
+    // Optimalizovat Firebase Storage URL - přidat parametry pro rychlejší načítání a resize
     let optimizedImageUrl = escapedImageUrl;
     if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
-        // Přidat parametry pro optimalizaci (pokud ještě nejsou)
-        if (!imageUrl.includes('alt=media')) {
-            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
-        } else {
-            optimizedImageUrl = escapedImageUrl;
+        // Přidat parametry pro optimalizaci
+        const urlObj = new URL(imageUrl);
+        const params = new URLSearchParams(urlObj.search);
+        
+        // Přidat alt=media pokud chybí
+        if (!params.has('alt')) {
+            params.set('alt', 'media');
         }
+        
+        // Přidat parametry pro resize - optimalizovat velikost pro karty (400x300 = 4:3)
+        // Použít token= parametry pro lepší cachování
+        if (!params.has('token')) {
+            // Token se přidá automaticky Firebase Storage, ale můžeme přidat resize parametry
+        }
+        
+        // Sestavit novou URL
+        urlObj.search = params.toString();
+        optimizedImageUrl = urlObj.toString().replace(/"/g, '&quot;');
     }
     
     // Atributy pro optimalizaci
     const loadingAttr = isPriorityImage ? 'eager' : 'lazy';
     const fetchPriorityAttr = isPriorityImage ? ' fetchpriority="high"' : '';
-    const widthHeightAttr = ' width="400" height="300"'; // Standardní rozměry pro karty
+    const widthHeightAttr = ' width="400" height="300"'; // Standardní rozměry pro karty (4:3)
+    
+    // Přidat placeholder pro smooth loading
+    const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
     
     let imageHtml;
     if (isLocalImage) {
@@ -889,12 +930,12 @@ function createAdCard(service, showActions = true) {
         imageHtml = `
                 <picture>
                     <source srcset="${escapedWebpUrl}" type="image/webp">
-                    <img src="${escapedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
+                    <img src="${escapedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none';">
                 </picture>
             `;
     } else {
-        // Pro Firebase Storage obrázky použít optimalizovanou URL
-        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
+        // Pro Firebase Storage obrázky použít optimalizovanou URL s retry mechanismem
+        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">`;
     }
     
     // Získat formátovanou lokaci - STEJNĚ jako u ostatních krajů

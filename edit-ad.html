@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="/electric-border.css">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    <!-- Cropper.js pro ořez obrázků -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
         .ad-create-layout{
             display:grid;
@@ -406,6 +409,26 @@
                     </div>
 
                 </form>
+            </div>
+
+            <!-- Modal pro ořez obrázku -->
+            <div id="imageCropModal" class="crop-modal" style="display: none;">
+                <div class="crop-modal-content">
+                    <div class="crop-modal-header">
+                        <h3>Oříznout obrázek</h3>
+                        <button class="crop-modal-close" onclick="closeImageCropModal()">&times;</button>
+                    </div>
+                    <div class="crop-modal-body">
+                        <div class="crop-container">
+                            <img id="cropImage" style="max-width: 100%;">
+                        </div>
+                        <p class="crop-info">Poměr stran je nastaven na 4:3 (stejný jako zobrazení na webu)</p>
+                    </div>
+                    <div class="crop-modal-footer">
+                        <button class="btn btn-secondary" onclick="closeImageCropModal()">Zrušit</button>
+                        <button class="btn btn-primary" onclick="confirmImageCrop()">Potvrdit ořez</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Náhled a akce vpravo -->

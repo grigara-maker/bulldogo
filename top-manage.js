@@ -230,14 +230,24 @@ function renderTopManageCard(ad) {
     
     let optimizedImageUrl = escapedImageUrl;
     if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
-        if (!imageUrl.includes('alt=media')) {
-            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
-        } else {
-            optimizedImageUrl = escapedImageUrl;
+        try {
+            const urlObj = new URL(imageUrl);
+            const params = new URLSearchParams(urlObj.search);
+            if (!params.has('alt')) {
+                params.set('alt', 'media');
+            }
+            urlObj.search = params.toString();
+            optimizedImageUrl = urlObj.toString().replace(/"/g, '&quot;');
+        } catch (e) {
+            if (!imageUrl.includes('alt=media')) {
+                optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+                optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+            }
         }
     }
     
     const widthHeightAttr = ' width="400" height="300"';
+    const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
     
     let imageHtml;
     if (isLocalImage) {
@@ -246,11 +256,11 @@ function renderTopManageCard(ad) {
         imageHtml = `
             <picture>
                 <source srcset="${escapedWebpUrl}" type="image/webp">
-                <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
+                <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async"${widthHeightAttr} style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none';">
             </picture>
         `;
     } else {
-        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="lazy" decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
+        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="lazy" decoding="async"${widthHeightAttr} style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">`;
     }
 
     return `

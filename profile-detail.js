@@ -802,12 +802,19 @@ function createServiceCard(service) {
     // Optimalizovat Firebase Storage URL - přidat parametry pro rychlejší načítání
     let optimizedImageUrl = escapedImageUrl;
     if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
-        // Přidat parametry pro optimalizaci (pokud ještě nejsou)
-        if (!imageUrl.includes('alt=media')) {
-            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
-            optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
-        } else {
-            optimizedImageUrl = escapedImageUrl;
+        try {
+            const urlObj = new URL(imageUrl);
+            const params = new URLSearchParams(urlObj.search);
+            if (!params.has('alt')) {
+                params.set('alt', 'media');
+            }
+            urlObj.search = params.toString();
+            optimizedImageUrl = urlObj.toString().replace(/"/g, '&quot;');
+        } catch (e) {
+            if (!imageUrl.includes('alt=media')) {
+                optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+                optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+            }
         }
     }
     

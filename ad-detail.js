@@ -379,8 +379,18 @@ function displayAdImages(images) {
     const thumbnails = document.getElementById('adThumbnails');
     
     if (images.length > 0) {
-        // Set main image
-		mainImage.innerHTML = `<img src="${images[0]}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        // Optimalizovat URL pro Firebase Storage
+        let mainImageUrl = images[0];
+        if (mainImageUrl.includes('firebasestorage.googleapis.com') && !mainImageUrl.includes('alt=media')) {
+            mainImageUrl = mainImageUrl + (mainImageUrl.includes('?') ? '&' : '?') + 'alt=media';
+        }
+        const escapedMainImageUrl = mainImageUrl.replace(/"/g, '&quot;');
+        const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+        const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
+        const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
+        
+        // Set main image s optimalizací
+		mainImage.innerHTML = `<img src="${escapedMainImageUrl}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" width="800" height="600" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">
             <div class="no-image-placeholder" style="display: none;">
                 <i class="fas fa-image"></i>
                 <span>Obrázek se nepodařilo načíst</span>
@@ -388,12 +398,20 @@ function displayAdImages(images) {
         
         // Set thumbnails - zobrazit další obrázky (bez prvního, který je už zobrazen jako hlavní)
         if (images.length > 1) {
+            const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
             thumbnails.innerHTML = images.slice(1).map((img, index) => {
+                // Optimalizovat URL pro Firebase Storage
+                let optimizedImg = img;
+                if (img.includes('firebasestorage.googleapis.com') && !img.includes('alt=media')) {
+                    optimizedImg = img + (img.includes('?') ? '&' : '?') + 'alt=media';
+                }
                 // Escapovat URL pro bezpečné použití v data atributu
-                const escapedUrl = img.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const escapedUrl = optimizedImg.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+                const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
                 return `
                 <div class="ad-thumbnail" data-image-url="${escapedUrl}" data-image-index="${index + 1}" style="cursor: pointer;">
-					<img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+					<img src="${escapedUrl}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" width="100" height="75" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">
                     <div class="no-image-placeholder" style="display: none;">
                         <i class="fas fa-image"></i>
                     </div>
@@ -496,7 +514,17 @@ window.changeMainImage = function(imageSrc) {
     // Escapovat imageSrc pro bezpečné použití v HTML
     const escapedSrc = imageSrc.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     
-	mainImage.innerHTML = `<img src="${escapedSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    // Optimalizovat URL pro Firebase Storage
+    let optimizedSrc = imageSrc;
+    if (imageSrc.includes('firebasestorage.googleapis.com') && !imageSrc.includes('alt=media')) {
+        optimizedSrc = imageSrc + (imageSrc.includes('?') ? '&' : '?') + 'alt=media';
+    }
+    const escapedOptimizedSrc = optimizedSrc.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+    const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
+    const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
+    
+	mainImage.innerHTML = `<img src="${escapedOptimizedSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" width="800" height="600" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">
         <div class="no-image-placeholder" style="display: none;">
             <i class="fas fa-image"></i>
             <span>Obrázek se nepodařilo načíst</span>
