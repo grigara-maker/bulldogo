@@ -13293,7 +13293,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         z-index: 3000 !important;
     }
     
-    /* Main container - flexbox column pro oddělení fotky a textu */
+    /* Main container - flexbox column */
     .ad-detail-main {
         display: flex !important;
         flex-direction: column !important;
@@ -13308,12 +13308,12 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
-    /* Levý sloupec - FOTKA SAMOSTATNĚ nahoře */
+    /* Levý sloupec - HERO SEKCE S FOTKOU nahoře, plná šířka bez paddingů */
     .ad-detail-left {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 1rem !important;
+        padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-bottom: 0 !important;
@@ -13327,7 +13327,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         order: 1 !important;
     }
     
-    /* Pravý sloupec - TEXT SAMOSTATNĚ pod fotkou */
+    /* Pravý sloupec - TEXT pod fotkou s paddingem */
     .ad-detail-right {
         width: 100% !important;
         max-width: 100% !important;
@@ -13343,7 +13343,6 @@ body:has(.ad-detail-content) .ad-detail-main,
         border-radius: 0 !important;
         box-shadow: none !important;
         order: 2 !important;
-        border-top: 1px solid #e5e7eb !important;
     }
     
     /* Profil uživatele pod popisem - PŘESNĚ STEJNÝ jako .ad-user-profile v profilu */
@@ -13359,15 +13358,16 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
-    /* ===== HLAVNÍ OBRÁZEK - SAMOSTATNÁ SEKCE ===== */
+    /* ===== HLAVNÍ OBRÁZEK - HERO SEKCE, PLNÁ ŠÍŘKA ===== */
     .ad-main-image {
-        width: 100% !important;
-        max-width: 100% !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
         min-width: 0 !important;
         aspect-ratio: 4 / 3 !important;
         height: auto !important;
-        margin: 0 0 1rem 0 !important;
-        border-radius: 12px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
         overflow: hidden !important;
         display: block !important;
         box-sizing: border-box !important;
@@ -13382,12 +13382,13 @@ body:has(.ad-detail-content) .ad-detail-main,
         box-sizing: border-box !important;
     }
     
-    /* Thumbnaily - součást sekce s fotkou */
+    /* Thumbnaily - pod hero fotkou, s paddingem */
     .ad-thumbnails {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0.75rem 0 !important;
+        padding: 0.75rem 1rem !important;
         margin: 0 !important;
+        background: #f9fafb !important;
         display: flex !important;
         gap: 0.5rem !important;
         overflow-x: auto !important;
