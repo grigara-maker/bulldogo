@@ -13141,17 +13141,22 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .back-btn {
-        padding: 18px 28px !important;
-        font-size: 1.05rem !important;
+        padding: 10px 20px !important;
+        font-size: 0.95rem !important;
         margin-bottom: 0 !important;
         position: fixed !important;
         top: 8px !important;
         right: 8px !important;
         left: auto !important;
         z-index: 200 !important;
-        min-height: 54px !important;
-        gap: 10px !important;
+        min-height: auto !important;
+        height: auto !important;
+        gap: 8px !important;
         margin-left: 0 !important;
+        max-width: calc(100vw - 100px) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
     
     /* Zajistit, že mobile-menu-btn a back-btn se neprolínají */
@@ -13163,8 +13168,18 @@ body:has(.ad-detail-content) .ad-detail-main,
         cursor: pointer !important;
     }
     
+    .ad-detail-header {
+        position: relative !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
     .ad-detail-header .back-btn {
-        margin-left: 0 !important; /* Odstranit margin-left */
+        margin-left: 0 !important;
+        position: fixed !important;
+        top: 8px !important;
+        right: 8px !important;
     }
     
     .ad-detail-main {
