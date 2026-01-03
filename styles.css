@@ -13124,7 +13124,7 @@ body:has(.ad-detail-content) .ad-detail-main,
 @media (max-width: 768px) {
     /* Profile detail page mobile optimization */
     .ad-detail-content {
-        padding: 1rem !important;
+        padding: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -13172,7 +13172,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         gap: 1.5rem !important;
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0 !important;
+        padding: 0 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
@@ -13432,6 +13432,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1.5rem 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-top: 0 !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
     }
