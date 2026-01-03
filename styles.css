@@ -15440,14 +15440,16 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .ad-card .ad-thumb {
         width: 100% !important;
-        aspect-ratio: 1 / 1 !important; /* Čtvercový tvar i na malých mobilních zařízeních */
+        aspect-ratio: 4 / 3 !important; /* Stejný poměr stran jako na PC */
         height: auto !important;
+        overflow: hidden !important;
     }
     
     .ad-card .ad-thumb img {
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
+        object-position: center !important; /* Vycentrovat obrázek */
     }
     
     .ad-card .ad-body {
