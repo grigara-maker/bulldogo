@@ -13269,6 +13269,11 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
     }
     
+    /* Zajistit, že ad-detail-main má stejný gap jako profile-detail-main */
+    .ad-detail-main {
+        gap: 1rem !important;
+    }
+    
     .ad-detail-header {
         margin-bottom: 1.5rem !important;
         padding: 0 1rem !important;
@@ -13344,7 +13349,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-bottom: 1rem !important;
+        margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         position: static !important;
@@ -13363,7 +13368,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-bottom: 1rem !important;
+        margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         background: transparent !important;
@@ -13425,6 +13430,38 @@ body:has(.ad-detail-content) .ad-detail-main,
         margin-right: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+    }
+    
+    /* Zajistit, že všechny sekce v ad-detail mají stejnou šířku jako profil */
+    .ad-detail-left .ad-title-section,
+    .ad-detail-left .ad-meta-section,
+    .ad-detail-left .ad-description-section,
+    .ad-detail-left .ad-contact-section,
+    .ad-detail-left .ad-main-image,
+    .ad-detail-right .ad-title-section,
+    .ad-detail-right .ad-meta-section,
+    .ad-detail-right .ad-description-section,
+    .ad-detail-right .ad-contact-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Zajistit, že hlavní obrázek a popis mají stejnou šířku jako profil */
+    .ad-detail-left .ad-main-image,
+    .ad-detail-left .ad-description-section,
+    .ad-detail-left .ad-description {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .ad-main-image .ad-main-img {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     .ad-chat-section {
