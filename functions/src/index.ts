@@ -4121,8 +4121,63 @@ export const createBillingPortalSession = functions
         // Získat Stripe customer ID z Firestore
         // Firebase Extension ukládá subscriptions pod customers/{uid}/subscriptions, kde uid je Firebase UID
         // Stripe customer ID je v subscription dokumentu v poli "customer" a MUSÍ začínat na "cus_"
+        // NEBO Extension může ukládat customer dokumenty s Stripe customer ID jako document ID
         const db = admin.firestore();
         let stripeCustomerId: string | null = null;
+
+        // 0) Nejdřív zkusit najít customer dokument s UID jako ID a získat Stripe customer ID z něj
+        try {
+          const customerDocByUid = await db.collection("customers").doc(userId).get();
+          if (customerDocByUid.exists) {
+            const customerData = customerDocByUid.data() as AnyObj;
+            functions.logger.info("📄 Customer document (step 0)", {
+              docId: customerDocByUid.id,
+              hasId: !!customerData?.id,
+              hasStripeId: !!customerData?.stripeId,
+              idValue: customerData?.id ? String(customerData.id).substring(0, 30) : null,
+              stripeIdValue: customerData?.stripeId ? String(customerData.stripeId).substring(0, 30) : null,
+              allKeys: Object.keys(customerData || {})
+            });
+            
+            // Zkusit získat customer ID z dokumentu - zkontrolovat id, stripeId, nebo stripeCustomerId
+            // stripeId může být string nebo Firestore reference
+            let candidateId: string | null = null;
+            
+            if (customerData?.id && typeof customerData.id === 'string') {
+              candidateId = customerData.id;
+            } else if (customerData?.stripeId) {
+              // stripeId může být string nebo Firestore reference
+              if (typeof customerData.stripeId === 'string') {
+                candidateId = customerData.stripeId;
+              } else if (customerData.stripeId?.id) {
+                // Firestore reference má .id property
+                candidateId = customerData.stripeId.id;
+              } else if (customerData.stripeId?.path) {
+                // Firestore reference má .path property - zkusit extrahovat ID z path
+                const pathParts = customerData.stripeId.path.split('/');
+                candidateId = pathParts[pathParts.length - 1];
+              }
+            } else if (customerData?.stripeCustomerId && typeof customerData.stripeCustomerId === 'string') {
+              candidateId = customerData.stripeCustomerId;
+            }
+            
+            functions.logger.info("🔍 Checking candidate ID", {
+              candidateId: candidateId ? candidateId.substring(0, 30) : null,
+              startsWithCus: candidateId ? candidateId.startsWith('cus_') : false,
+              rawId: customerData?.id,
+              rawStripeId: customerData?.stripeId,
+              rawStripeIdType: typeof customerData?.stripeId,
+              rawStripeCustomerId: customerData?.stripeCustomerId
+            });
+            
+            if (candidateId && typeof candidateId === 'string' && candidateId.startsWith('cus_')) {
+              stripeCustomerId = candidateId;
+              functions.logger.info("✅ Found customer ID in document", { stripeCustomerId });
+            }
+          }
+        } catch (error) {
+          functions.logger.warn("⚠️ Could not check customer document", { error, userId });
+        }
 
         // 1) Nejdřív zkusit najít z aktivní subscription (nejspolehlivější způsob)
         try {
@@ -4170,9 +4225,11 @@ export const createBillingPortalSession = functions
                   allKeys: Object.keys(customerData || {})
                 });
                 
-                // Zkusit získat customer ID z dokumentu
-                if (customerData?.id && typeof customerData.id === 'string' && customerData.id.startsWith('cus_')) {
-                  stripeCustomerId = customerData.id;
+                // Zkusit získat customer ID z dokumentu - zkontrolovat id, stripeId, nebo stripeCustomerId
+                const candidateId = customerData?.id || customerData?.stripeId || customerData?.stripeCustomerId;
+                if (candidateId && typeof candidateId === 'string' && candidateId.startsWith('cus_')) {
+                  stripeCustomerId = candidateId;
+                  functions.logger.info("✅ Found customer ID in customer document", { stripeCustomerId });
                 } else if (customerDoc.id && customerDoc.id.startsWith('cus_')) {
                   // Document ID je Stripe customer ID
                   stripeCustomerId = customerDoc.id;
@@ -4202,10 +4259,11 @@ export const createBillingPortalSession = functions
                 allKeys: Object.keys(customerData || {})
               });
               
-              // Zkusit získat customer ID z dokumentu
-              const candidateId = customerData?.id || customerData?.stripeCustomerId;
+              // Zkusit získat customer ID z dokumentu - zkontrolovat id, stripeId, nebo stripeCustomerId
+              const candidateId = customerData?.id || customerData?.stripeId || customerData?.stripeCustomerId;
               if (candidateId && typeof candidateId === 'string' && candidateId.startsWith('cus_')) {
                 stripeCustomerId = candidateId;
+                functions.logger.info("✅ Found customer ID in customer document (step 2)", { stripeCustomerId });
               } else if (customerDocByUid.id && customerDocByUid.id.startsWith('cus_')) {
                 // Document ID je Stripe customer ID (Extension ukládá customer dokumenty s Stripe customer ID jako ID)
                 stripeCustomerId = customerDocByUid.id;
@@ -4218,7 +4276,30 @@ export const createBillingPortalSession = functions
           }
         }
 
-        // 3) Pokud stále nemáme customer ID, zkusit najít podle emailu v customers kolekci
+        // 3) Pokud stále nemáme customer ID, zkusit najít v checkout sessions
+        if (!stripeCustomerId || !stripeCustomerId.startsWith('cus_')) {
+          try {
+            const checkoutSessionsRef = db.collection("customers").doc(userId).collection("checkout_sessions");
+            const checkoutSessions = await checkoutSessionsRef.orderBy("created", "desc").limit(1).get();
+            
+            if (!checkoutSessions.empty) {
+              const sessionData = checkoutSessions.docs[0].data() as AnyObj;
+              functions.logger.info("📄 Checkout session data", {
+                hasCustomer: !!sessionData?.customer,
+                customerValue: sessionData?.customer ? String(sessionData.customer).substring(0, 30) : null
+              });
+              
+              if (sessionData?.customer && typeof sessionData.customer === 'string' && sessionData.customer.startsWith('cus_')) {
+                stripeCustomerId = sessionData.customer;
+                functions.logger.info("✅ Found customer ID in checkout session", { stripeCustomerId });
+              }
+            }
+          } catch (error) {
+            functions.logger.warn("⚠️ Could not find customer ID from checkout sessions", { error, userId });
+          }
+        }
+
+        // 4) Pokud stále nemáme customer ID, zkusit najít podle emailu v customers kolekci
         if (!stripeCustomerId || !stripeCustomerId.startsWith('cus_')) {
           try {
             // Získat email uživatele
@@ -4227,12 +4308,18 @@ export const createBillingPortalSession = functions
 
             if (userEmail) {
               // Prohledat všechny customer dokumenty (Extension ukládá customer dokumenty s Stripe customer ID jako ID)
-              const allCustomers = await db.collection("customers").limit(100).get();
+              const allCustomers = await db.collection("customers").limit(200).get();
+              functions.logger.info("🔍 Searching all customers", { totalCustomers: allCustomers.size });
+              
               for (const customerDoc of allCustomers.docs) {
                 const customerData = customerDoc.data() as AnyObj;
-                if ((customerData?.email === userEmail || customerData?.metadata?.firebaseUID === userId) && customerDoc.id.startsWith('cus_')) {
-                  stripeCustomerId = customerDoc.id; // Document ID je Stripe customer ID
-                  break;
+                // Zkontrolovat, zda document ID je Stripe customer ID a dokument obsahuje metadata s firebaseUID
+                if (customerDoc.id.startsWith('cus_')) {
+                  if (customerData?.metadata?.firebaseUID === userId || customerData?.email === userEmail) {
+                    stripeCustomerId = customerDoc.id; // Document ID je Stripe customer ID
+                    functions.logger.info("✅ Found customer ID by email/metadata", { stripeCustomerId });
+                    break;
+                  }
                 }
               }
             }
