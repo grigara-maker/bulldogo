@@ -13341,10 +13341,14 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-bottom: 1rem !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         position: static !important;
         top: auto !important;
+        background: white !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
     }
     
     .ad-detail-right {
@@ -13356,8 +13360,12 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-bottom: 1rem !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+        background: white !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
     }
     
     .ad-title-section,
@@ -13368,9 +13376,10 @@ body:has(.ad-detail-content) .ad-detail-main,
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 1rem !important;
+        padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-bottom: 1.5rem !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
@@ -13378,25 +13387,41 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-title-section {
-        padding-bottom: 1rem !important;
+        padding-bottom: 0 !important;
         padding-top: 0 !important;
+        margin-bottom: 1.5rem !important;
     }
     
     .ad-meta-section {
-        margin-bottom: 1rem !important;
+        margin-bottom: 1.5rem !important;
         padding-top: 0 !important;
     }
     
     .ad-description-section {
-        margin-bottom: 1rem !important;
+        margin-bottom: 1.5rem !important;
         padding-top: 0 !important;
         max-height: none !important;
         overflow-y: visible !important;
     }
     
     .ad-contact-section {
-        margin-bottom: 1rem !important;
-        padding: 1rem !important;
+        margin-bottom: 1.5rem !important;
+        padding: 0 !important;
+    }
+    
+    /* Zajistit, že ad-detail-main má stejný styl jako profile-detail-main */
+    .ad-detail-main {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
     }
     
     .ad-chat-section {
@@ -13473,20 +13498,55 @@ body:has(.ad-detail-content) .ad-detail-main,
     }
     
     .ad-detail-title {
-        font-size: clamp(1.3rem, 5vw, 1.8rem) !important;
+        font-size: 1.5rem !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        margin: 0 0 0.5rem 0 !important;
+        line-height: 1.2 !important;
     }
     
     .ad-detail-price {
+        font-size: 1rem !important;
+        color: #6b7280 !important;
         word-break: break-word !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        margin: 0 !important;
+    }
+    
+    /* Zajistit, že sekce mají stejný styl jako u profilu - bez border a shadow */
+    .ad-title-section,
+    .ad-meta-section,
+    .ad-description-section,
+    .ad-contact-section {
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        border-bottom: none !important;
+    }
+    
+    /* Zajistit, že hlavní obrázek má stejný styl */
+    .ad-main-image {
+        margin-bottom: 1.5rem !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+    
+    /* Zajistit, že thumbnaily jsou správně zobrazeny */
+    .ad-thumbnails {
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Zajistit, že chat sekce má stejný styl */
+    .ad-chat-section {
+        margin-top: 1.5rem !important;
+        padding: 0 !important;
     }
     
     .ad-description {
