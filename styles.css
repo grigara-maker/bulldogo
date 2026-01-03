@@ -13437,9 +13437,14 @@ body:has(.ad-detail-content) .ad-detail-main,
         aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
         height: auto !important;
         width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        margin-bottom: 1.5rem !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
     }
     
     .ad-main-image .ad-main-img {
@@ -13447,6 +13452,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         object-position: center !important;
         width: 100% !important;
         height: 100% !important;
+        display: block !important;
     }
     
     .default-image-container {
@@ -13531,30 +13537,60 @@ body:has(.ad-detail-content) .ad-detail-main,
         border-bottom: none !important;
     }
     
-    /* Zajistit, že hlavní obrázek má stejný styl */
+    /* Zajistit, že hlavní obrázek má stejnou velikost jako u profilu - plná šířka */
     .ad-main-image {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
         margin-bottom: 1.5rem !important;
         border-radius: 12px !important;
         overflow: hidden !important;
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+    }
+    
+    .ad-main-image .ad-main-img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        display: block !important;
+    }
+    
+    /* Zajistit, že popis má stejnou velikost jako u profilu */
+    .ad-description-section {
+        margin-bottom: 1.5rem !important;
+        padding: 0 !important;
+    }
+    
+    .ad-description-section h3 {
+        font-size: 1.3rem !important;
+        margin-bottom: 1rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .ad-description {
+        font-size: 1rem !important;
+        line-height: 1.6 !important;
+        color: #374151 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
     /* Zajistit, že thumbnaily jsou správně zobrazeny */
     .ad-thumbnails {
         margin-bottom: 1.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     
     /* Zajistit, že chat sekce má stejný styl */
     .ad-chat-section {
         margin-top: 1.5rem !important;
         padding: 0 !important;
-    }
-    
-    .ad-description {
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        word-wrap: break-word !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
     }
     
     .ad-meta-item,
