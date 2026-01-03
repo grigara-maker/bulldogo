@@ -215,23 +215,43 @@ function selectPricing(duration, price) {
 }
 
 function showAdSelection() {
-    document.getElementById('adSelection').style.display = 'block';
-    document.querySelector('.top-ads-pricing').style.display = 'none';
+    const adSelectionEl = document.getElementById('adSelection');
+    if (adSelectionEl) {
+        adSelectionEl.style.display = 'block';
+        adSelectionEl.style.setProperty('display', 'block', 'important');
+    }
+    
+    const pricingEl = document.querySelector('.top-ads-pricing');
+    if (pricingEl) {
+        pricingEl.style.display = 'none';
+    }
     
     // Scroll to ad selection
-    document.getElementById('adSelection').scrollIntoView({ 
-        behavior: 'smooth' 
-    });
+    if (adSelectionEl) {
+        adSelectionEl.scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+    }
 }
 
 function hideAdSelection() {
-    document.getElementById('adSelection').style.display = 'none';
-    document.querySelector('.top-ads-pricing').style.display = 'block';
+    const adSelectionEl = document.getElementById('adSelection');
+    if (adSelectionEl) {
+        adSelectionEl.style.display = 'none';
+        adSelectionEl.style.setProperty('display', 'none', 'important');
+    }
+    
+    const pricingEl = document.querySelector('.top-ads-pricing');
+    if (pricingEl) {
+        pricingEl.style.display = 'block';
+    }
     
     // Scroll to pricing
-    document.querySelector('.top-ads-pricing').scrollIntoView({ 
-        behavior: 'smooth' 
-    });
+    if (pricingEl) {
+        pricingEl.scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+    }
 }
 
 function loadUserAds() {
@@ -705,7 +725,7 @@ async function processPayment() {
                     discounts: [{
                         promotion_code: PROMO_CODE_7DAYS // Automaticky aplikovat promo kód pro 7denní topování
                     }]
-                } : {})
+                } : {}),
                 // Automatické faktury - Stripe bude generovat a posílat faktury automaticky
                 invoice_creation: {
                     enabled: true, // Povolit automatické vytváření faktur
