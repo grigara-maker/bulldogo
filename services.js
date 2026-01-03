@@ -806,7 +806,11 @@ function goToPage(page) {
 
 // Vytvoření karty inzerátu
 function createAdCard(service, showActions = true) {
-    const topStyle = service.isTop ? 'style="border: 3px solid #ff8a00 !important; box-shadow: 0 8px 28px rgba(255, 138, 0, 0.6), 0 0 0 2px rgba(255, 138, 0, 0.4) !important;"' : '';
+    // Základní styly pro všechny karty - stejné pro všechny lokace
+    const baseCardStyle = 'width: 100% !important; max-width: 100% !important; min-width: 0 !important; text-align: left !important; box-sizing: border-box !important; display: block !important;';
+    const topStyle = service.isTop 
+        ? `style="${baseCardStyle} border: 3px solid #ff8a00 !important; box-shadow: 0 8px 28px rgba(255, 138, 0, 0.6), 0 0 0 2px rgba(255, 138, 0, 0.4) !important;"`
+        : `style="${baseCardStyle}"`;
     
     // Formátování ceny - pokud je jen číslo, přidat Kč
     let formattedPrice = service.price || '';
@@ -893,19 +897,25 @@ function createAdCard(service, showActions = true) {
         imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
     }
     
-    // Získat formátovanou lokaci
+    // Získat formátovanou lokaci - STEJNĚ jako u ostatních krajů
     const formattedLocation = getLocationName(service.location || '') || 'Neuvedeno';
     
+    // Styly pro ad-body - STEJNÉ pro všechny lokace
+    const adBodyStyle = 'width: 100% !important; max-width: 100% !important; min-width: 0 !important; text-align: left !important; box-sizing: border-box !important; margin: 0 !important; padding: 12px 14px 90px !important; position: relative !important; display: block !important;';
+    
+    // Styly pro ad-location - STEJNÉ pro všechny lokace
+    const adLocationStyle = 'width: 100% !important; max-width: 100% !important; min-width: 0 !important; text-align: left !important; box-sizing: border-box !important; margin: 0 !important; padding: 0 !important; word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; display: block !important; font-size: 0.85rem !important; color: #6b7280 !important;';
+    
     return `
-        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle} style="width: 100%; max-width: 100%; min-width: 0; text-align: left; box-sizing: border-box;">
-            <div class="ad-thumb">
+        <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" ${topStyle}>
+            <div class="ad-thumb" style="width: 100% !important; height: 200px !important; display: block !important;">
                 ${imageHtml}
             </div>
-            <div class="ad-body" data-location="${formattedLocation}" style="width: 100%; max-width: 100%; min-width: 0; text-align: left; box-sizing: border-box; margin: 0;">
-                <div class="ad-meta"><span>${getCategoryName(service.category || '')}</span></div>
-                <h3 class="ad-title">${service.title || 'Bez názvu'}</h3>
-                ${formattedPrice ? `<div class="ad-price">${formattedPrice}</div>` : ''}
-                <div class="ad-location" style="width: 100%; max-width: 100%; min-width: 0; text-align: left; box-sizing: border-box; margin: 0; padding: 0; word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${formattedLocation}</div>
+            <div class="ad-body" data-location="${formattedLocation}" style="${adBodyStyle}">
+                <div class="ad-meta" style="text-align: left !important; display: block !important; margin: 0 0 6px 0 !important;"><span>${getCategoryName(service.category || '')}</span></div>
+                <h3 class="ad-title" style="text-align: left !important; margin: 0 0 6px 0 !important; font-size: 1rem !important; color: #111827 !important; display: block !important;">${service.title || 'Bez názvu'}</h3>
+                ${formattedPrice ? `<div class="ad-price" style="text-align: left !important; display: block !important; margin: 0 0 6px 0 !important;">${formattedPrice}</div>` : ''}
+                <div class="ad-location" style="${adLocationStyle}">${formattedLocation}</div>
             </div>
             ${service.isTop ? `
             <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
