@@ -354,15 +354,26 @@ async function openStripeCustomerPortal() {
                 // Získat auth token pro autentizaci
                 let authToken = null;
                 if (user && typeof user.getIdToken === 'function') {
-                    authToken = await user.getIdToken();
+                    try {
+                        authToken = await user.getIdToken();
+                    } catch (tokenError) {
+                        console.warn('Could not get auth token:', tokenError);
+                    }
+                }
+                
+                // Vytvořit headers objekt
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Přidat Authorization header pouze pokud máme validní token
+                if (authToken && typeof authToken === 'string' && authToken.trim().length > 0) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
                 }
                 
                 const response = await fetch(functionsUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
-                    },
+                    headers: headers,
                     body: JSON.stringify({
                         returnUrl: returnUrl,
                         uid: user.uid

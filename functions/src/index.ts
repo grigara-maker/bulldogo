@@ -4051,6 +4051,7 @@ Faktura byla automaticky vytvořena Stripe a odeslána zákazníkovi.
  */
 export const createBillingPortalSession = functions
   .region("europe-west1")
+  .runWith({ secrets: ["STRIPE_SECRET_KEY"] })
   .https.onRequest(async (req, res) => {
     corsHandler(req, res, async () => {
       try {
@@ -4070,11 +4071,16 @@ export const createBillingPortalSession = functions
         // Získat UID z Authorization header nebo z requestu
         let userId: string | null = uid || null;
         const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith("Bearer ")) {
+        if (authHeader && typeof authHeader === 'string' && authHeader.startsWith("Bearer ")) {
           try {
-            const token = authHeader.split("Bearer ")[1];
-            const decodedToken = await admin.auth().verifyIdToken(token);
-            userId = decodedToken.uid;
+            const token = authHeader.substring(7).trim(); // Odstranit "Bearer " a whitespace
+            // Ověřit, že token neobsahuje neplatné znaky
+            if (token && /^[A-Za-z0-9._-]+$/.test(token)) {
+              const decodedToken = await admin.auth().verifyIdToken(token);
+              userId = decodedToken.uid;
+            } else {
+              functions.logger.warn("⚠️ Invalid token format", { tokenLength: token?.length });
+            }
           } catch (error) {
             functions.logger.warn("⚠️ Could not verify token", { error });
           }
@@ -4086,19 +4092,61 @@ export const createBillingPortalSession = functions
         }
 
         // Získat Stripe customer ID z Firestore
+        // Firebase Extension ukládá customer dokumenty s ID = Stripe customer ID, ne s UID
+        // Musíme najít customer ID z subscription nebo zkontrolovat, jestli existuje customer dokument s UID
         const db = admin.firestore();
-        const customerDoc = await db.collection("customers").doc(userId).get();
-        
-        if (!customerDoc.exists) {
-          res.status(404).json({ error: "Customer not found" });
-          return;
+        let stripeCustomerId: string | null = null;
+
+        // 1) Zkusit najít customer dokument s UID jako ID (pokud Extension ukládá takto)
+        const customerDocByUid = await db.collection("customers").doc(userId).get();
+        if (customerDocByUid.exists) {
+          const customerData = customerDocByUid.data() as AnyObj;
+          stripeCustomerId = customerData?.id || customerData?.stripeCustomerId || null;
         }
 
-        const customerData = customerDoc.data() as AnyObj;
-        const stripeCustomerId = customerData?.id || customerData?.stripeCustomerId;
+        // 2) Pokud nenajdeme, zkusit najít z subscription (Extension ukládá subscriptions pod customers/{customerId}/subscriptions)
+        if (!stripeCustomerId) {
+          try {
+            // Zkusit najít aktivní subscription pod customers/{uid}/subscriptions
+            const subscriptionsRef = db.collection("customers").doc(userId).collection("subscriptions");
+            const activeSubs = await subscriptionsRef.where("status", "in", ["trialing", "active"]).limit(1).get();
+            
+            if (!activeSubs.empty) {
+              const subData = activeSubs.docs[0].data() as AnyObj;
+              stripeCustomerId = subData?.customer || null;
+            }
+          } catch (error) {
+            functions.logger.warn("⚠️ Could not find customer ID from subscriptions", { error, userId });
+          }
+        }
+
+        // 3) Pokud stále nemáme customer ID, zkusit najít podle emailu v customers kolekci
+        if (!stripeCustomerId) {
+          try {
+            // Získat email uživatele
+            const userRecord = await admin.auth().getUser(userId);
+            const userEmail = userRecord.email;
+
+            if (userEmail) {
+              // Prohledat všechny customer dokumenty (Extension může ukládat s různými ID)
+              // Toto je náročné, ale jako fallback
+              const allCustomers = await db.collection("customers").limit(100).get();
+              for (const customerDoc of allCustomers.docs) {
+                const customerData = customerDoc.data() as AnyObj;
+                if (customerData?.email === userEmail || customerData?.metadata?.firebaseUID === userId) {
+                  stripeCustomerId = customerDoc.id; // Document ID je Stripe customer ID
+                  break;
+                }
+              }
+            }
+          } catch (error) {
+            functions.logger.warn("⚠️ Could not find customer ID by email", { error, userId });
+          }
+        }
 
         if (!stripeCustomerId) {
-          res.status(404).json({ error: "Stripe customer ID not found" });
+          functions.logger.error("❌ Stripe customer ID not found for user", { userId });
+          res.status(404).json({ error: "Stripe customer ID not found. Please ensure you have an active subscription." });
           return;
         }
 
