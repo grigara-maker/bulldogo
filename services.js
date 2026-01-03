@@ -906,7 +906,6 @@ function createAdCard(service, showActions = true) {
     // Styly pro ad-location - STEJNÉ pro všechny lokace
     const adLocationStyle = 'width: 100% !important; max-width: 100% !important; min-width: 0 !important; text-align: left !important; box-sizing: border-box !important; margin: 0 !important; padding: 0 !important; word-wrap: break-word !important; overflow-wrap: break-word !important; white-space: normal !important; display: block !important; font-size: 0.85rem !important; color: #6b7280 !important;';
     
-    // Zajistit, že pro "Celá Česká republika" jsou styly stejné jako pro ostatní lokace
     const escapedLocation = formattedLocation.replace(/"/g, '&quot;');
     
     return `

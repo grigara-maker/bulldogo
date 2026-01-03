@@ -836,23 +836,8 @@
     opacity: 1 !important;
 }
 
-/* Zajistit konzistentní formátování pro všechny lokace včetně "Celá Česká republika" */
-.ad-card[data-location*="Celá Česká republika"],
-.ad-card[data-location*="CelaCeskaRepublika"],
-.ad-body[data-location*="Celá Česká republika"],
-.ad-body[data-location*="CelaCeskaRepublika"] {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    text-align: left !important;
-    box-sizing: border-box !important;
-    display: block !important;
-}
-
-/* Konkrétní pravidlo pro .ad-location s dlouhým textem - včetně "Celá Česká republika" */
-.ad-location,
-.ad-location[data-location-text*="Celá Česká republika"],
-.ad-location[data-location-text*="CelaCeskaRepublika"] {
+/* Zajistit konzistentní formátování pro všechny lokace */
+.ad-location {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -16842,13 +16827,9 @@ html:has(.ad-detail-content) {
     }
 }
 
-/* ===== ZAJISTIT KONZISTENTNÍ FORMÁTOVÁNÍ PRO VŠECHNY LOKACE VČETNĚ "CELÁ ČESKÁ REPUBLIKA" ===== */
+/* ===== ZAJISTIT KONZISTENTNÍ FORMÁTOVÁNÍ PRO VŠECHNY LOKACE ===== */
 /* Zajistit, že všechny karty mají stejné formátování bez ohledu na filtr nebo lokaci */
-#servicesGrid .ad-card,
-#servicesGrid .ad-card[data-location*="Celá Česká republika"],
-#servicesGrid .ad-card[data-location*="CelaCeskaRepublika"],
-#servicesGrid .ad-card[data-location*="Kdekoliv"],
-#servicesGrid .ad-card[data-location*="Celá Slovenská republika"] {
+#servicesGrid .ad-card {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -16861,9 +16842,7 @@ html:has(.ad-detail-content) {
     clear: both !important;
 }
 
-#servicesGrid .ad-card .ad-body,
-#servicesGrid .ad-card .ad-body[data-location*="Celá Česká republika"],
-#servicesGrid .ad-card .ad-body[data-location*="CelaCeskaRepublika"] {
+#servicesGrid .ad-card .ad-body {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
@@ -16876,9 +16855,7 @@ html:has(.ad-detail-content) {
     clear: both !important;
 }
 
-#servicesGrid .ad-card .ad-location,
-#servicesGrid .ad-card .ad-location[data-location-text*="Celá Česká republika"],
-#servicesGrid .ad-card .ad-location[data-location-text*="CelaCeskaRepublika"] {
+#servicesGrid .ad-card .ad-location {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
