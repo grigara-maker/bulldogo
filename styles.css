@@ -12466,9 +12466,18 @@ html body .ad-actions {
 /* Zajistit, že ad-detail-content má plnou šířku */
 body:has(.ad-detail-content) .main-content .ad-detail-content,
 .main-content .ad-detail-content {
-    max-width: 100% !important;
-    width: 100% !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
     box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    body:has(.ad-detail-content) .main-content .ad-detail-content,
+    .main-content .ad-detail-content {
+        max-width: 100vw !important;
+        width: 100vw !important;
+        min-width: 100vw !important;
+    }
 }
 
 /* Explicitní pravidlo pro zajištění správného grid rozložení */
