@@ -859,7 +859,7 @@
     margin: 0 auto !important;
     width: 100% !important; /* Plná šířka containeru */
     justify-content: start !important; /* Zarovnat grid vlevo, nevycentrovat */
-    align-items: start !important; /* Zarovnat karty nahoru */
+    align-items: stretch !important; /* Všechny karty mají stejnou výšku */
 }
 
 /* Na hlavní stránce zmenšit grid, aby inzeráty nebyly až u kraje */
@@ -887,8 +887,9 @@
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
-    display: block !important;
-    min-height: 320px !important;
+    display: flex !important; /* Flexbox pro stejnou výšku */
+    flex-direction: column !important; /* Vertikální uspořádání */
+    height: 100% !important; /* Plná výška v gridu */
     position: relative !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -938,12 +939,13 @@
 }
 
 .ad-body {
-    display: block !important;
+    display: flex !important; /* Flexbox pro rozložení obsahu */
+    flex-direction: column !important; /* Vertikální uspořádání */
+    flex: 1 !important; /* Vyplní zbývající prostor v kartě */
     visibility: visible !important;
     opacity: 1 !important; 
     padding: 12px 14px 90px !important; 
     position: relative;
-    min-height: 160px !important;
     text-align: left !important; /* Zarovnání textů vlevo */
     overflow: hidden !important;
     word-wrap: break-word !important;
@@ -7023,14 +7025,15 @@ body.profile-plan-page .plan-info {
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 24px !important;
         max-width: 1600px !important;
+        align-items: stretch !important; /* Všechny karty mají stejnou výšku */
     }
     
     /* Reset ad-card pro desktop */
     .ad-card {
         padding: 0 !important;
-        min-height: 320px !important;
-        display: block !important;
-        flex-direction: initial !important;
+        display: flex !important; /* Flexbox pro stejnou výšku */
+        flex-direction: column !important; /* Vertikální uspořádání */
+        height: 100% !important; /* Plná výška v gridu */
         gap: 0 !important;
     }
     
@@ -7054,11 +7057,10 @@ body.profile-plan-page .plan-info {
     
     .ad-card .ad-body {
         padding: 12px 14px 80px !important;
-        min-height: 160px !important;
-        flex: initial !important;
-        display: block !important;
-        flex-direction: initial !important;
-        justify-content: initial !important;
+        flex: 1 !important; /* Vyplní zbývající prostor v kartě */
+        display: flex !important; /* Flexbox pro rozložení obsahu */
+        flex-direction: column !important; /* Vertikální uspořádání */
+        justify-content: flex-start !important;
         margin-top: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
@@ -14561,11 +14563,10 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .ad-card .ad-body {
         padding: 10px 12px 70px !important; /* Větší padding dole pro tlačítka */
-        min-height: auto !important;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
+        flex: 1 !important; /* Vyplní zbývající prostor v kartě */
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
         position: relative;
         margin-top: 0 !important;
         margin-left: 0 !important;
@@ -15458,7 +15459,9 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     
     .ad-card .ad-body {
         padding: 8px 10px 65px !important; /* Větší padding dole pro tlačítka */
-        min-height: auto !important;
+        flex: 1 !important; /* Vyplní zbývající prostor v kartě */
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
