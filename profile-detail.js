@@ -753,57 +753,80 @@ function createServiceCard(service) {
     const createdAt = service.createdAt ? service.createdAt.toDate() : new Date();
     const timeAgo = getTimeAgo(createdAt);
     
-    // Check for images - same as services.js
-    let imageUrl = './fotky/team.jpg'; // default fallback with explicit relative path
-    
+    // Získat URL obrázku - stejná logika jako v services.js
+    let imageUrl = '/fotky/vychozi-inzerat.png';
     if (service.images && service.images.length > 0) {
-        if (service.images[0].url) {
-            imageUrl = service.images[0].url;
-            console.log('✅ Using images[0].url:', imageUrl);
-        } else if (typeof service.images[0] === 'string') {
-            imageUrl = service.images[0];
-            console.log('✅ Using images[0] as string:', imageUrl);
+        const firstImg = service.images[0];
+        if (typeof firstImg === 'string') {
+            imageUrl = firstImg;
+        } else if (firstImg && firstImg.url) {
+            imageUrl = firstImg.url;
         }
     } else if (service.image) {
-        if (service.image.url) {
-            imageUrl = service.image.url;
-            console.log('✅ Using image.url:', imageUrl);
-        } else if (typeof service.image === 'string') {
+        // Fallback na service.image (starší formát)
+        if (typeof service.image === 'string') {
             imageUrl = service.image;
-            console.log('✅ Using image as string:', imageUrl);
+        } else if (service.image.url) {
+            imageUrl = service.image.url;
         }
     } else if (service.photo) {
-        if (service.photo.url) {
-            imageUrl = service.photo.url;
-            console.log('✅ Using photo.url:', imageUrl);
-        } else if (typeof service.photo === 'string') {
+        // Fallback na service.photo (starší formát)
+        if (typeof service.photo === 'string') {
             imageUrl = service.photo;
-            console.log('✅ Using photo as string:', imageUrl);
+        } else if (service.photo.url) {
+            imageUrl = service.photo.url;
         }
     }
     
-    console.log('🎯 Final image URL:', imageUrl);
-    console.log('🔗 Image URL type:', typeof imageUrl);
-    console.log('🔗 Image URL length:', imageUrl.length);
-    
-    // Vytvořit WebP fallback
-    const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
-    const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
-    const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
-    const escapedTitle = (service.title || '').replace(/"/g, '&quot;');
-    
-    // Optimalizovat Firebase Storage URL
-    let optimizedImageUrl = escapedImageUrl;
-    if (imageUrl.includes('firebasestorage.googleapis.com') && !imageUrl.includes('alt=media')) {
-        optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
-        optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+    // Ověřit, že imageUrl je platná URL nebo cesta
+    if (!imageUrl || imageUrl.trim() === '' || imageUrl === 'undefined' || imageUrl === 'null') {
+        imageUrl = '/fotky/vychozi-inzerat.png';
     }
     
-    let imageHtml = `<picture>
-        <source srcset="${escapedWebpUrl}" type="image/webp">
-        <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
-    </picture>`;
-    imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
+    const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
+    const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+    const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
+    const escapedTitle = (service.title || '').replace(/"/g, '&quot;');
+    
+    // Optimalizace obrázků - přidat fetchpriority pro první viditelné
+    const isFirstVisible = typeof createServiceCard.firstIndex === 'undefined';
+    if (isFirstVisible) createServiceCard.firstIndex = 0;
+    const isPriorityImage = createServiceCard.firstIndex < 3; // První 3 obrázky mají vysokou prioritu
+    createServiceCard.firstIndex++;
+    
+    // Použít WebP pouze pro lokální obrázky (ze složky /fotky/)
+    // Pro obrázky z Firebase Storage nepoužívat WebP, protože neexistují
+    const isLocalImage = imageUrl.startsWith('/fotky/') || imageUrl.startsWith('./fotky/');
+    
+    // Optimalizovat Firebase Storage URL - přidat parametry pro rychlejší načítání
+    let optimizedImageUrl = escapedImageUrl;
+    if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
+        // Přidat parametry pro optimalizaci (pokud ještě nejsou)
+        if (!imageUrl.includes('alt=media')) {
+            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+            optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+        } else {
+            optimizedImageUrl = escapedImageUrl;
+        }
+    }
+    
+    // Atributy pro optimalizaci
+    const loadingAttr = isPriorityImage ? 'eager' : 'lazy';
+    const fetchPriorityAttr = isPriorityImage ? ' fetchpriority="high"' : '';
+    const widthHeightAttr = ' width="400" height="300"'; // Standardní rozměry pro karty
+    
+    let imageHtml;
+    if (isLocalImage) {
+        const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+        const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
+        imageHtml = `<picture>
+            <source srcset="${escapedWebpUrl}" type="image/webp">
+            <img src="${escapedImageUrl}" alt="${escapedTitle}" loading="${loadingAttr}"${fetchPriorityAttr} decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}';">
+        </picture>`;
+    } else {
+        // Pro Firebase Storage obrázky nepoužívat WebP
+        imageHtml = `<img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="${loadingAttr}"${fetchPriorityAttr} decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}';" style="object-fit: cover; width: 100%; height: 100%;">`;
+    }
     
     return `
         <div class="ad-card" onclick="viewService('${service.id}', '${currentProfileUser.id}')">
