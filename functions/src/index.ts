@@ -4055,6 +4055,16 @@ export const createBillingPortalSession = functions
   .https.onRequest(async (req, res) => {
     corsHandler(req, res, async () => {
       try {
+        functions.logger.info("📥 createBillingPortalSession called", {
+          method: req.method,
+          hasBody: !!req.body,
+          bodyType: typeof req.body,
+          headers: {
+            contentType: req.headers["content-type"],
+            authorization: req.headers.authorization ? "present" : "missing"
+          }
+        });
+
         // Kontrola metody
         if (req.method !== "POST") {
           res.status(405).json({ error: "Method not allowed" });
@@ -4062,8 +4072,17 @@ export const createBillingPortalSession = functions
         }
 
         // Získat return URL z requestu
-        const { returnUrl, uid } = req.body;
+        const body = req.body || {};
+        const { returnUrl, uid } = body;
+        
+        functions.logger.info("📋 Request body parsed", {
+          returnUrl: returnUrl ? `${returnUrl.substring(0, 50)}...` : "missing",
+          uid: uid ? `${uid.substring(0, 10)}...` : "missing",
+          bodyKeys: Object.keys(body)
+        });
+
         if (!returnUrl || typeof returnUrl !== 'string' || returnUrl.trim().length === 0) {
+          functions.logger.error("❌ Missing or invalid returnUrl", { returnUrl, type: typeof returnUrl });
           res.status(400).json({ error: "Missing or invalid returnUrl parameter" });
           return;
         }
@@ -4110,8 +4129,20 @@ export const createBillingPortalSession = functions
           const subscriptionsRef = db.collection("customers").doc(userId).collection("subscriptions");
           const activeSubs = await subscriptionsRef.where("status", "in", ["trialing", "active"]).limit(1).get();
           
+          functions.logger.info("🔍 Checking subscriptions", {
+            userId,
+            subscriptionsFound: activeSubs.size,
+            path: `customers/${userId}/subscriptions`
+          });
+          
           if (!activeSubs.empty) {
             const subData = activeSubs.docs[0].data() as AnyObj;
+            functions.logger.info("📄 Subscription data", {
+              hasCustomer: !!subData?.customer,
+              customerType: typeof subData?.customer,
+              customerValue: subData?.customer ? (typeof subData.customer === 'string' ? subData.customer.substring(0, 20) : 'object') : 'null'
+            });
+            
             // Customer ID může být string nebo objekt s id
             if (typeof subData?.customer === 'string') {
               stripeCustomerId = subData.customer;
@@ -4120,6 +4151,22 @@ export const createBillingPortalSession = functions
             } else if (subData?.customer) {
               // Pokud je to reference nebo jiný formát, zkusit získat ID
               stripeCustomerId = String(subData.customer);
+            }
+            
+            // Pokud stále nemáme customer ID, zkusit použít document ID z customer kolekce
+            // Firebase Extension může ukládat customer dokumenty s UID jako ID
+            // a Stripe customer ID může být stejné jako UID nebo v customer dokumentu
+            if (!stripeCustomerId) {
+              // Zkusit najít customer dokument s UID jako ID
+              const customerDoc = await db.collection("customers").doc(userId).get();
+              if (customerDoc.exists) {
+                const customerData = customerDoc.data() as AnyObj;
+                stripeCustomerId = customerData?.id || customerData?.stripeCustomerId || null;
+                // Pokud customer dokument existuje, ale nemá id, zkusit použít document ID (pokud vypadá jako Stripe customer ID)
+                if (!stripeCustomerId && customerDoc.id && customerDoc.id.startsWith('cus_')) {
+                  stripeCustomerId = customerDoc.id;
+                }
+              }
             }
           }
         } catch (error) {
@@ -4202,24 +4249,58 @@ export const createBillingPortalSession = functions
         }
 
         // Vytvořit billing portal session přes Stripe API
-        const stripeResponse = await axios.post(
-          "https://api.stripe.com/v1/billing_portal/sessions",
-          new URLSearchParams({
-            customer: stripeCustomerId,
-            return_url: returnUrl,
-          }),
-          {
-            headers: {
-              Authorization: `Bearer ${cleanedSecretKey}`,
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
+        functions.logger.info("🔄 Calling Stripe API", {
+          stripeCustomerId,
+          returnUrl,
+          hasSecretKey: !!cleanedSecretKey
+        });
+
+        let stripeResponse;
+        try {
+          stripeResponse = await axios.post(
+            "https://api.stripe.com/v1/billing_portal/sessions",
+            new URLSearchParams({
+              customer: stripeCustomerId,
+              return_url: returnUrl,
+            }),
+            {
+              headers: {
+                Authorization: `Bearer ${cleanedSecretKey}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            }
+          );
+        } catch (stripeError: any) {
+          functions.logger.error("❌ Stripe API error", {
+            status: stripeError?.response?.status,
+            statusText: stripeError?.response?.statusText,
+            data: stripeError?.response?.data,
+            message: stripeError?.message
+          });
+          
+          // Pokud Stripe vrací 400, zkusit získat detailnější chybu
+          if (stripeError?.response?.status === 400) {
+            const stripeErrorData = stripeError?.response?.data;
+            const errorMessage = stripeErrorData?.error?.message || stripeErrorData?.message || "Invalid request to Stripe";
+            res.status(400).json({ 
+              error: errorMessage,
+              details: stripeErrorData?.error || stripeErrorData
+            });
+            return;
           }
-        );
+          
+          // Pro ostatní chyby vrátit 500
+          res.status(500).json({ 
+            error: stripeError?.response?.data?.error?.message || stripeError?.message || "Failed to create portal session"
+          });
+          return;
+        }
 
         const portalUrl = stripeResponse.data.url;
 
         if (!portalUrl) {
-          res.status(500).json({ error: "Failed to create portal session" });
+          functions.logger.error("❌ No URL in Stripe response", { response: stripeResponse.data });
+          res.status(500).json({ error: "Failed to create portal session - no URL returned" });
           return;
         }
 
@@ -4234,6 +4315,7 @@ export const createBillingPortalSession = functions
         functions.logger.error("❌ Chyba při vytváření billing portal session", {
           error: error?.message,
           stack: error?.stack,
+          name: error?.name
         });
         res.status(500).json({ error: error?.message || "Internal server error" });
       }

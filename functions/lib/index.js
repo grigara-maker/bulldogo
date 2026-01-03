@@ -3774,16 +3774,32 @@ exports.createBillingPortalSession = functions
     .runWith({ secrets: ["STRIPE_SECRET_KEY"] })
     .https.onRequest(async (req, res) => {
     corsHandler(req, res, async () => {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         try {
+            functions.logger.info("📥 createBillingPortalSession called", {
+                method: req.method,
+                hasBody: !!req.body,
+                bodyType: typeof req.body,
+                headers: {
+                    contentType: req.headers["content-type"],
+                    authorization: req.headers.authorization ? "present" : "missing"
+                }
+            });
             // Kontrola metody
             if (req.method !== "POST") {
                 res.status(405).json({ error: "Method not allowed" });
                 return;
             }
             // Získat return URL z requestu
-            const { returnUrl, uid } = req.body;
+            const body = req.body || {};
+            const { returnUrl, uid } = body;
+            functions.logger.info("📋 Request body parsed", {
+                returnUrl: returnUrl ? `${returnUrl.substring(0, 50)}...` : "missing",
+                uid: uid ? `${uid.substring(0, 10)}...` : "missing",
+                bodyKeys: Object.keys(body)
+            });
             if (!returnUrl || typeof returnUrl !== 'string' || returnUrl.trim().length === 0) {
+                functions.logger.error("❌ Missing or invalid returnUrl", { returnUrl, type: typeof returnUrl });
                 res.status(400).json({ error: "Missing or invalid returnUrl parameter" });
                 return;
             }
@@ -3827,8 +3843,18 @@ exports.createBillingPortalSession = functions
             try {
                 const subscriptionsRef = db.collection("customers").doc(userId).collection("subscriptions");
                 const activeSubs = await subscriptionsRef.where("status", "in", ["trialing", "active"]).limit(1).get();
+                functions.logger.info("🔍 Checking subscriptions", {
+                    userId,
+                    subscriptionsFound: activeSubs.size,
+                    path: `customers/${userId}/subscriptions`
+                });
                 if (!activeSubs.empty) {
                     const subData = activeSubs.docs[0].data();
+                    functions.logger.info("📄 Subscription data", {
+                        hasCustomer: !!(subData === null || subData === void 0 ? void 0 : subData.customer),
+                        customerType: typeof (subData === null || subData === void 0 ? void 0 : subData.customer),
+                        customerValue: (subData === null || subData === void 0 ? void 0 : subData.customer) ? (typeof subData.customer === 'string' ? subData.customer.substring(0, 20) : 'object') : 'null'
+                    });
                     // Customer ID může být string nebo objekt s id
                     if (typeof (subData === null || subData === void 0 ? void 0 : subData.customer) === 'string') {
                         stripeCustomerId = subData.customer;
@@ -3839,6 +3865,21 @@ exports.createBillingPortalSession = functions
                     else if (subData === null || subData === void 0 ? void 0 : subData.customer) {
                         // Pokud je to reference nebo jiný formát, zkusit získat ID
                         stripeCustomerId = String(subData.customer);
+                    }
+                    // Pokud stále nemáme customer ID, zkusit použít document ID z customer kolekce
+                    // Firebase Extension může ukládat customer dokumenty s UID jako ID
+                    // a Stripe customer ID může být stejné jako UID nebo v customer dokumentu
+                    if (!stripeCustomerId) {
+                        // Zkusit najít customer dokument s UID jako ID
+                        const customerDoc = await db.collection("customers").doc(userId).get();
+                        if (customerDoc.exists) {
+                            const customerData = customerDoc.data();
+                            stripeCustomerId = (customerData === null || customerData === void 0 ? void 0 : customerData.id) || (customerData === null || customerData === void 0 ? void 0 : customerData.stripeCustomerId) || null;
+                            // Pokud customer dokument existuje, ale nemá id, zkusit použít document ID (pokud vypadá jako Stripe customer ID)
+                            if (!stripeCustomerId && customerDoc.id && customerDoc.id.startsWith('cus_')) {
+                                stripeCustomerId = customerDoc.id;
+                            }
+                        }
                     }
                 }
             }
@@ -3915,18 +3956,50 @@ exports.createBillingPortalSession = functions
                 return;
             }
             // Vytvořit billing portal session přes Stripe API
-            const stripeResponse = await axios_1.default.post("https://api.stripe.com/v1/billing_portal/sessions", new URLSearchParams({
-                customer: stripeCustomerId,
-                return_url: returnUrl,
-            }), {
-                headers: {
-                    Authorization: `Bearer ${cleanedSecretKey}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
+            functions.logger.info("🔄 Calling Stripe API", {
+                stripeCustomerId,
+                returnUrl,
+                hasSecretKey: !!cleanedSecretKey
             });
+            let stripeResponse;
+            try {
+                stripeResponse = await axios_1.default.post("https://api.stripe.com/v1/billing_portal/sessions", new URLSearchParams({
+                    customer: stripeCustomerId,
+                    return_url: returnUrl,
+                }), {
+                    headers: {
+                        Authorization: `Bearer ${cleanedSecretKey}`,
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                });
+            }
+            catch (stripeError) {
+                functions.logger.error("❌ Stripe API error", {
+                    status: (_d = stripeError === null || stripeError === void 0 ? void 0 : stripeError.response) === null || _d === void 0 ? void 0 : _d.status,
+                    statusText: (_e = stripeError === null || stripeError === void 0 ? void 0 : stripeError.response) === null || _e === void 0 ? void 0 : _e.statusText,
+                    data: (_f = stripeError === null || stripeError === void 0 ? void 0 : stripeError.response) === null || _f === void 0 ? void 0 : _f.data,
+                    message: stripeError === null || stripeError === void 0 ? void 0 : stripeError.message
+                });
+                // Pokud Stripe vrací 400, zkusit získat detailnější chybu
+                if (((_g = stripeError === null || stripeError === void 0 ? void 0 : stripeError.response) === null || _g === void 0 ? void 0 : _g.status) === 400) {
+                    const stripeErrorData = (_h = stripeError === null || stripeError === void 0 ? void 0 : stripeError.response) === null || _h === void 0 ? void 0 : _h.data;
+                    const errorMessage = ((_j = stripeErrorData === null || stripeErrorData === void 0 ? void 0 : stripeErrorData.error) === null || _j === void 0 ? void 0 : _j.message) || (stripeErrorData === null || stripeErrorData === void 0 ? void 0 : stripeErrorData.message) || "Invalid request to Stripe";
+                    res.status(400).json({
+                        error: errorMessage,
+                        details: (stripeErrorData === null || stripeErrorData === void 0 ? void 0 : stripeErrorData.error) || stripeErrorData
+                    });
+                    return;
+                }
+                // Pro ostatní chyby vrátit 500
+                res.status(500).json({
+                    error: ((_m = (_l = (_k = stripeError === null || stripeError === void 0 ? void 0 : stripeError.response) === null || _k === void 0 ? void 0 : _k.data) === null || _l === void 0 ? void 0 : _l.error) === null || _m === void 0 ? void 0 : _m.message) || (stripeError === null || stripeError === void 0 ? void 0 : stripeError.message) || "Failed to create portal session"
+                });
+                return;
+            }
             const portalUrl = stripeResponse.data.url;
             if (!portalUrl) {
-                res.status(500).json({ error: "Failed to create portal session" });
+                functions.logger.error("❌ No URL in Stripe response", { response: stripeResponse.data });
+                res.status(500).json({ error: "Failed to create portal session - no URL returned" });
                 return;
             }
             functions.logger.info("✅ Billing portal session created", {
@@ -3940,6 +4013,7 @@ exports.createBillingPortalSession = functions
             functions.logger.error("❌ Chyba při vytváření billing portal session", {
                 error: error === null || error === void 0 ? void 0 : error.message,
                 stack: error === null || error === void 0 ? void 0 : error.stack,
+                name: error === null || error === void 0 ? void 0 : error.name
             });
             res.status(500).json({ error: (error === null || error === void 0 ? void 0 : error.message) || "Internal server error" });
         }
