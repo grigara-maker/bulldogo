@@ -1084,8 +1084,15 @@
                 
                 const userAds = [];
                 adsSnapshot.forEach((doc) => {
-                    userAds.push({ id: doc.id, ...doc.data() });
+                    const adData = doc.data();
+                    userAds.push({ 
+                        id: doc.id, 
+                        ...adData,
+                        status: adData.status || (adData.active === false ? 'inactive' : 'active')
+                    });
                 });
+
+                console.log('📦 Loaded user ads:', userAds.length, 'ads:', userAds.map(ad => ({ id: ad.id, status: ad.status, active: ad.active })));
 
                 // Update profile display
                 updateProfileDisplay(currentUser, userProfile);

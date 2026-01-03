@@ -2070,8 +2070,12 @@ async function addService(serviceData) {
 // Načtení uživatelského profilu z Firestore (users/{uid}/profile/profile)
 async function loadUserProfile(uid) {
     try {
+        if (!window.firebaseDb) {
+            console.warn('⚠️ Firebase DB not available');
+            return null;
+        }
         const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        const profileRef = doc(firebaseDb, 'users', uid, 'profile', 'profile');
+        const profileRef = doc(window.firebaseDb, 'users', uid, 'profile', 'profile');
         const snap = await getDoc(profileRef);
         return snap.exists() ? snap.data() : null;
     } catch (error) {
