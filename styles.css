@@ -16920,48 +16920,141 @@ html:has(.ad-detail-content) {
 
 /* ===== FIXNÍ POMĚR STRAN PRO VŠECHNY OBRÁZKY - STEJNÝ VŠUDE ===== */
 /* Zajistit, že všechny obrázky mají stejný poměr stran 4:3 na všech zařízeních */
+/* Tato pravidla mají nejvyšší prioritu a přepisují všechna ostatní pravidla */
 .ad-thumb,
 .ad-card .ad-thumb,
 .ad-card.is-top .ad-thumb,
 #servicesGrid .ad-card .ad-thumb,
-.ads-grid .ad-card .ad-thumb {
+.ads-grid .ad-card .ad-thumb,
+.ad-thumb[style*="height"],
+.ad-card .ad-thumb[style*="height"],
+.ad-card.is-top .ad-thumb[style*="height"] {
     aspect-ratio: 4 / 3 !important;
     height: auto !important;
     width: 100% !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 .ad-thumb img,
 .ad-card .ad-thumb img,
 .ad-card.is-top .ad-thumb img,
 #servicesGrid .ad-card .ad-thumb img,
-.ads-grid .ad-card .ad-thumb img {
+.ads-grid .ad-card .ad-thumb img,
+.ad-thumb img[style*="height"],
+.ad-card .ad-thumb img[style*="height"] {
     width: 100% !important;
     height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
     object-fit: cover !important;
     object-position: center !important;
+    display: block !important;
 }
 
-.ad-main-image {
+.ad-main-image,
+.ad-main-image[style*="height"] {
     aspect-ratio: 4 / 3 !important;
     height: auto !important;
     width: 100% !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
 }
 
-.ad-main-img {
+.ad-main-img,
+.ad-main-img[style*="height"] {
     width: 100% !important;
     height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
     object-fit: cover !important;
     object-position: center !important;
+    display: block !important;
 }
 
-.ad-thumbnail {
+.ad-thumbnail,
+.ad-thumbnail[style*="height"] {
     aspect-ratio: 4 / 3 !important;
     height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    padding-bottom: 0 !important;
 }
 
-.ad-thumbnail img {
+.ad-thumbnail img,
+.ad-thumbnail img[style*="height"] {
     width: 100% !important;
     height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
     object-fit: cover !important;
     object-position: center !important;
+    display: block !important;
+}
+
+/* Přepis pro všechna media query - zajistit stejný poměr na mobilu */
+@media (max-width: 768px) {
+    .ad-thumb,
+    .ad-card .ad-thumb,
+    .ad-card.is-top .ad-thumb,
+    #servicesGrid .ad-card .ad-thumb,
+    .ads-grid .ad-card .ad-thumb {
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+        width: 100% !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .ad-main-image {
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+        width: 100% !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .ad-thumbnail {
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        padding-bottom: 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .ad-thumb,
+    .ad-card .ad-thumb,
+    .ad-card.is-top .ad-thumb,
+    #servicesGrid .ad-card .ad-thumb,
+    .ads-grid .ad-card .ad-thumb {
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+        width: 100% !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .ad-main-image {
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+        width: 100% !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .ad-thumbnail {
+        aspect-ratio: 4 / 3 !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+        padding-bottom: 0 !important;
+    }
 }

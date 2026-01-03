@@ -910,7 +910,7 @@ function createAdCard(service, showActions = true) {
     
     return `
         <article class="ad-card${service.isTop ? ' is-top' : ''}" data-category="${service.category || ''}" data-status="${status}" data-location="${escapedLocation}" ${topStyle}>
-            <div class="ad-thumb" style="width: 100% !important; height: 200px !important; display: block !important; overflow: hidden !important;">
+            <div class="ad-thumb" style="width: 100% !important; aspect-ratio: 4 / 3 !important; height: auto !important; display: block !important; overflow: hidden !important;">
                 ${imageHtml}
             </div>
             <div class="ad-body" data-location="${escapedLocation}" style="${adBodyStyle}">
