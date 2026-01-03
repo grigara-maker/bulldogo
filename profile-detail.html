@@ -19,7 +19,7 @@
     </script>
     
     <style>
-        /* ÚPLNÉ ZABLOKOVÁNÍ OVERFLOW - ZMĚNA LAYOUTU NA PC */
+        /* ÚPLNÉ PŘEDĚLÁNÍ LAYOUTU - VŠECHNA OKNA NA STRÁNCE */
         html, body {
             overflow-x: hidden !important;
             max-width: 100vw !important;
@@ -37,7 +37,7 @@
             margin-left: 70px !important;
         }
         
-        /* Detail content - maximální šířka */
+        /* Detail content - maximální šířka a výška */
         .ad-detail-content {
             width: 100% !important;
             max-width: 100% !important;
@@ -48,7 +48,7 @@
             position: relative !important;
         }
         
-        /* ZMĚNA: Místo gridu použít flexbox s striktními omezeními na PC */
+        /* ÚPLNĚ NOVÝ LAYOUT - VŠECHNO POD SEBOU NEBO VEDLE SEBE S MAX VÝŠKOU */
         @media (min-width: 769px) {
             .profile-detail-main {
                 display: flex !important;
@@ -57,9 +57,10 @@
                 width: 100% !important;
                 max-width: 100% !important;
                 box-sizing: border-box !important;
-                overflow: hidden !important;
+                overflow: visible !important;
                 margin: 0 0 2rem 0 !important;
                 padding: 0 !important;
+                align-items: flex-start !important;
             }
             
             .profile-detail-left {
@@ -68,7 +69,7 @@
                 min-width: 0 !important;
                 width: calc(50% - 1rem) !important;
                 box-sizing: border-box !important;
-                overflow: hidden !important;
+                overflow: visible !important;
                 padding: 2rem !important;
                 margin: 0 !important;
             }
@@ -79,9 +80,22 @@
                 min-width: 0 !important;
                 width: calc(50% - 1rem) !important;
                 box-sizing: border-box !important;
-                overflow: hidden !important;
+                overflow: visible !important;
                 padding: 2rem !important;
                 margin: 0 !important;
+            }
+            
+            /* Sekce "O uživateli" - maximální výška a scroll */
+            .ad-description-section {
+                max-height: calc(100vh - 400px) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+            }
+            
+            .ad-description {
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                max-width: 100% !important;
             }
         }
         
@@ -97,6 +111,8 @@
                 display: flex !important;
                 flex-direction: column !important;
                 gap: 1.5rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             
             .profile-detail-left,
@@ -105,6 +121,46 @@
                 max-width: 100% !important;
                 width: 100% !important;
             }
+            
+            .ad-description-section {
+                max-height: 300px !important;
+                overflow-y: auto !important;
+            }
+        }
+        
+        /* Všechny sekce - povinné formatování */
+        .ad-title-section,
+        .ad-meta-section,
+        .ad-description-section,
+        .ad-contact-section {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            overflow-x: hidden !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+        
+        /* Sekce další služby a recenze */
+        .ad-user-profile {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            padding: 2rem !important;
+            margin: 2rem 0 0 0 !important;
+        }
+        
+        .user-other-ads {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
         }
         
         /* Zajistit, že všechny obrázky a media nezpůsobují overflow */
@@ -121,6 +177,20 @@
             max-width: 100% !important;
             overflow-x: auto !important;
             display: block !important;
+        }
+        
+        /* Všechny texty - povinné zalamování */
+        .ad-detail-content p,
+        .ad-detail-content span,
+        .ad-detail-content div,
+        .ad-detail-content h1,
+        .ad-detail-content h2,
+        .ad-detail-content h3,
+        .ad-detail-content h4 {
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
         }
         
         
