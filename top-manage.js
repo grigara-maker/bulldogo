@@ -11,7 +11,32 @@ async function topManage_waitForFirebase() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await topManage_waitForFirebase();
-    await topManageLoad();
+    
+    // Zkontrolovat, zda je uživatel přihlášen
+    const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+    if (user) {
+        await topManageLoad();
+    } else {
+        // Pokud není přihlášen, počkat na přihlášení
+        const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        onAuthStateChanged(window.firebaseAuth, async (user) => {
+            if (user) {
+                await topManageLoad();
+            } else {
+                // Zobrazit prázdný stav, pokud není přihlášen
+                const list = document.getElementById('topManageList');
+                const empty = document.getElementById('topManageEmpty');
+                if (list) list.innerHTML = '';
+                if (empty) {
+                    empty.style.display = '';
+                    const h3 = empty.querySelector('h3');
+                    if (h3) h3.textContent = 'Pro zobrazení topovaných inzerátů se musíte přihlásit';
+                    const p = empty.querySelector('p');
+                    if (p) p.textContent = 'Přihlaste se pro správu topování vašich inzerátů.';
+                }
+            }
+        });
+    }
 });
 
 async function topManageLoad() {
@@ -75,31 +100,139 @@ async function topManageLoad() {
     }
 }
 
+// Pomocná funkce pro získání názvu kategorie (stejná jako v services.js)
+function getCategoryName(category) {
+    const categories = {
+        'home_craftsmen': 'Domácnost & Řemeslníci',
+        'auto_moto': 'Auto & Moto',
+        'garden_exterior': 'Zahrada & Exteriér',
+        'education_tutoring': 'Vzdělávání & Doučování',
+        'it_technology': 'IT & technologie',
+        'health_personal_care': 'Zdraví a Osobní péče',
+        'gastronomy_catering': 'Gastronomie & Catering',
+        'events_entertainment': 'Události & Zábava',
+        'personal_small_jobs': 'Osobní služby & drobné práce',
+        'auto_moto_transport': 'Auto - moto doprava',
+        'hobby_creative': 'Hobby & kreativní služby',
+        'law_finance_admin': 'Právo & finance & administrativa',
+        'pets': 'Domácí zvířata',
+        'specialized_custom': 'Specializované služby / na přání'
+    };
+    return categories[category] || category;
+}
+
+// Pomocná funkce pro získání názvu lokace (stejná jako v services.js)
+function getLocationName(location) {
+    if (!location) return '';
+    if (typeof location === 'string') return location;
+    if (location.name) return location.name;
+    if (location.city) return location.city;
+    return String(location);
+}
+
 function renderTopManageCard(ad) {
     const isTop = !!ad.isTop;
     const topExpiresAt = ad.topExpiresAt?.toDate ? ad.topExpiresAt.toDate() : (ad.topExpiresAt ? new Date(ad.topExpiresAt) : null);
     const topUntilText = topExpiresAt ? topExpiresAt.toLocaleDateString('cs-CZ') : '-';
     const remaining = topExpiresAt ? Math.max(0, Math.ceil((topExpiresAt - new Date()) / (24*60*60*1000))) : 0;
-    const remainingText = isTop && topExpiresAt ? `${remaining} dní` : '-';
+    const remainingText = isTop && topExpiresAt ? `${remaining} ${remaining === 1 ? 'den' : remaining < 5 ? 'dny' : 'dní'}` : '-';
 
-    const badge = isTop ? '<div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>' : '';
     const topStyle = isTop ? 'style="border: 3px solid #ff8a00 !important; box-shadow: 0 8px 28px rgba(255, 138, 0, 0.6), 0 0 0 2px rgba(255, 138, 0, 0.4) !important;"' : '';
+    const status = (ad?.status || 'active').toString().trim().toLowerCase();
+    
+    // Formátování ceny - pokud je jen číslo, přidat Kč
+    let formattedPrice = ad.price || '';
+    if (formattedPrice && /^\d+$/.test(formattedPrice.toString().trim())) {
+        formattedPrice = `${formattedPrice} Kč`;
+    }
+    
+    // Získat URL obrázku - stejná logika jako v services.js
+    let imageUrl = '/fotky/vychozi-inzerat.png';
+    if (ad.images && ad.images.length > 0) {
+        const firstImg = ad.images[0];
+        if (typeof firstImg === 'string') {
+            imageUrl = firstImg;
+        } else if (firstImg && firstImg.url) {
+            imageUrl = firstImg.url;
+        }
+    } else if (ad.image) {
+        if (typeof ad.image === 'string') {
+            imageUrl = ad.image;
+        } else if (ad.image.url) {
+            imageUrl = ad.image.url;
+        }
+    } else if (ad.photo) {
+        if (typeof ad.photo === 'string') {
+            imageUrl = ad.photo;
+        } else if (ad.photo.url) {
+            imageUrl = ad.photo.url;
+        }
+    }
+    
+    // Ověřit, že imageUrl je platná URL nebo cesta
+    if (!imageUrl || imageUrl === 'undefined' || imageUrl === 'null') {
+        imageUrl = '/fotky/vychozi-inzerat.png';
+    }
+    
+    const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
+    const defaultImageUrl = '/fotky/vychozi-inzerat.png';
+    const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
+    
+    // Optimalizace obrázků
+    const isLocalImage = imageUrl.startsWith('/fotky/') || imageUrl.startsWith('./fotky/');
+    
+    let optimizedImageUrl = escapedImageUrl;
+    if (!isLocalImage && imageUrl.includes('firebasestorage.googleapis.com')) {
+        if (!imageUrl.includes('alt=media')) {
+            optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
+        } else {
+            optimizedImageUrl = escapedImageUrl;
+        }
+    }
+    
+    const widthHeightAttr = ' width="400" height="300"';
+    
+    let imageHtml;
+    if (isLocalImage) {
+        const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+        const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
+        imageHtml = `
+            <picture>
+                <source srcset="${escapedWebpUrl}" type="image/webp">
+                <img src="${escapedImageUrl}" alt="Inzerát" loading="lazy" decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">
+            </picture>
+        `;
+    } else {
+        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="lazy" decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}'">`;
+    }
 
     return `
-        <article class="ad-card${isTop ? ' is-top' : ''}" ${topStyle}>
+        <article class="ad-card${isTop ? ' is-top' : ''}" data-category="${ad.category || ''}" data-status="${status}" ${topStyle}>
             <div class="ad-thumb">
-                <img src="${ad.images && ad.images[0]?.url ? ad.images[0].url : 'fotky/team.jpg'}" alt="Inzerát" loading="lazy" decoding="async">
+                ${imageHtml}
             </div>
-            <div class="ad-body">
+            <div class="ad-body" data-location="${getLocationName(ad.location || '') || 'Neuvedeno'}">
+                <div class="ad-meta"><span>${getCategoryName(ad.category || '')}</span></div>
                 <h3 class="ad-title">${ad.title || 'Bez názvu'}</h3>
-                <div class="ad-meta"><span>${ad.location || 'Neuvedeno'}</span> • <span>${(ad.category || '').toString()}</span></div>
-                <div style="margin-top:8px; font-size:14px; color:#444;">
-                    <div><strong>Stav TOP:</strong> ${isTop ? 'Aktivní' : 'Neaktivní'}</div>
-                    <div><strong>TOP do:</strong> ${isTop ? topUntilText : '-'}</div>
-                    <div><strong>Zbývá:</strong> ${isTop ? remainingText : '-'}</div>
+                ${formattedPrice ? `<div class="ad-price">${formattedPrice}</div>` : ''}
+                <div class="ad-location">${getLocationName(ad.location || '') || 'Neuvedeno'}</div>
+                ${isTop ? `
+                <div style="margin-top:12px; padding:8px; background:rgba(255,138,0,0.1); border-radius:6px; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="color:#666;"><strong>TOP do:</strong></span>
+                        <span style="color:#f77c00; font-weight:600;">${topUntilText}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#666;"><strong>Zbývá:</strong></span>
+                        <span style="color:#f77c00; font-weight:600;">${remainingText}</span>
+                    </div>
                 </div>
-                ${badge}
+                ` : ''}
             </div>
+            ${isTop ? `
+            <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
+            <div class="ad-flames" aria-hidden="true"></div>
+            ` : ''}
             <div class="ad-actions" style="position: static; transform:none; justify-content:flex-start; gap:8px; margin-top:10px;">
                 <button class="btn-activate" onclick="topManageExtend('${ad.id}')" title="Prodloužit (přejít na platbu)"><i class="fas fa-credit-card"></i></button>
                 <button class="btn-edit" onclick="topManageView('${ad.id}')" title="Zobrazit detail inzerátu"><i class="fas fa-eye"></i></button>

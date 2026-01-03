@@ -984,6 +984,7 @@ function getRegionCode(input) {
     if (!val) return '';
     // Pokud už je to kód, vrať bez změny
     const validCodes = [
+        'Kdekoliv', 'CelaCeskaRepublika', 'CelaSlovenskaRepublika',
         'Praha','Stredocesky','Jihocesky','Plzensky','Karlovarsky','Ustecky','Liberecky','Kralovehradecky','Pardubicky','Vysocina','Jihomoravsky','Olomoucky','Zlinsky','Moravskoslezsky',
         'Bratislavsky','Trnavsky','Trenciansky','Nitriansky','Zilinsky','Banskobystricky','Presovsky','Kosicky'
     ];
@@ -991,6 +992,9 @@ function getRegionCode(input) {
     // Bez diakritiky a malá písmena
     const n = normalize(val);
     const map = {
+        'kdekoliv': 'Kdekoliv',
+        'cela ceska republika': 'CelaCeskaRepublika',
+        'cela slovenska republika': 'CelaSlovenskaRepublika',
         'hlavni mesto praha': 'Praha',
         'praha': 'Praha',
         'stredocesky kraj': 'Stredocesky',
@@ -1016,6 +1020,41 @@ function getRegionCode(input) {
         'kosicky kraj': 'Kosicky'
     };
     return map[n] || '';
+}
+
+// Pomocná funkce pro získání kódu z formátovaného názvu
+function getRegionCodeFromFormatted(formattedName) {
+    if (!formattedName) return '';
+    const val = formattedName.toString().trim();
+    // Přímé mapování formátovaných názvů na kódy
+    const formattedMap = {
+        'Kdekoliv': 'Kdekoliv',
+        'Celá Česká republika': 'CelaCeskaRepublika',
+        'Celá Slovenská republika': 'CelaSlovenskaRepublika',
+        'Hlavní město Praha': 'Praha',
+        'Středočeský kraj': 'Stredocesky',
+        'Jihočeský kraj': 'Jihocesky',
+        'Plzeňský kraj': 'Plzensky',
+        'Karlovarský kraj': 'Karlovarsky',
+        'Ústecký kraj': 'Ustecky',
+        'Liberecký kraj': 'Liberecky',
+        'Královéhradecký kraj': 'Kralovehradecky',
+        'Pardubický kraj': 'Pardubicky',
+        'Kraj Vysočina': 'Vysocina',
+        'Jihomoravský kraj': 'Jihomoravsky',
+        'Olomoucký kraj': 'Olomoucky',
+        'Zlínský kraj': 'Zlinsky',
+        'Moravskoslezský kraj': 'Moravskoslezsky',
+        'Bratislavský kraj': 'Bratislavsky',
+        'Trnavský kraj': 'Trnavsky',
+        'Trenčianský kraj': 'Trenciansky',
+        'Nitriansky kraj': 'Nitriansky',
+        'Žilinský kraj': 'Zilinsky',
+        'Banskobystrický kraj': 'Banskobystricky',
+        'Prešovský kraj': 'Presovsky',
+        'Košický kraj': 'Kosicky'
+    };
+    return formattedMap[val] || getRegionCode(val);
 }
 
 // Formátování data
@@ -1181,16 +1220,32 @@ function filterServices() {
         const matchesSearch = !searchTerm || title.includes(searchTerm) || desc.includes(searchTerm) || loc.includes(searchTerm);
         const matchesCategory = !categoryFilter || (service?.category === categoryFilter);
         // Pokud je vybrán kraj, musí se shodovat. Pokud kraj není vybrán, zobrazit všechny.
-        // Speciální hodnoty: "Kdekoliv" a "CelaCeskaRepublika" zobrazí všechny inzeráty
+        // Speciální hodnoty: "Kdekoliv", "CelaCeskaRepublika", "CelaSlovenskaRepublika" zobrazí všechny inzeráty
         let matchesRegion = true;
         if (regionFilter && regionFilter.trim()) {
             const serviceLoc = storedLocRaw.toString().trim();
+            const regionFilterFormatted = getLocationName(regionFilter);
+            const serviceLocFormatted = getLocationName(serviceLoc);
+            
             if (regionFilter === 'Kdekoliv') {
-                matchesRegion = serviceLoc === 'Kdekoliv';
+                matchesRegion = serviceLoc === 'Kdekoliv' || loc === 'Kdekoliv' || serviceLocFormatted === 'Kdekoliv';
             } else if (regionFilter === 'CelaCeskaRepublika') {
-                matchesRegion = serviceLoc === 'CelaCeskaRepublika';
+                matchesRegion = serviceLoc === 'CelaCeskaRepublika' || 
+                               serviceLoc === 'Celá Česká republika' ||
+                               loc === 'Celá Česká republika' ||
+                               loc === 'CelaCeskaRepublika' ||
+                               serviceLocFormatted === 'Celá Česká republika';
+            } else if (regionFilter === 'CelaSlovenskaRepublika') {
+                matchesRegion = serviceLoc === 'CelaSlovenskaRepublika' || 
+                               serviceLoc === 'Celá Slovenská republika' ||
+                               loc === 'Celá Slovenská republika' ||
+                               loc === 'CelaSlovenskaRepublika' ||
+                               serviceLocFormatted === 'Celá Slovenská republika';
             } else if (regionCode) {
-                matchesRegion = locCode && locCode === regionCode;
+                matchesRegion = (locCode && locCode === regionCode) || 
+                               (loc === regionFilterFormatted) ||
+                               (serviceLoc === regionFilter) ||
+                               (serviceLocFormatted === regionFilterFormatted);
             }
         }
         // Ve veřejném katalogu zobrazujeme jen aktivní inzeráty
@@ -1256,20 +1311,36 @@ function filterServicesDom(searchTerm, categoryFilter, regionFilter) {
         const locationFromElement = card.querySelector('.ad-location')?.textContent?.trim() || '';
         const locationText = locationFromAttr || locationFromElement || '';
         const locationCode = getRegionCode(locationText);
+        
+        // Získat také kód z formátovaného názvu (pro zpětnou kompatibilitu)
+        const locationCodeFromFormatted = getRegionCodeFromFormatted(locationText);
 
         const matchesSearch = !searchTerm || title.includes(searchTerm) || meta.includes(searchTerm);
         const matchesCategory = !categoryFilter || dataCategory === categoryFilter;
         // Pokud je vybrán kraj, musí se shodovat. Pokud kraj není vybrán, zobrazit všechny.
-        // Speciální hodnoty: "Kdekoliv" a "CelaCeskaRepublika" zobrazí všechny inzeráty s touto hodnotou
+        // Speciální hodnoty: "Kdekoliv", "CelaCeskaRepublika", "CelaSlovenskaRepublika" zobrazí všechny inzeráty s touto hodnotou
         let matchesRegion = true;
         if (regionFilter && regionFilter.trim()) {
             const serviceLoc = locationText.trim();
+            const regionFilterCode = getRegionCode(regionFilter);
+            const regionFilterFormatted = getLocationName(regionFilter);
+            
             if (regionFilter === 'Kdekoliv') {
-                matchesRegion = serviceLoc === 'Kdekoliv';
+                matchesRegion = serviceLoc === 'Kdekoliv' || locationCode === 'Kdekoliv' || locationCodeFromFormatted === 'Kdekoliv';
             } else if (regionFilter === 'CelaCeskaRepublika') {
-                matchesRegion = serviceLoc === 'Celá Česká republika' || serviceLoc === 'CelaCeskaRepublika';
+                matchesRegion = serviceLoc === 'Celá Česká republika' || 
+                               serviceLoc === 'CelaCeskaRepublika' || 
+                               locationCode === 'CelaCeskaRepublika' ||
+                               locationCodeFromFormatted === 'CelaCeskaRepublika';
+            } else if (regionFilter === 'CelaSlovenskaRepublika') {
+                matchesRegion = serviceLoc === 'Celá Slovenská republika' || 
+                               serviceLoc === 'CelaSlovenskaRepublika' || 
+                               locationCode === 'CelaSlovenskaRepublika' ||
+                               locationCodeFromFormatted === 'CelaSlovenskaRepublika';
             } else if (regionCode) {
-                matchesRegion = locationCode && locationCode === regionCode;
+                matchesRegion = (locationCode && locationCode === regionCode) || 
+                               (locationCodeFromFormatted && locationCodeFromFormatted === regionCode) ||
+                               (serviceLoc === regionFilterFormatted);
             }
         }
 
