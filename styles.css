@@ -13950,7 +13950,10 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
         overflow-x: hidden !important;
     }
     
-    .ads-grid {
+    .user-other-ads .ads-grid,
+    #otherAdsGrid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
@@ -13958,6 +13961,67 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
         overflow-x: hidden !important;
         padding: 0 !important;
         margin: 0 !important;
+    }
+    
+    .user-other-ads .ad-card,
+    #otherAdsGrid .ad-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 12px !important;
+        padding: 12px !important;
+        min-height: auto !important;
+        height: auto !important;
+    }
+    
+    .user-other-ads .ad-thumb,
+    #otherAdsGrid .ad-thumb {
+        width: 120px !important;
+        min-width: 120px !important;
+        height: 90px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .user-other-ads .ad-thumb img,
+    #otherAdsGrid .ad-thumb img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    
+    .user-other-ads .ad-body,
+    #otherAdsGrid .ad-body {
+        flex: 1 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        min-width: 0 !important;
+    }
+    
+    .user-other-ads .ad-title,
+    #otherAdsGrid .ad-title {
+        font-size: 0.95rem !important;
+        line-height: 1.3 !important;
+        margin-bottom: 6px !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    
+    .user-other-ads .ad-meta-details,
+    #otherAdsGrid .ad-meta-details {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .user-other-ads .ad-meta-item,
+    #otherAdsGrid .ad-meta-item {
+        font-size: 0.75rem !important;
     }
     
     .user-other-ads h4 {
