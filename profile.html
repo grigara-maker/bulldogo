@@ -193,7 +193,7 @@
                 <div class="content-section">
                     <h3 class="section-title">Rychlé akce</h3>
                     <div class="quick-actions">
-                        <button class="quick-action-btn" onclick="showAddServiceModal()">
+                        <button class="quick-action-btn" onclick="if(typeof requireAuthForCreateAd === 'function') { requireAuthForCreateAd(); } else { window.location.href='create-ad.html'; }">
                             <i class="fas fa-plus"></i>
                             <span>Nový inzerát</span>
                         </button>
