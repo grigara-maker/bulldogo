@@ -939,29 +939,50 @@
                         console.log('✅ Firebase available, checking auth');
                         clearInterval(checkFirebase);
                         
-                        // Check if user is logged in
+                        // Check if user is logged in immediately
                         const currentUser = window.firebaseAuth.currentUser;
                         if (!currentUser) {
-                            // User is not logged in - redirect to login
-                            console.log('⚠️ Uživatel není přihlášen - přesměrování na přihlášení');
+                            // User is not logged in - hide content and show login
+                            console.log('⚠️ Uživatel není přihlášen - zobrazuji přihlášení');
+                            const mainContent = document.querySelector('.main-content');
+                            if (mainContent) {
+                                mainContent.style.display = 'none';
+                            }
+                            // Show login modal
                             if (typeof showAuthModal === 'function') {
                                 showAuthModal('login');
                             } else {
+                                // If modal not available, redirect to homepage
                                 window.location.href = 'index.html';
+                                return;
                             }
                             return;
                         }
                         
+                        // User is logged in - show content and load data
+                        const mainContent = document.querySelector('.main-content');
+                        if (mainContent) {
+                            mainContent.style.display = '';
+                        }
                         loadUserData();
                         
                         // Listen for auth state changes
                         window.firebaseAuth.onAuthStateChanged((user) => {
                             console.log('👤 Auth state changed on profile page:', user ? user.email : 'Not logged in');
                             if (user) {
+                                // User logged in - show content
+                                const mainContent = document.querySelector('.main-content');
+                                if (mainContent) {
+                                    mainContent.style.display = '';
+                                }
                                 loadUserData();
                             } else {
-                                // User logged out - redirect to login
-                                console.log('⚠️ Uživatel se odhlásil - přesměrování na přihlášení');
+                                // User logged out - hide content and show login
+                                console.log('⚠️ Uživatel se odhlásil - zobrazuji přihlášení');
+                                const mainContent = document.querySelector('.main-content');
+                                if (mainContent) {
+                                    mainContent.style.display = 'none';
+                                }
                                 if (typeof showAuthModal === 'function') {
                                     showAuthModal('login');
                                 } else {
