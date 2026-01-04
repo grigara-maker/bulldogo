@@ -82,6 +82,7 @@
 .ig-conv .ig-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
 /* Pravý panel – karty inzerátů v úzkém sloupci */
+.ig-sidebar-right .ig-conversations { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 4px; min-height: 0; }
 .ig-sidebar-right .ad-card { margin: 10px; }
 .ig-sidebar-right .ad-card .ad-thumb img { height: 140px; object-fit: cover; }
 .ig-sidebar-right .ad-card .ad-actions { margin-top: 10px; }
@@ -122,14 +123,14 @@
 .ig-images { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 6px; }
 .ig-images img { width: 100%; height: 140px; object-fit: cover; border-radius: 10px; }
 
-.ig-input { border-top: 1px solid rgba(0,0,0,0.06); padding: 8px 12px; flex-shrink: 0; background: white; position: sticky; bottom: 0; z-index: 10; }
-.ig-file-preview { display: none; flex-wrap: wrap; gap: 12px; padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; }
+.ig-input { border-top: 1px solid rgba(0,0,0,0.06); padding: 8px 12px; flex-shrink: 0; background: white; position: sticky; bottom: 0; z-index: 10; overflow: visible; }
+.ig-file-preview { display: none; flex-wrap: wrap; gap: 12px; padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; overflow: visible; max-height: none; }
 .ig-file-preview-item { position: relative; display: inline-block; }
 .ig-file-preview-item img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #e5e7eb; display: block; }
 .ig-file-remove { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #ef4444; color: white; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; padding: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .ig-file-remove:hover { background: #dc2626; }
-.ig-input-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
-.ig-input-row input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; outline: none; }
+.ig-input-row { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; overflow: visible; }
+.ig-input-row input[type="text"] { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; outline: none; overflow: hidden; resize: none; }
 .ig-input-row input[type="text"]:focus { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,.15); }
 .ig-attach { display: inline-flex; width: 38px; height: 38px; align-items: center; justify-content: center; background: #fff8eb; border-radius: 10px; color: #f77c00; cursor: pointer; border: 1px solid #ffe0b2; }
 .ig-attach:hover { background: #fff3de; }

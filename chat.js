@@ -17,6 +17,86 @@
 console.log('💬 Nový chat systém: inicializace');
 
 // ============================================
+// POMOCNÉ FUNKCE PRO FORMÁTOVÁNÍ
+// ============================================
+// Získání názvu kategorie
+function getCategoryName(category) {
+    const categories = {
+        'home_craftsmen': 'Domácnost & Řemeslníci',
+        'auto_moto': 'Auto & Moto',
+        'garden_exterior': 'Zahrada & Exteriér',
+        'education_tutoring': 'Vzdělávání & Doučování',
+        'it_technology': 'IT & technologie',
+        'health_personal_care': 'Zdraví a Osobní péče',
+        'gastronomy_catering': 'Gastronomie & Catering',
+        'events_entertainment': 'Události & Zábava',
+        'personal_small_jobs': 'Osobní služby & drobné práce',
+        'auto_moto_transport': 'Auto - moto doprava',
+        'hobby_creative': 'Hobby & kreativní služby',
+        'law_finance_admin': 'Právo & finance & administrativa',
+        'pets': 'Domácí zvířata',
+        'specialized_custom': 'Specializované služby / na přání'
+    };
+    return categories[category] || category;
+}
+
+// Získání názvu lokace s diakritikou
+function getLocationName(location) {
+    // Pokud není lokace, vrátit prázdný string
+    if (!location) return '';
+    
+    // Pokud je to objekt, zkusit získat název nebo kód
+    if (typeof location === 'object') {
+        if (location.name) location = location.name;
+        else if (location.code) location = location.code;
+        else if (location.city) location = location.city;
+        else location = String(location);
+    }
+    
+    // Převést na string a oříznout mezery
+    const locStr = String(location).trim();
+    
+    const locations = {
+        'Kdekoliv': 'Kdekoliv',
+        'CelaCeskaRepublika': 'Celá ČR',
+        'CelaSlovenskaRepublika': 'Celá Slovenská republika',
+        'Celá Česká republika': 'Celá ČR',
+        'Celá ČR': 'Celá ČR',
+        'Celá Slovenská republika': 'Celá Slovenská republika',
+        'Praha': 'Hlavní město Praha',
+        'Stredocesky': 'Středočeský kraj',
+        'Jihocesky': 'Jihočeský kraj',
+        'Plzensky': 'Plzeňský kraj',
+        'Karlovarsky': 'Karlovarský kraj',
+        'Ustecky': 'Ústecký kraj',
+        'Liberecky': 'Liberecký kraj',
+        'Kralovehradecky': 'Královéhradecký kraj',
+        'Pardubicky': 'Pardubický kraj',
+        'Vysocina': 'Kraj Vysočina',
+        'Jihomoravsky': 'Jihomoravský kraj',
+        'Olomoucky': 'Olomoucký kraj',
+        'Zlinsky': 'Zlínský kraj',
+        'Moravskoslezsky': 'Moravskoslezský kraj',
+        'Bratislavsky': 'Bratislavský kraj',
+        'Trnavsky': 'Trnavský kraj',
+        'Trenciansky': 'Trenčianský kraj',
+        'Nitriansky': 'Nitriansky kraj',
+        'Zilinsky': 'Žilinský kraj',
+        'Banskobystricky': 'Banskobystrický kraj',
+        'Presovsky': 'Prešovský kraj',
+        'Kosicky': 'Košický kraj'
+    };
+    
+    // Zkusit najít přesnou shodu
+    if (locations[locStr]) {
+        return locations[locStr];
+    }
+    
+    // Pokud není přesná shoda, vrátit původní hodnotu
+    return locStr;
+}
+
+// ============================================
 // STAV
 // ============================================
 let currentUser = null;
@@ -547,7 +627,11 @@ async function loadMessages(conversationId) {
                     text: data.text || '',
                     images: data.images || [],
                     createdAt: data.createdAt,
-                    senderAvatar: senderAvatar
+                    senderAvatar: senderAvatar,
+                    isAdInfo: data.isAdInfo || false,
+                    adUrl: data.adUrl || '',
+                    adId: data.adId || '',
+                    adTitle: data.adTitle || ''
                 });
             }
             
@@ -616,6 +700,21 @@ function renderMessages() {
     }
     
     container.innerHTML = messages.map(msg => {
+        // Systémová zpráva o inzerátu
+        if (msg.isAdInfo && msg.senderId === 'system') {
+            const adLink = msg.adUrl ? `<a href="${msg.adUrl}" style="color: #f77c00; text-decoration: underline; font-weight: 600;">Zobrazit inzerát</a>` : '';
+            return `
+                <div class="ig-row" style="justify-content: center; margin: 16px 0;">
+                    <div class="ig-bubble" style="background: #fff8eb; border: 1px solid #ffe0b2; max-width: 80%; text-align: center; padding: 12px 16px;">
+                        <div style="font-size: 14px; color: #111827; margin-bottom: 8px;">
+                            ${msg.text || ''}
+                        </div>
+                        ${adLink ? `<div style="margin-top: 8px;">${adLink}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
         const isMine = msg.senderId === currentUser.uid;
         const time = formatTime(msg.createdAt);
         // Určit avatar - pro vlastní zprávy použít currentUserAvatar, jinak senderAvatar
@@ -767,7 +866,7 @@ async function sendMessage() {
     isSendingMessage = true;
     
     try {
-        const { collection, addDoc, doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { collection, addDoc, doc, updateDoc, getDoc, getDocs, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         // Nahrát obrázky, pokud existují
         const imageUrls = [];
@@ -810,12 +909,45 @@ async function sendMessage() {
         
         console.log('✅ Zpráva uložena:', messageDocRef.id);
         
+        // Pokud konverzace má listingId a listingTitle, přidat systémovou zprávu o inzerátu (pokud ještě není)
+        const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
+        const conversationSnap = await getDoc(conversationRef);
+        
+        if (conversationSnap.exists()) {
+            const convData = conversationSnap.data();
+            if (convData.listingId && convData.listingTitle) {
+                // Zkontrolovat, zda už není systémová zpráva o inzerátu
+                const existingMessagesSnapshot = await getDocs(messagesRef);
+                const hasSystemMessage = existingMessagesSnapshot.docs.some(doc => {
+                    const data = doc.data();
+                    return data.senderId === 'system' && data.isAdInfo === true;
+                });
+                
+                if (!hasSystemMessage) {
+                    // Vytvořit systémovou zprávu s informacemi o inzerátu
+                    const systemMessageText = `📌 Tato konverzace se týká inzerátu: "${convData.listingTitle}"`;
+                    const adUrl = `ad-detail.html?id=${convData.listingId}&userId=${convData.participants.find(uid => uid !== currentUser.uid)}`;
+                    
+                    await addDoc(messagesRef, {
+                        senderId: 'system',
+                        isAdInfo: true,
+                        text: systemMessageText,
+                        adUrl: adUrl,
+                        adId: convData.listingId,
+                        adTitle: convData.listingTitle,
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    console.log('✅ Systémová zpráva o inzerátu přidána');
+                }
+            }
+        }
+        
         // Aktualizovat konverzaci (zpráva s obrázky nebo textem)
         const lastMessageText = imageUrls.length > 0 
             ? (text || `📷 ${imageUrls.length} obrázek${imageUrls.length > 1 ? 'ů' : ''}`)
             : text;
         
-        const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
         await updateDoc(conversationRef, {
             lastMessage: lastMessageText,
             lastMessageAt: serverTimestamp()
@@ -1183,8 +1315,8 @@ async function loadLatestAds(targetUserId = null) {
                             ${topBadge}
                         </div>
                         <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
-                            <i class="fas fa-map-marker-alt" style="color:#f77c00;"></i> ${ad.location}
-                            ${ad.category ? ` • ${ad.category}` : ''}
+                            <i class="fas fa-map-marker-alt" style="color:#f77c00;"></i> ${getLocationName(ad.location) || ad.location || 'Neuvedeno'}
+                            ${ad.category ? ` • ${getCategoryName(ad.category)}` : ''}
                         </div>
                         ${ad.price ? `<div style="font-size: 16px; font-weight: 700; color: #f77c00;">${ad.price}</div>` : ''}
                     </div>
