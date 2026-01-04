@@ -12326,6 +12326,15 @@ input[type="tel"]:focus {
         height: 42px;
         border-radius: 10px;
         margin: 0;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .ad-actions button:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .ad-actions button:active {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
     }
     
     .ad-actions button i {
@@ -12378,6 +12387,15 @@ input[type="tel"]:focus {
         height: 38px;
         border-radius: 8px;
         margin: 0;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .ad-actions button:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .ad-actions button:active {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
     }
     
     .ad-actions button i {
@@ -14953,13 +14971,7 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     }
     
     .ad-card .ad-meta::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        background: #f77c00;
-        border-radius: 50%;
-        display: inline-block;
-        flex-shrink: 0;
+        display: none !important;
     }
     
     /* Skrýt lokaci a oddělovač z ad-meta */
