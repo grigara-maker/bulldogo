@@ -20,6 +20,7 @@ console.log('💬 Nový chat systém: inicializace');
 // STAV
 // ============================================
 let currentUser = null;
+let currentUserAvatar = '';
 let conversations = [];
 let currentConversationId = null;
 let messages = [];
@@ -83,13 +84,29 @@ async function checkAuth() {
     const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
     
     return new Promise((resolve) => {
-        onAuthStateChanged(window.firebaseAuth, (user) => {
+        onAuthStateChanged(window.firebaseAuth, async (user) => {
             currentUser = user;
             if (!user) {
+                currentUserAvatar = '';
                 // Zobrazit CTA pro přihlášení
                 showLoginPrompt();
                 resolve(false);
             } else {
+                // Načíst avatar aktuálního uživatele
+                try {
+                    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                    const profileRef = doc(window.firebaseDb, 'users', user.uid, 'profile', 'profile');
+                    const profileSnap = await getDoc(profileRef);
+                    if (profileSnap.exists()) {
+                        const profileData = profileSnap.data();
+                        currentUserAvatar = profileData.photoURL || profileData.avatarUrl || '';
+                    } else {
+                        currentUserAvatar = '';
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Nepodařilo se načíst avatar aktuálního uživatele:', e);
+                    currentUserAvatar = '';
+                }
                 hideLoginPrompt();
                 resolve(true);
             }
@@ -452,18 +469,6 @@ async function openConversation(conversationId) {
         if (subjectEl) subjectEl.style.display = 'none';
     }
     
-    // Nastavit telefonní tlačítko
-    const callBtn = q('igCallPhone');
-    if (callBtn) {
-        callBtn.disabled = !conversation.otherParticipantPhone;
-        callBtn.title = conversation.otherParticipantPhone ? `Zavolat: ${conversation.otherParticipantPhone}` : 'Telefon není uveden';
-        callBtn.onclick = () => {
-            if (conversation.otherParticipantPhone) {
-                window.location.href = `tel:${conversation.otherParticipantPhone.replace(/[^\d+]/g, '')}`;
-            }
-        };
-    }
-    
     // Nastavit tlačítko profilu
     const profileBtn = q('igOpenProfile');
     if (profileBtn) {
@@ -474,6 +479,11 @@ async function openConversation(conversationId) {
     
     // Načíst zprávy
     loadMessages(conversationId);
+    
+    // Načíst inzeráty druhého účastníka
+    if (conversation.otherParticipantId) {
+        loadLatestAds(conversation.otherParticipantId);
+    }
 }
 
 // ============================================
@@ -502,10 +512,17 @@ async function loadMessages(conversationId) {
                 fromCache: snapshot.metadata.fromCache,
                 hasPendingWrites: snapshot.metadata.hasPendingWrites
             });
-            messages = [];
+            
+            // Použít Map pro deduplikaci zpráv podle ID
+            const messagesMap = new Map();
             
             // Načíst zprávy a avatary odesílatelů
             for (const doc of snapshot.docs) {
+                // Přeskočit duplicitní zprávy
+                if (messagesMap.has(doc.id)) {
+                    continue;
+                }
+                
                 const data = doc.data();
                 let senderAvatar = '';
                 
@@ -524,7 +541,7 @@ async function loadMessages(conversationId) {
                     }
                 }
                 
-                messages.push({
+                messagesMap.set(doc.id, {
                     id: doc.id,
                     senderId: data.senderId,
                     text: data.text || '',
@@ -533,6 +550,14 @@ async function loadMessages(conversationId) {
                     senderAvatar: senderAvatar
                 });
             }
+            
+            // Převést mapu na pole (seřazené podle createdAt)
+            messages = Array.from(messagesMap.values());
+            messages.sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+                const timeB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+                return timeA - timeB;
+            });
             
             renderMessages();
         }, (error) => {
@@ -593,9 +618,17 @@ function renderMessages() {
     container.innerHTML = messages.map(msg => {
         const isMine = msg.senderId === currentUser.uid;
         const time = formatTime(msg.createdAt);
-        const avatar = !isMine && msg.senderAvatar
-            ? `<img src="${msg.senderAvatar}" alt="Avatar" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`
-            : (!isMine ? '<i class="fas fa-user"></i>' : '');
+        // Určit avatar - pro vlastní zprávy použít currentUserAvatar, jinak senderAvatar
+        let avatarUrl = '';
+        if (isMine) {
+            avatarUrl = currentUserAvatar;
+        } else {
+            avatarUrl = msg.senderAvatar || '';
+        }
+        
+        const avatar = avatarUrl
+            ? `<img src="${avatarUrl}" alt="Avatar" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`
+            : '<i class="fas fa-user"></i>';
         
         // Zpracovat obrázky
         let imagesHtml = '';
@@ -828,7 +861,7 @@ async function findOrCreateConversation(otherUserId, listingId, listingTitle) {
     }
     
     try {
-        const { collection, query, where, getDocs, doc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { collection, query, where, getDocs, doc, setDoc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         // Najít existující konverzaci
         const conversationsRef = collection(window.firebaseDb, 'conversations');
@@ -854,6 +887,19 @@ async function findOrCreateConversation(otherUserId, listingId, listingTitle) {
         
         if (existingConv) {
             console.log('✅ Nalezena existující konverzace:', existingConv.id);
+            // Aktualizovat listingId a listingTitle, pokud jsou předány nové hodnoty
+            if (listingId || listingTitle) {
+                try {
+                    const conversationRef = doc(window.firebaseDb, 'conversations', existingConv.id);
+                    const updateData = {};
+                    if (listingId) updateData.listingId = listingId;
+                    if (listingTitle) updateData.listingTitle = listingTitle;
+                    await updateDoc(conversationRef, updateData);
+                    console.log('✅ Konverzace aktualizována s novými informacemi o inzerátu:', updateData);
+                } catch (updateError) {
+                    console.warn('⚠️ Nepodařilo se aktualizovat konverzaci:', updateError);
+                }
+            }
             return existingConv.id;
         }
         
@@ -903,7 +949,7 @@ window.contactSeller = async function(listingId, sellerUid, listingTitle) {
 // ============================================
 // NAČÍTÁNÍ NEJNOVĚJŠÍCH INZERÁTŮ (PRAVÝ PANEL)
 // ============================================
-async function loadLatestAds() {
+async function loadLatestAds(targetUserId = null) {
     const container = q('igRightAds');
     if (!container) {
         console.warn('⚠️ Nelze načíst inzeráty: chybí container');
@@ -929,55 +975,34 @@ async function loadLatestAds() {
     }
     
     try {
-        const { collectionGroup, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+        const { collectionGroup, collection, getDocs, query, orderBy, limit } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         
         let snapshot = null;
         let ads = [];
         
-        // Zkusit collectionGroup pro users/{uid}/inzeraty
-        try {
-            console.log('🔄 Zkouším načíst inzeráty přes collectionGroup...');
-            const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
-            snapshot = await getDocs(inzeratyRef);
-            console.log('📊 CollectionGroup výsledek:', snapshot.size, 'dokumentů');
-            
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data() || {};
-                const userIdFromPath = docSnap.ref.parent && docSnap.ref.parent.parent ? docSnap.ref.parent.parent.id : undefined;
-                if (!data.userId && userIdFromPath) data.userId = userIdFromPath;
-                ads.push({
-                    id: docSnap.id,
-                    userId: data.userId || userIdFromPath,
-                    title: data.title || 'Bez názvu',
-                    location: data.location || 'Neuvedeno',
-                    category: data.category || '',
-                    price: data.price || '',
-                    isTop: data.isTop || false,
-                    createdAt: data.createdAt,
-                    images: data.images || [],
-                    image: data.image,
-                    photo: data.photo
-                });
-            });
-            
-            console.log('✅ Načteno inzerátů z collectionGroup:', ads.length);
-        } catch (cgError) {
-            console.warn('⚠️ Chyba při načítání přes collectionGroup:', cgError.message);
-        }
-        
-        // Fallback: zkusit starou kolekci 'services'
-        if (ads.length === 0) {
+        // Pokud je zadán targetUserId, načíst inzeráty pouze tohoto uživatele
+        if (targetUserId) {
             try {
-                console.log('🔄 Zkouším načíst inzeráty ze staré kolekce services...');
-                const servicesRef = collection(window.firebaseDb, 'services');
-                snapshot = await getDocs(servicesRef);
-                console.log('📊 Services kolekce výsledek:', snapshot.size, 'dokumentů');
+                console.log('🔄 Načítám inzeráty uživatele:', targetUserId);
+                const userAdsRef = collection(window.firebaseDb, 'users', targetUserId, 'inzeraty');
+                
+                // Zkusit načíst s orderBy a limitem
+                let q;
+                try {
+                    q = query(userAdsRef, orderBy('createdAt', 'desc'), limit(10));
+                } catch (orderByError) {
+                    // Pokud orderBy nefunguje, použít bez něj
+                    q = query(userAdsRef, limit(10));
+                }
+                
+                snapshot = await getDocs(q);
+                console.log('📊 Uživatelské inzeráty výsledek:', snapshot.size, 'dokumentů');
                 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data() || {};
                     ads.push({
                         id: docSnap.id,
-                        userId: data.userId || '',
+                        userId: targetUserId,
                         title: data.title || 'Bez názvu',
                         location: data.location || 'Neuvedeno',
                         category: data.category || '',
@@ -990,9 +1015,97 @@ async function loadLatestAds() {
                     });
                 });
                 
-                console.log('✅ Načteno inzerátů z services:', ads.length);
-            } catch (servicesError) {
-                console.warn('⚠️ Chyba při načítání z kolekce services:', servicesError.message);
+                // Seřadit podle data vytvoření (nejnovější první)
+                ads.sort((a, b) => {
+                    const dateA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+                    const dateB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+                    return dateB - dateA;
+                });
+                
+                console.log('✅ Načteno inzerátů uživatele:', ads.length);
+            } catch (userAdsError) {
+                console.warn('⚠️ Chyba při načítání uživatelských inzerátů:', userAdsError.message);
+            }
+        }
+        
+        // Pokud není zadán targetUserId nebo se nepodařilo načíst, načíst všechny inzeráty
+        if (ads.length === 0) {
+            // Zkusit collectionGroup pro users/{uid}/inzeraty
+            try {
+                console.log('🔄 Zkouším načíst inzeráty přes collectionGroup...');
+                const inzeratyRef = collectionGroup(window.firebaseDb, 'inzeraty');
+                snapshot = await getDocs(inzeratyRef);
+                console.log('📊 CollectionGroup výsledek:', snapshot.size, 'dokumentů');
+                
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data() || {};
+                    const userIdFromPath = docSnap.ref.parent && docSnap.ref.parent.parent ? docSnap.ref.parent.parent.id : undefined;
+                    if (!data.userId && userIdFromPath) data.userId = userIdFromPath;
+                    ads.push({
+                        id: docSnap.id,
+                        userId: data.userId || userIdFromPath,
+                        title: data.title || 'Bez názvu',
+                        location: data.location || 'Neuvedeno',
+                        category: data.category || '',
+                        price: data.price || '',
+                        isTop: data.isTop || false,
+                        createdAt: data.createdAt,
+                        images: data.images || [],
+                        image: data.image,
+                        photo: data.photo
+                    });
+                });
+                
+                // Seřadit podle data vytvoření (nejnovější první) a omezit na 10
+                ads.sort((a, b) => {
+                    const dateA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+                    const dateB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+                    return dateB - dateA;
+                });
+                ads = ads.slice(0, 10);
+                
+                console.log('✅ Načteno inzerátů z collectionGroup:', ads.length);
+            } catch (cgError) {
+                console.warn('⚠️ Chyba při načítání přes collectionGroup:', cgError.message);
+            }
+            
+            // Fallback: zkusit starou kolekci 'services'
+            if (ads.length === 0) {
+                try {
+                    console.log('🔄 Zkouším načíst inzeráty ze staré kolekce services...');
+                    const servicesRef = collection(window.firebaseDb, 'services');
+                    snapshot = await getDocs(servicesRef);
+                    console.log('📊 Services kolekce výsledek:', snapshot.size, 'dokumentů');
+                    
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data() || {};
+                        ads.push({
+                            id: docSnap.id,
+                            userId: data.userId || '',
+                            title: data.title || 'Bez názvu',
+                            location: data.location || 'Neuvedeno',
+                            category: data.category || '',
+                            price: data.price || '',
+                            isTop: data.isTop || false,
+                            createdAt: data.createdAt,
+                            images: data.images || [],
+                            image: data.image,
+                            photo: data.photo
+                        });
+                    });
+                    
+                    // Seřadit podle data vytvoření (nejnovější první) a omezit na 10
+                    ads.sort((a, b) => {
+                        const dateA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+                        const dateB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+                        return dateB - dateA;
+                    });
+                    ads = ads.slice(0, 10);
+                    
+                    console.log('✅ Načteno inzerátů z services:', ads.length);
+                } catch (servicesError) {
+                    console.warn('⚠️ Chyba při načítání z kolekce services:', servicesError.message);
+                }
             }
         }
         
@@ -1002,15 +1115,17 @@ async function loadLatestAds() {
             return;
         }
         
-        // Seřadit podle createdAt (nejnovější první)
-        ads.sort((a, b) => {
-            const timeA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
-            const timeB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
-            return timeB - timeA;
-        });
+        // Pokud ještě nejsou seřazeny (fallback cesta), seřadit podle createdAt (nejnovější první)
+        if (ads.length > 1) {
+            ads.sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.() || a.createdAt || new Date(0);
+                const timeB = b.createdAt?.toDate?.() || b.createdAt || new Date(0);
+                return timeB - timeA;
+            });
+        }
         
-        // Omezit na 3 nejnovější
-        const latestAds = ads.slice(0, 3);
+        // Použít všechny načtené inzeráty (už jsou omezeny na 10 v podmíněných blocích)
+        const latestAds = ads;
         
         console.log('🎯 Zobrazuji', latestAds.length, 'nejnovějších inzerátů');
         
