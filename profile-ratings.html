@@ -894,6 +894,10 @@
         // Display user reviews (stejně jako v profile-detail.js)
         async function displayUserReviews() {
             const reviewsGrid = document.querySelector('.reviews-list');
+            if (!reviewsGrid) {
+                console.error('❌ Reviews container (.reviews-list) not found!');
+                return;
+            }
             
             if (userReviews.length === 0) {
                 reviewsGrid.innerHTML = `
