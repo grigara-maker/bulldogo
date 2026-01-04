@@ -2072,46 +2072,6 @@ function showInAppBrowserWarning(action = 'registrace') {
     if (closeBtn) {
         closeBtn.addEventListener('click', closeModal);
     }
-    
-    // Otevření URL ve výchozím prohlížeči
-    const openBtn = modal.querySelector('.in-app-browser-open-btn');
-    if (openBtn) {
-        openBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const url = window.location.href;
-            
-            // Zkusit různé metody pro otevření ve výchozím prohlížeči
-            // Metoda 1: window.open s _system (funguje v některých prostředích)
-            try {
-                const opened = window.open(url, '_system');
-                if (opened) {
-                    return;
-                }
-            } catch (e) {
-                console.log('Metoda 1 selhala:', e);
-            }
-            
-            // Metoda 2: window.open s _blank
-            try {
-                const opened = window.open(url, '_blank');
-                if (opened) {
-                    return;
-                }
-            } catch (e) {
-                console.log('Metoda 2 selhala:', e);
-            }
-            
-            // Metoda 3: window.location.href (přesměruje, ale zůstane v in-app browseru)
-            // Použijeme to jako fallback s upozorněním
-            try {
-                window.location.href = url;
-            } catch (e) {
-                console.log('Metoda 3 selhala:', e);
-                // Pokud vše selhalo, zobrazit instrukce
-                alert('Prosím otevřete web v Safari nebo Chrome pomocí menu aplikace (tři tečky → Otevřít v prohlížeči)');
-            }
-        });
-    }
 }
 
 // Exportovat funkce globálně
