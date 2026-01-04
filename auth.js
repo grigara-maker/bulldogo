@@ -1076,6 +1076,18 @@ function createAuthModal() {
                         visibility: visible !important;
                         opacity: 1 !important;
                     }
+                    .auth-form .form-group:has(.auth-switch-btn) {
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
+                        text-align: center !important;
+                        width: 100% !important;
+                    }
+                    .auth-switch-btn {
+                        display: inline-block !important;
+                        text-align: center !important;
+                        margin: 0 auto !important;
+                    }
                 }
             </style>
             <form id="authForm" class="auth-form" action="javascript:void(0)" method="post">
