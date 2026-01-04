@@ -567,6 +567,134 @@
             return 'Dohodou';
         }
     }
+    
+    // Funkce pro otevření modalu pro ořez obrázku
+    window.openImageCropModal = function(file) {
+        const modal = document.getElementById('imageCropModal');
+        const cropImage = document.getElementById('cropImage');
+        
+        if (!modal || !cropImage) {
+            console.error('❌ Crop modal elements not found');
+            return;
+        }
+        
+        // Uložit soubor pro pozdější použití
+        currentCropFile = file;
+        currentCropInput = document.getElementById('previewImage');
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Nejdřív zobrazit modal
+            modal.style.display = 'flex';
+            
+            // Nastavit src a počkat na načtení obrázku
+            cropImage.onload = function() {
+                // Zajistit, že předchozí instance je zničena
+                if (cropperInstance) {
+                    cropperInstance.destroy();
+                    cropperInstance = null;
+                }
+                
+                // Inicializovat cropper s fixním poměrem 4:3
+                setTimeout(() => {
+                    cropperInstance = new Cropper(cropImage, {
+                        aspectRatio: 4 / 3,
+                        viewMode: 1,
+                        dragMode: 'move',
+                        autoCropArea: 0.8,
+                        restore: false,
+                        guides: true,
+                        center: true,
+                        highlight: false,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                        responsive: true,
+                        minContainerWidth: 300,
+                        minContainerHeight: 225
+                    });
+                    console.log('✅ Cropper initialized with 4:3 aspect ratio');
+                }, 100);
+            };
+            
+            // Nastavit src až po registraci onload handleru
+            cropImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+    
+    // Funkce pro zavření modalu
+    window.closeImageCropModal = function() {
+        const modal = document.getElementById('imageCropModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+        currentCropFile = null;
+        currentCropInput = null;
+    };
+    
+    // Funkce pro potvrzení ořezu
+    window.confirmImageCrop = function() {
+        if (!cropperInstance || !currentCropInput) {
+            console.error('❌ Cropper instance or input not found');
+            return;
+        }
+        
+        // Získat oříznutý obrázek jako canvas s poměrem 4:3
+        const canvas = cropperInstance.getCroppedCanvas({
+            width: 800,
+            height: 600,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high'
+        });
+        
+        if (!canvas) {
+            console.error('❌ Failed to get cropped canvas');
+            return;
+        }
+        
+        // Převést canvas na blob
+        canvas.toBlob(function(blob) {
+            if (!blob) {
+                console.error('❌ Failed to create blob from canvas');
+                return;
+            }
+            
+            // Vytvořit File objekt z blobu
+            const fileName = currentCropFile.name || 'cropped-image.jpg';
+            const fileExtension = fileName.split('.').pop() || 'jpg';
+            const croppedFile = new File([blob], `cropped-${Date.now()}.${fileExtension}`, {
+                type: blob.type || 'image/jpeg'
+            });
+            
+            // Nastavit oříznutý soubor do inputu
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(croppedFile);
+            currentCropInput.files = dataTransfer.files;
+            
+            // Aktualizovat náhled
+            const imgPreview = document.getElementById('previewCardImage');
+            if (imgPreview) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(croppedFile);
+            }
+            
+            // Zavřít modal
+            closeImageCropModal();
+            
+            // Aktualizovat validaci
+            if (typeof validateRequired === 'function') {
+                validateRequired();
+            }
+        }, 'image/jpeg', 0.9);
+    };
 })();
 
 

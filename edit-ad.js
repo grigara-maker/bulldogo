@@ -777,22 +777,8 @@
                 minContainerWidth: 300,
                 minContainerHeight: 225,
                 ready: function() {
-                    // Zajistit, že crop box má správný poměr
-                    const cropBoxData = cropperInstance.getCropBoxData();
-                    const containerData = cropperInstance.getContainerData();
-                    const aspectRatio = 4 / 3;
-                    
-                    // Nastavit crop box na 80% velikosti kontejneru s poměrem 4:3
-                    const cropSize = Math.min(containerData.width * 0.8, containerData.height * 0.8);
-                    const cropWidth = cropSize;
-                    const cropHeight = cropSize / aspectRatio;
-                    
-                    cropperInstance.setCropBoxData({
-                        left: (containerData.width - cropWidth) / 2,
-                        top: (containerData.height - cropHeight) / 2,
-                        width: cropWidth,
-                        height: cropHeight
-                    });
+                    // Rámeček se automaticky zobrazí s poměrem 4:3
+                    console.log('✅ Cropper initialized with 4:3 aspect ratio');
                 }
             });
         };
