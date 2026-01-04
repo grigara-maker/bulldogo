@@ -12585,16 +12585,27 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
     }
 }
 
-/* Explicitní pravidlo pro zajištění správného grid rozložení */
-body:has(.ad-detail-content) .ad-detail-main,
-.ad-detail-content .ad-detail-main {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 2rem !important;
+/* Explicitní pravidlo pro zajištění správného grid rozložení - pouze na PC */
+/* Na mobilu - flexbox column */
+@media (max-width: 768px) {
+    body:has(.ad-detail-content) .ad-detail-main,
+    .ad-detail-content .ad-detail-main {
+        display: flex !important;
+        flex-direction: column !important;
+        grid-template-columns: none !important;
+        gap: 0 !important;
+    }
 }
 
-/* Pro PC - zajistit, že levý sloupec je vlevo a pravý vpravo */
+/* Pro PC - grid layout se 2 sloupci */
 @media (min-width: 769px) {
+    body:has(.ad-detail-content) .ad-detail-main,
+    .ad-detail-content .ad-detail-main {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 2rem !important;
+    }
+    
     .ad-detail-main {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
@@ -13305,7 +13316,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         margin: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
-        background: #f8f9fa !important;
+        background: #ffffff !important;
     }
     
     /* Header - stejné jako profil */
@@ -13341,20 +13352,20 @@ body:has(.ad-detail-content) .ad-detail-main,
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 1rem !important;
+        padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
-        background: #f8f9fa !important;
+        background: transparent !important;
     }
     
-    /* Levý sloupec - KOMPAKTNNÍ SEKCE S FOTKOU nahoře, s paddingem */
+    /* Levý sloupec - FOTKA PŘES CELOU ŠÍŘKU */
     .ad-detail-left {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 1rem !important;
+        padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-bottom: 0 !important;
@@ -13362,13 +13373,13 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
         position: static !important;
         top: auto !important;
-        background: #ffffff !important;
-        border-radius: 16px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
         order: 1 !important;
     }
     
-    /* Pravý sloupec - KOMPAKTNNÍ TEXT pod fotkou, s paddingem */
+    /* Pravý sloupec - TEXT PŘES CELOU ŠÍŘKU pod fotkou */
     .ad-detail-right {
         width: 100% !important;
         max-width: 100% !important;
@@ -13376,13 +13387,13 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-top: 1rem !important;
+        margin-top: 0 !important;
         margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
         background: #ffffff !important;
-        border-radius: 16px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
         order: 2 !important;
     }
     
@@ -13402,7 +13413,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
     }
     
-    /* ===== HLAVNÍ OBRÁZEK - KOMPAKTNÍ, S PADDINGEM ===== */
+    /* ===== HLAVNÍ OBRÁZEK - PŘES CELOU ŠÍŘKU ===== */
     .ad-main-image {
         width: 100% !important;
         max-width: 100% !important;
@@ -13411,7 +13422,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         height: auto !important;
         margin: 0 0 0.75rem 0 !important;
         padding: 0 !important;
-        border-radius: 12px !important;
+        border-radius: 0 !important;
         overflow: hidden !important;
         display: block !important;
         box-sizing: border-box !important;
