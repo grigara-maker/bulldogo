@@ -704,18 +704,17 @@ function displayOtherAds(ads) {
         console.log('🔗 Image URL type:', typeof imageUrl);
         console.log('🔗 Image URL length:', imageUrl.length);
         
-        // Vytvořit WebP fallback
-        const webpUrl = imageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
-        const escapedImageUrl = imageUrl.replace(/"/g, '&quot;');
-        const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
-        const escapedTitle = (ad.title || '').replace(/"/g, '&quot;');
-        
-        // Optimalizovat Firebase Storage URL
-        let optimizedImageUrl = escapedImageUrl;
+        // Optimalizovat Firebase Storage URL PRVNÍ (před escapováním)
+        let optimizedImageUrl = imageUrl;
         if (imageUrl.includes('firebasestorage.googleapis.com') && !imageUrl.includes('alt=media')) {
             optimizedImageUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 'alt=media';
-            optimizedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
         }
+        
+        // Vytvořit WebP fallback z optimalizovaného URL
+        const webpUrl = optimizedImageUrl.replace(/\.(png|jpg|jpeg|PNG|JPG|JPEG)(\?.*)?$/, '.webp$2');
+        const escapedImageUrl = optimizedImageUrl.replace(/"/g, '&quot;');
+        const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
+        const escapedTitle = (ad.title || '').replace(/"/g, '&quot;');
         
         let imageHtml = `<picture>
             <source srcset="${escapedWebpUrl}" type="image/webp">
