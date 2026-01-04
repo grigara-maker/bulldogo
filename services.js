@@ -2,7 +2,7 @@
 let allServices = [];
 let filteredServices = [];
 let currentPage = 1;
-const itemsPerPage = 40; // 40 inzerátů na stránku
+const itemsPerPage = 16; // 16 inzerátů na stránku
 let servicesFirebaseAuth = null;
 let servicesFirebaseDb = null;
 
