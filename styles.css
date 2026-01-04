@@ -7090,6 +7090,15 @@ body.profile-plan-page .plan-info {
         min-width: 0 !important;
         text-align: left !important;
         box-sizing: border-box !important;
+        overflow: visible !important; /* Zajistit, aby stín tlačítek nebyl oříznutý */
+    }
+    
+    .ad-card {
+        overflow: visible !important; /* Zajistit, aby stín tlačítek nebyl oříznutý */
+    }
+    
+    .ad-card .ad-thumb {
+        overflow: hidden !important; /* Zachovat overflow pro obrázky */
     }
     
     /* Pro topované inzeráty: menší padding dole, protože tlačítka jsou pod lokací */
