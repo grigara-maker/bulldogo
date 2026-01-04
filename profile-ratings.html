@@ -309,8 +309,11 @@
                     userProfile = profileSnap.data();
                 }
 
-                // Update ratings display
+                // Update ratings display (basic info from profile)
                 updateRatingsDisplay(userProfile);
+                
+                // Load all reviews from database
+                loadAllUserReviews(currentUser.uid);
 
             } catch (error) {
                 console.error('Chyba při načítání dat hodnocení:', error);
