@@ -938,6 +938,27 @@
     border-radius: 0; /* Odstranit zaoblené rohy pro mobilní zařízení */
 }
 
+/* Oranžový loading spinner pro načítající se obrázky */
+.ad-thumb:has(img:not(.loaded))::before {
+    content: '\f110'; /* FontAwesome spinner ikona */
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900 !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 3rem !important;
+    color: #f77c00 !important;
+    animation: spin 1s linear infinite !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+}
+
+/* Skrýt spinner po načtení obrázku */
+.ad-thumb:has(img.loaded)::before {
+    display: none !important;
+}
+
 .ad-body {
     display: flex !important; /* Flexbox pro rozložení obsahu */
     flex-direction: column !important; /* Vertikální uspořádání */

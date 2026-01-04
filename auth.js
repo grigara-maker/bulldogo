@@ -1788,9 +1788,18 @@ async function handleForgotPassword() {
         
         const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
         
-        await sendPasswordResetEmail(firebaseAuth, email);
+        console.log('📧 Odesílám email pro obnovení hesla na:', email);
         
-        showMessage(`📧 Email s odkazem pro obnovení hesla byl odeslán na adresu ${email}. Zkontrolujte prosím svou poštovní schránku.`, 'success', { timeout: 8000 });
+        await sendPasswordResetEmail(firebaseAuth, email, {
+            // URL pro redirect po kliknutí na odkaz (volitelné)
+            url: window.location.origin + '/auth-action.html',
+            // Handle kódy v URL (můžete použít vlastní stránku)
+            handleCodeInApp: false
+        });
+        
+        console.log('✅ Email pro obnovení hesla byl úspěšně odeslán');
+        
+        showMessage(`📧 Email s odkazem pro obnovení hesla byl odeslán na adresu ${email}. Zkontrolujte prosím svou poštovní schránku (včetně složky Spam).`, 'success', { timeout: 10000 });
         
         // Zavřít modal po úspěšném odeslání
         setTimeout(() => {
@@ -1799,6 +1808,8 @@ async function handleForgotPassword() {
         
     } catch (error) {
         console.error('❌ Chyba při odesílání reset emailu:', error);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error message:', error.message);
         
         let errorMessage = 'Nepodařilo se odeslat email pro obnovení hesla.';
         
@@ -1808,9 +1819,15 @@ async function handleForgotPassword() {
             errorMessage = 'Neplatný formát emailu. Zadejte platný email.';
         } else if (error.code === 'auth/too-many-requests') {
             errorMessage = 'Příliš mnoho pokusů. Počkejte prosím a zkuste to znovu později.';
+        } else if (error.code === 'auth/invalid-continue-uri') {
+            errorMessage = 'Neplatná URL pro redirect. Kontaktujte podporu.';
+        } else if (error.code === 'auth/unauthorized-continue-uri') {
+            errorMessage = 'URL pro redirect není autorizována. Přidejte doménu do Firebase Console → Authentication → Settings → Authorized domains.';
+        } else {
+            errorMessage = `Chyba: ${error.message || error.code || 'Neznámá chyba'}. Zkontrolujte konzoli pro více informací.`;
         }
         
-        showMessage(errorMessage, 'error');
+        showMessage(errorMessage, 'error', { timeout: 10000 });
     }
 }
 

@@ -920,8 +920,8 @@ function createAdCard(service, showActions = true) {
     const fetchPriorityAttr = isPriorityImage ? ' fetchpriority="high"' : '';
     const widthHeightAttr = ' width="400" height="300"'; // Standardní rozměry pro karty (4:3)
     
-    // Přidat placeholder pro smooth loading
-    const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
+    // Přidat placeholder pro smooth loading - oranžový spinner místo shimmer efektu
+    const placeholderStyle = 'background: #f8f9fa; position: relative;';
     
     let imageHtml;
     if (isLocalImage) {
@@ -930,12 +930,12 @@ function createAdCard(service, showActions = true) {
         imageHtml = `
                 <picture>
                     <source srcset="${escapedWebpUrl}" type="image/webp">
-                    <img src="${escapedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none';">
+                    <img src="${escapedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} style="${placeholderStyle}" onload="this.classList.add('loaded'); this.style.background='transparent';" onerror="this.onerror=null; this.src='${escapedDefaultUrl}'; this.classList.add('loaded'); this.style.background='transparent';">
                 </picture>
             `;
     } else {
         // Pro Firebase Storage obrázky použít optimalizovanou URL s retry mechanismem včetně _200x200 varianty
-        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else if(this.dataset.retry === '1') { this.dataset.retry='2'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }" data-retry="0">`;
+        imageHtml = `<img src="${optimizedImageUrl}" alt="Inzerát" loading="${loadingAttr}" decoding="async"${fetchPriorityAttr}${widthHeightAttr} style="${placeholderStyle}" onload="this.classList.add('loaded'); this.style.background='transparent';" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else if(this.dataset.retry === '1') { this.dataset.retry='2'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.classList.add('loaded'); this.style.background='transparent'; }" data-retry="0">`;
     }
     
     // Získat formátovanou lokaci - STEJNĚ jako u ostatních krajů
