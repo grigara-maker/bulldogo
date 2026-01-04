@@ -257,15 +257,39 @@
                         firebaseDb: !!window.firebaseDb
                     });
                     if (window.firebaseAuth && window.firebaseDb) {
-                        console.log('✅ Firebase available, loading data');
+                        console.log('✅ Firebase available, checking auth');
                         clearInterval(checkFirebase);
+                        
+                        // Check if user is logged in
+                        const currentUser = window.firebaseAuth.currentUser;
+                        if (!currentUser) {
+                            // User is not logged in - redirect to login
+                            console.log('⚠️ Uživatel není přihlášen - přesměrování na přihlášení');
+                            if (typeof showAuthModal === 'function') {
+                                showAuthModal('login');
+                            } else {
+                                window.location.href = 'index.html';
+                            }
+                            return;
+                        }
+                        
                         loadUserData();
+                        loadRatingsData();
                         
                         // Listen for auth state changes
                         window.firebaseAuth.onAuthStateChanged((user) => {
                             console.log('👤 Auth state changed on profile page:', user ? user.email : 'Not logged in');
                             if (user) {
                                 loadUserData();
+                                loadRatingsData();
+                            } else {
+                                // User logged out - redirect to login
+                                console.log('⚠️ Uživatel se odhlásil - přesměrování na přihlášení');
+                                if (typeof showAuthModal === 'function') {
+                                    showAuthModal('login');
+                                } else {
+                                    window.location.href = 'index.html';
+                                }
                             }
                         });
                     }
@@ -281,7 +305,10 @@
                 const checkFirebase = setInterval(() => {
                     if (window.firebaseAuth && window.firebaseDb) {
                         clearInterval(checkFirebase);
-                        loadRatingsData();
+                        const currentUser = window.firebaseAuth.currentUser;
+                        if (currentUser) {
+                            loadRatingsData();
+                        }
                     }
                 }, 100);
             } catch (error) {
