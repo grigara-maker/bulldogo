@@ -702,14 +702,13 @@ function renderMessages() {
     container.innerHTML = messages.map(msg => {
         // Systémová zpráva o inzerátu
         if (msg.isAdInfo) {
-            const adLink = msg.adUrl ? `<a href="${msg.adUrl}" style="color: #f77c00; text-decoration: underline; font-weight: 600;">Zobrazit inzerát</a>` : '';
+            const adLink = msg.adUrl ? `<a href="${msg.adUrl}" style="color: #f77c00; text-decoration: underline; font-weight: 600; margin-left: 8px;">Zobrazit inzerát</a>` : '';
             return `
-                <div class="ig-row" style="justify-content: center; margin: 16px 0;">
-                    <div class="ig-bubble" style="background: #fff8eb; border: 1px solid #ffe0b2; max-width: 80%; text-align: center; padding: 12px 16px;">
-                        <div style="font-size: 14px; color: #111827; margin-bottom: 8px;">
-                            ${msg.text || ''}
+                <div class="ig-row" style="justify-content: center; align-items: center; margin: 16px 0; display: flex; width: 100%;">
+                    <div class="ig-bubble" style="background: #fff8eb; border: 1px solid #ffe0b2; max-width: 90%; text-align: center; padding: 12px 16px; display: inline-block;">
+                        <div style="font-size: 14px; color: #111827; display: inline; white-space: normal;">
+                            ${msg.text || ''}${adLink ? adLink : ''}
                         </div>
-                        ${adLink ? `<div style="margin-top: 8px;">${adLink}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -956,6 +955,7 @@ async function sendMessage() {
             ? (text || `📷 ${imageUrls.length} obrázek${imageUrls.length > 1 ? 'ů' : ''}`)
             : text;
         
+        const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
         await updateDoc(conversationRef, {
             lastMessage: lastMessageText,
             lastMessageAt: serverTimestamp()
