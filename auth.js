@@ -2026,9 +2026,13 @@ async function addService(serviceData) {
                 console.log('✅ Upload úspěšný, získávám URL...');
                 console.log('🔍 previewSnapshot.ref:', previewSnapshot.ref);
                 console.log('🔍 previewSnapshot.ref.fullPath:', previewSnapshot.ref.fullPath);
+                console.log('🔍 previewSnapshot.ref.name:', previewSnapshot.ref.name);
+                console.log('🔍 Očekávaná cesta:', fileName);
+                console.log('🔍 Shoduje se fullPath s očekávanou cestou?', previewSnapshot.ref.fullPath === fileName);
                 const previewUrl = await getDownloadURL(previewSnapshot.ref);
                 console.log('🔗 Získaná URL:', previewUrl);
                 console.log('🔗 URL obsahuje token:', previewUrl.includes('token='));
+                console.log('🔗 URL obsahuje správný název:', previewUrl.includes(fileName.split('/').pop()));
                 uploadedImages.push({
                     url: previewUrl,
                     isPreview: true,
