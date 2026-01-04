@@ -1303,9 +1303,10 @@ function setupAuthModalEvents() {
 
 // Zobrazení auth modalu
 function showAuthModal(type = 'login') {
-    // Kontrola in-app browseru při registraci
-    if (type === 'register' && isInAppBrowser()) {
-        showInAppBrowserWarning('registrace');
+    // Kontrola in-app browseru při registraci nebo přihlášení
+    if (isInAppBrowser()) {
+        const actionText = type === 'register' ? 'registraci' : 'přihlášení';
+        showInAppBrowserWarning(actionText);
         return;
     }
     
@@ -1909,16 +1910,17 @@ function showInAppBrowserWarning(action = 'registrace') {
     modal.id = 'inAppBrowserWarning';
     modal.style.cssText = `
         position: fixed !important;
+        inset: 0 !important;
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        min-width: 100vw !important;
-        min-height: 100vh !important;
-        max-width: 100vw !important;
-        max-height: 100vh !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 100% !important;
+        min-height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
         background: radial-gradient(1200px 600px at 70% 10%, rgba(247,124,0,0.18), transparent 60%), rgba(0,0,0,0.65) !important;
         backdrop-filter: blur(8px) saturate(110%) !important;
         z-index: 100000 !important;
@@ -1949,7 +1951,7 @@ function showInAppBrowserWarning(action = 'registrace') {
         document.head.appendChild(style);
     }
     
-    const actionText = action === 'registrace' ? 'registraci' : action === 'platba' ? 'platbu' : 'tuto akci';
+    const actionText = action === 'registrace' ? 'registraci' : action === 'přihlášení' ? 'přihlášení' : action === 'platba' ? 'platbu' : 'tuto akci';
     
     modal.innerHTML = `
         <div style="
