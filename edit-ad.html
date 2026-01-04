@@ -199,6 +199,7 @@
             .sidebar.mobile-open {
                 z-index: 2000 !important;
                 pointer-events: auto !important;
+                position: fixed !important;
             }
             
             .sidebar.mobile-open * {
@@ -214,12 +215,24 @@
             .sidebar.mobile-open .nav-link {
                 pointer-events: auto !important;
                 cursor: pointer !important;
+                position: relative !important;
+                z-index: 2001 !important;
             }
             
             /* Zajistit, aby logo bylo klikatelné */
             .sidebar.mobile-open .logo {
                 pointer-events: auto !important;
                 cursor: pointer !important;
+                position: relative !important;
+                z-index: 2001 !important;
+            }
+            
+            /* Zajistit, aby všechny interaktivní prvky v sidebaru byly klikatelné */
+            .sidebar.mobile-open a,
+            .sidebar.mobile-open button {
+                position: relative !important;
+                z-index: 2001 !important;
+                pointer-events: auto !important;
             }
         }
     </style>
