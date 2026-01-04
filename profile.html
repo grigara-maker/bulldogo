@@ -878,8 +878,11 @@
         // Initialize auth state for profile page
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Profile page loaded');
-            // Immediately show empty state
-            showEmptyProfile();
+            // Hide content immediately until auth is checked
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.style.display = 'none';
+            }
             loadUserProfile();
         });
 
