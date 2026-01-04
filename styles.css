@@ -12712,10 +12712,12 @@ body:has(.ad-detail-content) .ad-detail-main,
 /* Desktop - zarovnat thumbnaily do řádky pod hlavní fotkou */
 @media (min-width: 769px) {
     .ad-thumbnails {
+        display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         justify-content: flex-start !important;
+        align-items: center !important;
         gap: 0.75rem !important;
     }
 }
@@ -17531,11 +17533,19 @@ html:has(.ad-detail-content) {
     }
     
     /* Zajistit správné zobrazení obrázků */
-    .ad-main-image,
-    .ad-thumbnails {
+    .ad-main-image {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
+    }
+    
+    .ad-thumbnails {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
     }
     
     /* Tlačítka musí být viditelná a klikatelná */
@@ -17578,3 +17588,4 @@ html:has(.ad-detail-content) {
         height: 60px !important;
     }
 }
+
