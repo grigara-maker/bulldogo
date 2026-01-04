@@ -472,7 +472,7 @@
                             </div>
                             <div class="reviewer-details">
                                 <div class="reviewer-name">${reviewerName}</div>
-                                <div class="review-date">${getTimeAgo(review.createdAt)}</div>
+                                <div class="review-date">${getTimeAgo(review.updatedAt || review.createdAt)}</div>
                             </div>
                         </div>
                         <div class="review-rating">
@@ -488,8 +488,17 @@
         }
 
         function getTimeAgo(date) {
+            if (!date) return 'Neznámé datum';
+            let reviewDate;
+            if (date.toDate && typeof date.toDate === 'function') {
+                reviewDate = date.toDate();
+            } else if (date instanceof Date) {
+                reviewDate = date;
+            } else {
+                reviewDate = new Date(date);
+            }
+            
             const now = new Date();
-            const reviewDate = new Date(date);
             const diffMs = now - reviewDate;
             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             const diffWeeks = Math.floor(diffDays / 7);
