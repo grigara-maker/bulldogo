@@ -1601,7 +1601,7 @@ function renderUserResults(users) {
             </div>
             <div class="service-content">
                 <div class="service-details">
-                    <div class="service-detail"><i class="fas fa-user"></i> <span>${u.email || 'N/A'}</span></div>
+                    <div class="service-detail"><i class="fas fa-user"></i> <span>${u.email || 'Neuvedeno'}</span></div>
                     ${u.phone ? `<div class="service-detail"><i class="fas fa-phone"></i> <span>${u.phone}</span></div>` : ''}
                 </div>
             </div>

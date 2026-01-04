@@ -140,7 +140,7 @@ async function loadAdDetail(adId, userId) {
                     // Použít alespoň email z user dokumentu
                     adOwner = {
                         name: userData.email?.split('@')[0] || 'Uživatel',
-                        email: userData.email || 'N/A'
+                        email: userData.email || 'Neuvedeno'
                     };
                     console.log('✅ User basic data loaded from fallback:', adOwner);
                 } else {
@@ -244,8 +244,8 @@ function displayAdDetail() {
         
         const emailEl = document.getElementById('adEmail');
         const phoneEl = document.getElementById('adPhone');
-        const fullEmail = adOwner.email || 'N/A';
-        const fullPhone = adOwner.phone || adOwner.companyPhone || adOwner.telefon || 'N/A';
+        const fullEmail = adOwner.email || 'Neuvedeno';
+        const fullPhone = adOwner.phone || adOwner.companyPhone || adOwner.telefon || 'Neuvedeno';
         const viewer = window.firebaseAuth?.currentUser;
         
         if (viewer) {
@@ -335,8 +335,8 @@ function displayAdDetail() {
     } else {
         // Pokud není profil načtený, zobrazit výchozí hodnoty
         document.getElementById('adUser').textContent = 'Uživatel';
-        document.getElementById('adEmail').textContent = 'N/A';
-        document.getElementById('adPhone').textContent = 'N/A';
+        document.getElementById('adEmail').textContent = 'Neuvedeno';
+        document.getElementById('adPhone').textContent = 'Neuvedeno';
         const userProfileNameEl = document.getElementById('userProfileName');
         if (userProfileNameEl) {
             userProfileNameEl.textContent = 'Uživatel';

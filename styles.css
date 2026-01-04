@@ -12336,14 +12336,20 @@ input[type="tel"]:focus {
         border-radius: 10px;
         margin: 0;
         box-shadow: none !important;
+        border: 2px solid rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        backdrop-filter: blur(15px) !important;
     }
     
     .ad-actions button:hover {
         box-shadow: none !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        background: white !important;
     }
     
     .ad-actions button:active {
         box-shadow: none !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
     }
     
     .ad-actions button i {
@@ -12397,14 +12403,20 @@ input[type="tel"]:focus {
         border-radius: 8px;
         margin: 0;
         box-shadow: none !important;
+        border: 2px solid rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        backdrop-filter: blur(15px) !important;
     }
     
     .ad-actions button:hover {
         box-shadow: none !important;
+        border-color: rgba(255, 255, 255, 0.6) !important;
+        background: white !important;
     }
     
     .ad-actions button:active {
         box-shadow: none !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
     }
     
     .ad-actions button i {
