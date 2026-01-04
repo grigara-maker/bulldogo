@@ -490,12 +490,25 @@
                         alert('Náhledový obrázek je povinný (nebo zaškrtněte volbu bez náhledu).');
                         return;
                     }
+                    const previewFile = previewImage.files[0];
                     console.log('📤 Předávám náhledový obrázek do addService:', {
-                        name: previewImage.files[0].name,
-                        size: previewImage.files[0].size,
-                        type: previewImage.files[0].type
+                        name: previewFile.name,
+                        size: previewFile.size,
+                        type: previewFile.type,
+                        lastModified: previewFile.lastModified,
+                        isFile: previewFile instanceof File,
+                        isBlob: previewFile instanceof Blob,
+                        constructor: previewFile.constructor.name
                     });
-                    data.previewImage = previewImage.files[0];
+                    
+                    // Ověřit, že soubor je platný
+                    if (!previewFile || previewFile.size === 0) {
+                        console.error('❌ Soubor je prázdný nebo neplatný!');
+                        alert('Soubor je prázdný nebo neplatný. Zkuste to znovu.');
+                        return;
+                    }
+                    
+                    data.previewImage = previewFile;
                 } else {
                     // použít výchozí logo, neuploadovat do Storage
                     // Výchozí logo pro náhledový obrázek - změňte cestu zde
@@ -689,7 +702,12 @@
                 lastModified: Date.now()
             });
             
-            console.log('✅ File objekt vytvořen:', croppedFile.name, 'velikost:', croppedFile.size);
+            console.log('✅ File objekt vytvořen:', {
+                name: croppedFile.name,
+                size: croppedFile.size,
+                type: croppedFile.type,
+                lastModified: croppedFile.lastModified
+            });
             
             // Nastavit oříznutý soubor do inputu pomocí DataTransfer
             try {
@@ -700,7 +718,14 @@
                 dataTransfer.items.add(croppedFile);
                 currentCropInput.files = dataTransfer.files;
                 
-                console.log('✅ Soubor nastaven do inputu, files.length:', currentCropInput.files.length);
+                console.log('✅ Soubor nastaven do inputu:', {
+                    filesLength: currentCropInput.files.length,
+                    fileName: currentCropInput.files[0]?.name,
+                    fileSize: currentCropInput.files[0]?.size,
+                    fileType: currentCropInput.files[0]?.type,
+                    isFile: currentCropInput.files[0] instanceof File,
+                    isBlob: currentCropInput.files[0] instanceof Blob
+                });
                 
                 // Flag se resetuje v change listeneru
                 
