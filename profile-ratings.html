@@ -844,11 +844,12 @@
             
             const reviewsContainer = document.querySelector('.reviews-list');
             if (!reviewsContainer) {
-                console.log('❌ Reviews container not found');
+                console.error('❌ Reviews container (.reviews-list) not found!');
                 return;
             }
+            console.log('✅ Reviews container found');
 
-            if (reviews.length === 0) {
+            if (!reviews || reviews.length === 0) {
                 console.log('📝 No reviews found, showing empty state');
                 reviewsContainer.innerHTML = `
                     <div class="no-reviews">
@@ -861,14 +862,15 @@
             }
 
             // Sort reviews by date (newest first)
-            const sortedReviews = reviews.sort((a, b) => {
-                const dateA = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
-                const dateB = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+            const sortedReviews = [...reviews].sort((a, b) => {
+                const dateA = new Date(a.updatedAt?.toDate?.() || a.updatedAt || a.createdAt?.toDate?.() || a.createdAt || 0);
+                const dateB = new Date(b.updatedAt?.toDate?.() || b.updatedAt || b.createdAt?.toDate?.() || b.createdAt || 0);
                 return dateB - dateA;
             });
 
             console.log('📝 Rendering', sortedReviews.length, 'reviews');
             reviewsContainer.innerHTML = sortedReviews.map(review => createReviewCard(review)).join('');
+            console.log('✅ Reviews rendered to container');
         }
     </script>
 </body>
