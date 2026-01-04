@@ -484,6 +484,11 @@
                         alert('Náhledový obrázek je povinný (nebo zaškrtněte volbu bez náhledu).');
                         return;
                     }
+                    console.log('📤 Předávám náhledový obrázek do addService:', {
+                        name: previewImage.files[0].name,
+                        size: previewImage.files[0].size,
+                        type: previewImage.files[0].type
+                    });
                     data.previewImage = previewImage.files[0];
                 } else {
                     // použít výchozí logo, neuploadovat do Storage
@@ -644,6 +649,8 @@
             return;
         }
         
+        console.log('✂️ Potvrzuji ořez obrázku...');
+        
         // Získat oříznutý obrázek jako canvas s poměrem 4:3
         const canvas = cropperInstance.getCroppedCanvas({
             width: 800,
@@ -657,6 +664,8 @@
             return;
         }
         
+        console.log('✅ Canvas vytvořen, převádím na blob...');
+        
         // Převést canvas na blob
         canvas.toBlob(function(blob) {
             if (!blob) {
@@ -664,34 +673,53 @@
                 return;
             }
             
+            console.log('✅ Blob vytvořen, velikost:', blob.size, 'typ:', blob.type);
+            
             // Vytvořit File objekt z blobu
-            const fileName = currentCropFile.name || 'cropped-image.jpg';
+            const fileName = currentCropFile ? (currentCropFile.name || 'cropped-image.jpg') : 'cropped-image.jpg';
             const fileExtension = fileName.split('.').pop() || 'jpg';
             const croppedFile = new File([blob], `cropped-${Date.now()}.${fileExtension}`, {
-                type: blob.type || 'image/jpeg'
+                type: 'image/jpeg',
+                lastModified: Date.now()
             });
             
-            // Nastavit oříznutý soubor do inputu
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(croppedFile);
-            currentCropInput.files = dataTransfer.files;
+            console.log('✅ File objekt vytvořen:', croppedFile.name, 'velikost:', croppedFile.size);
             
-            // Aktualizovat náhled
-            const imgPreview = document.getElementById('previewCardImage');
-            if (imgPreview) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imgPreview.src = e.target.result;
-                };
-                reader.readAsDataURL(croppedFile);
-            }
-            
-            // Zavřít modal
-            closeImageCropModal();
-            
-            // Aktualizovat validaci
-            if (typeof validateRequired === 'function') {
-                validateRequired();
+            // Nastavit oříznutý soubor do inputu pomocí DataTransfer
+            try {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+                currentCropInput.files = dataTransfer.files;
+                
+                console.log('✅ Soubor nastaven do inputu, files.length:', currentCropInput.files.length);
+                
+                // Spustit change event pro aktualizaci
+                const changeEvent = new Event('change', { bubbles: true });
+                currentCropInput.dispatchEvent(changeEvent);
+                
+                // Aktualizovat náhled
+                const imgPreview = document.getElementById('previewCardImage');
+                if (imgPreview) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imgPreview.src = e.target.result;
+                        console.log('✅ Náhled aktualizován');
+                    };
+                    reader.readAsDataURL(croppedFile);
+                }
+                
+                // Zavřít modal
+                closeImageCropModal();
+                
+                // Aktualizovat validaci
+                if (typeof validateRequired === 'function') {
+                    validateRequired();
+                }
+                
+                console.log('✅ Ořez dokončen, modal zavřen');
+            } catch (error) {
+                console.error('❌ Chyba při nastavení souboru:', error);
+                alert('Chyba při uložení oříznutého obrázku. Zkuste to znovu.');
             }
         }, 'image/jpeg', 0.9);
     };
