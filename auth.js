@@ -2011,7 +2011,7 @@ function showInAppBrowserWarning(action = 'registrace') {
                     text-align: center;
                 ">
                     <strong style="color: #374151;">Jak otevřít v prohlížeči:</strong><br>
-                    Klikněte na tlačítko níže nebo v menu aplikace zvolte "Otevřít v Safari/Chrome"
+                    V menu aplikace zvolte "Otevřít v Safari/Chrome" nebo použijte tlačítko sdílet
                 </p>
             </div>
             
