@@ -936,50 +936,23 @@
                         firebaseDb: !!window.firebaseDb
                     });
                     if (window.firebaseAuth && window.firebaseDb) {
-                        console.log('✅ Firebase available, checking auth');
+                        console.log('✅ Firebase available, setting up auth listener');
                         clearInterval(checkFirebase);
                         
-                        // Check if user is logged in immediately
-                        const currentUser = window.firebaseAuth.currentUser;
-                        if (!currentUser) {
-                            // User is not logged in - hide content and show login
-                            console.log('⚠️ Uživatel není přihlášen - zobrazuji přihlášení');
-                            const mainContent = document.querySelector('.main-content');
-                            if (mainContent) {
-                                mainContent.style.display = 'none';
-                            }
-                            // Show login modal
-                            if (typeof showAuthModal === 'function') {
-                                showAuthModal('login');
-                            } else {
-                                // If modal not available, redirect to homepage
-                                window.location.href = 'index.html';
-                                return;
-                            }
-                            return;
-                        }
-                        
-                        // User is logged in - show content and load data
-                        const mainContent = document.querySelector('.main-content');
-                        if (mainContent) {
-                            mainContent.style.display = '';
-                        }
-                        loadUserData();
-                        
-                        // Listen for auth state changes
+                        // Listen for auth state changes (this will fire immediately if user is already logged in)
                         window.firebaseAuth.onAuthStateChanged((user) => {
                             console.log('👤 Auth state changed on profile page:', user ? user.email : 'Not logged in');
+                            const mainContent = document.querySelector('.main-content');
                             if (user) {
                                 // User logged in - show content
-                                const mainContent = document.querySelector('.main-content');
+                                console.log('✅ Uživatel přihlášen, zobrazuji obsah');
                                 if (mainContent) {
                                     mainContent.style.display = '';
                                 }
                                 loadUserData();
                             } else {
-                                // User logged out - hide content and show login
-                                console.log('⚠️ Uživatel se odhlásil - zobrazuji přihlášení');
-                                const mainContent = document.querySelector('.main-content');
+                                // User not logged in - hide content and show login
+                                console.log('⚠️ Uživatel není přihlášen - zobrazuji přihlášení');
                                 if (mainContent) {
                                     mainContent.style.display = 'none';
                                 }
