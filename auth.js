@@ -1145,6 +1145,12 @@ function createAuthModal() {
                     <button type="button" id="btnAuthSubmit" class="btn btn-primary" style="display: none;">Dokončit registraci</button>
                 </div>
 
+                <div class="form-group" id="forgotPasswordLink" style="display: none;">
+                    <button type="button" id="btnForgotPassword" class="btn btn-link" style="font-size: 0.9rem; padding: 0.5rem 0; color: #6b7280; text-decoration: underline; cursor: pointer;">
+                        Zapomněli jste heslo?
+                    </button>
+                </div>
+
                 <div class="form-group">
                     <button type="button" class="auth-switch-btn btn btn-link">Nemáte účet? Zaregistrujte se</button>
                 </div>
@@ -1279,6 +1285,12 @@ function setupAuthModalEvents() {
         });
     }
     
+    // Event listener pro tlačítko Zapomenuté heslo
+    const btnForgotPassword = modal.querySelector('#btnForgotPassword');
+    if (btnForgotPassword) {
+        btnForgotPassword.addEventListener('click', handleForgotPassword);
+    }
+    
     authModalEventsSetup = true;
 }
 
@@ -1345,6 +1357,10 @@ function showAuthModal(type = 'login') {
         if (authPhone) authPhone.required = false;
         if (phoneRow) phoneRow.style.display = 'none';
         if (phoneRight && phoneCode) phoneCode.style.display = 'none';
+        
+        // Zobrazit tlačítko Zapomenuté heslo při přihlášení
+        const forgotPasswordLink = modal.querySelector('#forgotPasswordLink');
+        if (forgotPasswordLink) forgotPasswordLink.style.display = '';
 
         console.log('✅ Modal nastaven pro přihlášení:', { 
             title: modalTitle.textContent, 
@@ -1352,6 +1368,10 @@ function showAuthModal(type = 'login') {
         });
     } else {
         modalTitle.textContent = 'Registrace';
+        
+        // Skrýt tlačítko Zapomenuté heslo při registraci
+        const forgotPasswordLink = modal.querySelector('#forgotPasswordLink');
+        if (forgotPasswordLink) forgotPasswordLink.style.display = 'none';
         modal.setAttribute('data-mode', 'register');
         submitBtn.textContent = 'Zaregistrovat se';
         switchBtn.textContent = 'Již máte účet? Přihlaste se';
@@ -1725,6 +1745,66 @@ function handleAuthError(error) {
     
     console.error('❌ Auth error:', errorCode || error.code, error.message);
     showMessage(message, 'error');
+}
+
+// Zpracování zapomenutého hesla
+async function handleForgotPassword() {
+    const modal = document.getElementById('authModal');
+    if (!modal) return;
+    
+    const authEmail = modal.querySelector('#authEmail');
+    if (!authEmail) {
+        showMessage('Chyba: Emailové pole není dostupné.', 'error');
+        return;
+    }
+    
+    const email = authEmail.value.trim();
+    if (!email) {
+        showMessage('Zadejte prosím emailovou adresu pro obnovení hesla.', 'error');
+        authEmail.focus();
+        return;
+    }
+    
+    // Základní validace emailu
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showMessage('Zadejte prosím platnou emailovou adresu.', 'error');
+        authEmail.focus();
+        return;
+    }
+    
+    try {
+        if (!firebaseAuth) {
+            showMessage('Chyba: Firebase není načten. Obnovte stránku.', 'error');
+            return;
+        }
+        
+        const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+        
+        await sendPasswordResetEmail(firebaseAuth, email);
+        
+        showMessage(`📧 Email s odkazem pro obnovení hesla byl odeslán na adresu ${email}. Zkontrolujte prosím svou poštovní schránku.`, 'success', { timeout: 8000 });
+        
+        // Zavřít modal po úspěšném odeslání
+        setTimeout(() => {
+            closeAuthModal();
+        }, 2000);
+        
+    } catch (error) {
+        console.error('❌ Chyba při odesílání reset emailu:', error);
+        
+        let errorMessage = 'Nepodařilo se odeslat email pro obnovení hesla.';
+        
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = 'Uživatel s tímto emailem neexistuje. Zkontrolujte email nebo se zaregistrujte.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Neplatný formát emailu. Zadejte platný email.';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = 'Příliš mnoho pokusů. Počkejte prosím a zkuste to znovu později.';
+        }
+        
+        showMessage(errorMessage, 'error');
+    }
 }
 
 // Překlad běžných chyb phone auth do srozumitelných zpráv

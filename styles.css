@@ -12948,6 +12948,11 @@ body:has(.ad-detail-content) .ad-detail-main,
     color: #374151;
 }
 
+/* Zajistit, aby labely jako "Email:", "Jméno:" nešly rozdělit na více řádků */
+.contact-item > span:first-of-type {
+    white-space: nowrap !important;
+}
+
 .ad-actions {
     display: flex;
     gap: 1rem;
@@ -13599,6 +13604,11 @@ body:has(.ad-detail-content) .ad-detail-main,
         font-size: 0.95rem !important;
         line-height: 1.5 !important;
         flex: 1 !important;
+    }
+    
+    /* Zajistit, aby labely jako "Email:", "Jméno:" nešly rozdělit na více řádků */
+    .contact-item > span:first-of-type {
+        white-space: nowrap !important;
     }
     
     /* ===== TLAČÍTKA - STEJNÉ JAKO U PROFILU ===== */
