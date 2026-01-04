@@ -16971,11 +16971,6 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .auth-form .btn-primary {
         padding: 10px 16px !important;
         font-size: 0.95rem !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin: 0 auto !important;
-        text-align: center !important;
     }
     
     .auth-switch-btn {
