@@ -389,8 +389,8 @@ function displayAdImages(images) {
         const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
         const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
         
-        // Set main image s optimalizací
-		mainImage.innerHTML = `<img src="${escapedMainImageUrl}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" width="800" height="600" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">
+        // Set main image s optimalizací a retry mechanismem včetně _200x200 varianty
+		mainImage.innerHTML = `<img src="${escapedMainImageUrl}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" width="800" height="600" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else if(this.dataset.retry === '1') { this.dataset.retry='2'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }" data-retry="0">
             <div class="no-image-placeholder" style="display: none;">
                 <i class="fas fa-image"></i>
                 <span>Obrázek se nepodařilo načíst</span>
@@ -411,7 +411,7 @@ function displayAdImages(images) {
                 const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
                 return `
                 <div class="ad-thumbnail" data-image-url="${escapedUrl}" data-image-index="${index + 1}" style="cursor: pointer;">
-					<img src="${escapedUrl}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" width="100" height="75" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">
+					<img src="${escapedUrl}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" width="100" height="75" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else if(this.dataset.retry === '1') { this.dataset.retry='2'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }" data-retry="0">
                     <div class="no-image-placeholder" style="display: none;">
                         <i class="fas fa-image"></i>
                     </div>
@@ -524,7 +524,7 @@ window.changeMainImage = function(imageSrc) {
     const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
     const placeholderStyle = 'background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite;';
     
-	mainImage.innerHTML = `<img src="${escapedOptimizedSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" width="800" height="600" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry !== '1') { this.dataset.retry='1'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }">
+	mainImage.innerHTML = `<img src="${escapedOptimizedSrc}" alt="Hlavní obrázek" class="ad-main-img" loading="eager" decoding="async" fetchpriority="high" width="800" height="600" style="${placeholderStyle}" onload="this.style.background='transparent'; this.style.animation='none';" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else if(this.dataset.retry === '1') { this.dataset.retry='2'; this.src=this.src.split('?')[0] + '?alt=media'; } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.background='transparent'; this.style.animation='none'; }" data-retry="0">
         <div class="no-image-placeholder" style="display: none;">
             <i class="fas fa-image"></i>
             <span>Obrázek se nepodařilo načíst</span>
@@ -719,7 +719,7 @@ function displayOtherAds(ads) {
         
         let imageHtml = `<picture>
             <source srcset="${escapedWebpUrl}" type="image/webp">
-            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';">
+            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else { console.error('❌ Image failed to load:', this.src); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block'; }" data-retry="0">
         </picture>`;
         imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
         

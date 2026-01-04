@@ -832,8 +832,8 @@ function createServiceCard(service) {
             <img src="${escapedImageUrl}" alt="${escapedTitle}" loading="${loadingAttr}"${fetchPriorityAttr} decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}';">
         </picture>`;
     } else {
-        // Pro Firebase Storage obrázky nepoužívat WebP
-        imageHtml = `<img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="${loadingAttr}"${fetchPriorityAttr} decoding="async"${widthHeightAttr} onerror="this.onerror=null; this.src='${escapedDefaultUrl}';" style="object-fit: cover; width: 100%; height: 100%;">`;
+        // Pro Firebase Storage obrázky nepoužívat WebP, s retry mechanismem včetně _200x200 varianty
+        imageHtml = `<img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="${loadingAttr}"${fetchPriorityAttr} decoding="async"${widthHeightAttr} onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else { this.onerror=null; this.src='${escapedDefaultUrl}'; }" data-retry="0" style="object-fit: cover; width: 100%; height: 100%;">`;
     }
     
     return `
