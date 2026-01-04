@@ -352,21 +352,22 @@
 
         // Jednoduchá funkce pro načtení a zobrazení všech recenzí
         async function loadAndDisplayAllReviews(userId) {
-            console.log('📚 Začínám načítat recenze pro uživatele:', userId);
+            console.log('📚 ZAČÍNÁM NAČÍTAT RECENZE PRO UŽIVATELE:', userId);
             
             try {
-                const { getDocs, collection, collectionGroup, getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                const { getDocs, collection, collectionGroup } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 const allReviews = [];
                 
                 // 1. Načíst recenze na profilu
                 try {
-                    console.log('📖 Načítám recenze z profilu...');
+                    console.log('📖 1. Načítám recenze z profilu...');
                     const profileReviewsRef = collection(window.firebaseDb, 'users', userId, 'reviews');
                     const profileSnap = await getDocs(profileReviewsRef);
-                    console.log('📖 Nalezeno recenzí na profilu:', profileSnap.size);
+                    console.log('📖 1. Nalezeno recenzí na profilu:', profileSnap.size);
                     
                     profileSnap.forEach(doc => {
                         const data = doc.data();
+                        console.log('📖 1. Recenze z profilu:', doc.id, data);
                         allReviews.push({
                             id: doc.id,
                             ...data,
@@ -374,15 +375,15 @@
                         });
                     });
                 } catch (error) {
-                    console.warn('⚠️ Chyba při načítání recenzí z profilu:', error);
+                    console.error('❌ Chyba při načítání recenzí z profilu:', error);
                 }
                 
                 // 2. Načíst recenze z inzerátů pomocí collectionGroup
                 try {
-                    console.log('📖 Načítám recenze z inzerátů...');
+                    console.log('📖 2. Načítám recenze z inzerátů...');
                     const adReviewsGroup = collectionGroup(window.firebaseDb, 'reviews');
                     const adReviewsSnap = await getDocs(adReviewsGroup);
-                    console.log('📖 Nalezeno recenzí celkem (collectionGroup):', adReviewsSnap.size);
+                    console.log('📖 2. Nalezeno recenzí celkem (collectionGroup):', adReviewsSnap.size);
                     
                     adReviewsSnap.forEach(docSnap => {
                         const reviewData = docSnap.data();
@@ -392,6 +393,7 @@
                         const userDoc = inzeraty?.parent;
                         
                         if (userDoc && userDoc.id === userId && inzeraty.id === 'inzeraty') {
+                            console.log('📖 2. Recenze z inzerátu:', docSnap.id, reviewData);
                             allReviews.push({
                                 id: docSnap.id,
                                 ...reviewData,
@@ -400,36 +402,44 @@
                             });
                         }
                     });
-                    console.log('📖 Nalezeno recenzí z inzerátů tohoto uživatele:', allReviews.filter(r => r.type === 'ad').length);
+                    console.log('📖 2. Nalezeno recenzí z inzerátů tohoto uživatele:', allReviews.filter(r => r.type === 'ad').length);
                 } catch (error) {
-                    console.warn('⚠️ Chyba při načítání recenzí z inzerátů:', error);
+                    console.error('❌ Chyba při načítání recenzí z inzerátů:', error);
                 }
                 
-                console.log('✅ Celkem načteno recenzí:', allReviews.length);
-                console.log('📊 Recenze:', allReviews);
+                console.log('✅ CELKEM NAČTENO RECENZÍ:', allReviews.length);
+                console.log('📊 VŠECHNY RECENZE:', allReviews);
                 
                 // Zobrazit recenze
+                console.log('🎨 VOLÁM DISPLAYALLREVIEWS S', allReviews.length, 'RECENZEMI');
                 displayAllReviews(allReviews);
                 
                 // Aktualizovat statistiky
                 updateRatingFromReviews(allReviews);
                 
             } catch (error) {
-                console.error('❌ Chyba při načítání recenzí:', error);
+                console.error('❌ CHYBA PŘI NAČÍTÁNÍ RECENZÍ:', error);
+                console.error('❌ Error details:', error);
             }
         }
 
         // Jednoduchá funkce pro zobrazení všech recenzí
         function displayAllReviews(reviews) {
-            console.log('🎨 Zobrazuji recenze:', reviews.length);
+            console.log('🎨 DISPLAYALLREVIEWS VOLÁNO S', reviews?.length || 0, 'RECENZEMI');
+            console.log('🎨 Reviews data:', reviews);
             
             const container = document.querySelector('.reviews-list');
+            console.log('🎨 Kontejner .reviews-list:', container);
+            
             if (!container) {
-                console.error('❌ Kontejner .reviews-list nenalezen!');
+                console.error('❌❌❌ KONTEJNER .reviews-list NENALEZEN!');
+                // Zkusit najít jakýkoli kontejner
+                const allContainers = document.querySelectorAll('[class*="review"], [id*="review"]');
+                console.log('🎨 Nalezené kontejnery:', allContainers);
                 return;
             }
             
-            console.log('✅ Kontejner nalezen, zobrazuji', reviews.length, 'recenzí');
+            console.log('✅✅✅ KONTEJNER NALEZEN, zobrazuji', reviews.length, 'recenzí');
             
             if (reviews.length === 0) {
                 container.innerHTML = `
