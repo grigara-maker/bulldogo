@@ -1288,7 +1288,14 @@ function setupAuthModalEvents() {
     // Event listener pro tlačítko Zapomenuté heslo
     const btnForgotPassword = modal.querySelector('#btnForgotPassword');
     if (btnForgotPassword) {
-        btnForgotPassword.addEventListener('click', handleForgotPassword);
+        // Odstranit všechny listenery klonováním (stejně jako ostatní tlačítka)
+        const newBtn = btnForgotPassword.cloneNode(true);
+        btnForgotPassword.parentNode.replaceChild(newBtn, btnForgotPassword);
+        newBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleForgotPassword();
+        });
     }
     
     authModalEventsSetup = true;
@@ -2279,11 +2286,28 @@ function setupEventListeners() {
         const cleanAuthForm = document.getElementById('authForm');
 		
 		// Po klonování se ztratí listenery na tlačítkách typů registrace.
-		// Znovu je navážeme, aby šlo přepnout na „Firma“.
+		// Znovu je navážeme, aby šlo přepnout na „Firma".
 		try {
 			setupRegistrationTypeSelection();
 		} catch (e) {
 			console.warn('⚠️ Nepodařilo se znovu navázat registration-type listenery:', e?.message || e);
+		}
+		
+		// Po klonování se ztratí listener na tlačítku Zapomenuté heslo.
+		// Znovu ho navážeme.
+		try {
+			const btnForgotPassword = cleanAuthForm.querySelector('#btnForgotPassword');
+			if (btnForgotPassword) {
+				const newBtn = btnForgotPassword.cloneNode(true);
+				btnForgotPassword.parentNode.replaceChild(newBtn, btnForgotPassword);
+				newBtn.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					handleForgotPassword();
+				});
+			}
+		} catch (e) {
+			console.warn('⚠️ Nepodařilo se znovu navázat forgot-password listener:', e?.message || e);
 		}
         
         // Auth formulář připraven pro event listener
