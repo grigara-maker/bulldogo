@@ -340,7 +340,7 @@
                 updateRatingsDisplay(userProfile);
                 
                 // Load all reviews from database
-                loadAllUserReviews(currentUser.uid);
+                await loadAllUserReviews(currentUser.uid);
 
             } catch (error) {
                 console.error('Chyba při načítání dat hodnocení:', error);
