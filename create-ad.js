@@ -4,6 +4,7 @@
     let cropperInstance = null;
     let currentCropFile = null;
     let currentCropInput = null;
+    let isSettingCroppedFile = false; // Flag pro detekci programatického nastavení souboru
     
     // Globální pomocné funkce pro publikovat tlačítko a validaci (dostupné i před init)
     function disablePublish(disabled){
@@ -364,6 +365,11 @@
         }
         if (previewImageInput && imgPreview) {
             previewImageInput.addEventListener('change', function(e) {
+                // Pokud právě nastavujeme oříznutý soubor, neotevírat modal
+                if (isSettingCroppedFile) {
+                    isSettingCroppedFile = false;
+                    return;
+                }
                 const file = e.target.files?.[0];
                 if (!file) return;
                 currentCropFile = file;
@@ -687,15 +693,16 @@
             
             // Nastavit oříznutý soubor do inputu pomocí DataTransfer
             try {
+                // Nastavit flag, aby se change event neotevřel modal znovu
+                isSettingCroppedFile = true;
+                
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(croppedFile);
                 currentCropInput.files = dataTransfer.files;
                 
                 console.log('✅ Soubor nastaven do inputu, files.length:', currentCropInput.files.length);
                 
-                // Spustit change event pro aktualizaci
-                const changeEvent = new Event('change', { bubbles: true });
-                currentCropInput.dispatchEvent(changeEvent);
+                // Flag se resetuje v change listeneru
                 
                 // Aktualizovat náhled
                 const imgPreview = document.getElementById('previewCardImage');

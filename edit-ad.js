@@ -9,6 +9,7 @@
     let cropperInstance = null;
     let currentCropFile = null;
     let currentCropInput = null;
+    let isSettingCroppedFile = false; // Flag pro detekci programatického nastavení souboru
 
     // Parsování ceny z textu
     function parsePrice(priceText) {
@@ -535,6 +536,11 @@
         // Aktualizace obrázku při změně náhledového obrázku
         if (previewImageInput && imgPreview) {
             previewImageInput.addEventListener('change', function(e) {
+                // Pokud právě nastavujeme oříznutý soubor, neotevírat modal
+                if (isSettingCroppedFile) {
+                    isSettingCroppedFile = false;
+                    return;
+                }
                 const file = e.target.files?.[0];
                 if (file) {
                     currentCropFile = file;
@@ -844,11 +850,16 @@
             
             // Nastavit oříznutý soubor do inputu
             try {
+                // Nastavit flag, aby se change event neotevřel modal znovu
+                isSettingCroppedFile = true;
+                
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(croppedFile);
                 currentCropInput.files = dataTransfer.files;
                 
                 console.log('✅ Soubor nastaven do inputu, files.length:', currentCropInput.files.length);
+                
+                // Flag se resetuje v change listeneru
                 
                 // Aktualizovat náhled
                 const imgPreview = document.getElementById('previewCardImage');
@@ -872,9 +883,8 @@
                 // Zavřít modal
                 closeImageCropModal();
                 
-                // Spustit change event pro aktualizaci dalších náhledů
-                const changeEvent = new Event('change', { bubbles: true });
-                currentCropInput.dispatchEvent(changeEvent);
+                // NEspouštět change event - to by mohlo způsobit problémy
+                // Náhled se aktualizuje přímo výše
                 
                 console.log('✅ Ořez dokončen, modal zavřen');
             } catch (error) {
