@@ -699,7 +699,14 @@ window.removeFile = removeFile;
 // ============================================
 // ODESLÁNÍ ZPRÁVY
 // ============================================
+let isSendingMessage = false;
+
 async function sendMessage() {
+    // Zabraň dvojitému odeslání
+    if (isSendingMessage) {
+        return;
+    }
+    
     if (!currentUser || !currentConversationId || !window.firebaseDb) {
         showError('Musíte být přihlášeni a mít otevřenou konverzaci');
         return;
@@ -722,6 +729,9 @@ async function sendMessage() {
             return;
         }
     }
+    
+    // Nastavit flag, že se odesílá zpráva
+    isSendingMessage = true;
     
     try {
         const { collection, addDoc, doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
@@ -797,6 +807,9 @@ async function sendMessage() {
         } else {
             showError('Nepodařilo se odeslat zprávu.');
         }
+    } finally {
+        // Resetovat flag po dokončení odesílání
+        isSendingMessage = false;
     }
 }
 
