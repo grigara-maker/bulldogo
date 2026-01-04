@@ -12335,15 +12335,15 @@ input[type="tel"]:focus {
         height: 42px;
         border-radius: 10px;
         margin: 0;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: none !important;
     }
     
     .ad-actions button:hover {
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: none !important;
     }
     
     .ad-actions button:active {
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: none !important;
     }
     
     .ad-actions button i {
@@ -12396,15 +12396,15 @@ input[type="tel"]:focus {
         height: 38px;
         border-radius: 8px;
         margin: 0;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: none !important;
     }
     
     .ad-actions button:hover {
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: none !important;
     }
     
     .ad-actions button:active {
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+        box-shadow: none !important;
     }
     
     .ad-actions button i {
