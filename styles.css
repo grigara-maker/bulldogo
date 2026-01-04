@@ -13305,6 +13305,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         margin: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+        background: #f8f9fa !important;
     }
     
     /* Header - stejné jako profil */
@@ -13332,27 +13333,28 @@ body:has(.ad-detail-content) .ad-detail-main,
         z-index: 3000 !important;
     }
     
-    /* Main container - flexbox column */
+    /* Main container - flexbox column, kompaktní s paddingem */
     .ad-detail-main {
         display: flex !important;
         flex-direction: column !important;
-        gap: 0 !important;
+        gap: 1rem !important;
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+        background: #f8f9fa !important;
     }
     
-    /* Levý sloupec - HERO SEKCE S FOTKOU nahoře, plná šířka bez paddingů */
+    /* Levý sloupec - KOMPAKTNNÍ SEKCE S FOTKOU nahoře, s paddingem */
     .ad-detail-left {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 0 !important;
+        padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-bottom: 0 !important;
@@ -13360,13 +13362,13 @@ body:has(.ad-detail-content) .ad-detail-main,
         overflow-x: hidden !important;
         position: static !important;
         top: auto !important;
-        background: transparent !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
         order: 1 !important;
     }
     
-    /* Pravý sloupec - TEXT pod fotkou s paddingem */
+    /* Pravý sloupec - KOMPAKTNNÍ TEXT pod fotkou, s paddingem */
     .ad-detail-right {
         width: 100% !important;
         max-width: 100% !important;
@@ -13374,17 +13376,17 @@ body:has(.ad-detail-content) .ad-detail-main,
         padding: 1rem !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        margin-top: 0 !important;
+        margin-top: 1rem !important;
         margin-bottom: 0 !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
-        background: transparent !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
         order: 2 !important;
     }
     
-    /* Profil uživatele pod popisem - PŘESNĚ STEJNÝ jako .ad-user-profile v profilu */
+    /* Profil uživatele pod popisem - KOMPAKTNNÍ */
     .ad-user-profile {
         width: 100% !important;
         max-width: 100% !important;
@@ -13395,21 +13397,25 @@ body:has(.ad-detail-content) .ad-detail-main,
         margin-top: 1rem !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+        background: #ffffff !important;
+        border-radius: 16px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
     }
     
-    /* ===== HLAVNÍ OBRÁZEK - HERO SEKCE, PLNÁ ŠÍŘKA ===== */
+    /* ===== HLAVNÍ OBRÁZEK - KOMPAKTNÍ, S PADDINGEM ===== */
     .ad-main-image {
-        width: 100vw !important;
-        max-width: 100vw !important;
+        width: 100% !important;
+        max-width: 100% !important;
         min-width: 0 !important;
         aspect-ratio: 4 / 3 !important;
         height: auto !important;
-        margin: 0 !important;
+        margin: 0 0 0.75rem 0 !important;
         padding: 0 !important;
-        border-radius: 0 !important;
+        border-radius: 12px !important;
         overflow: hidden !important;
         display: block !important;
         box-sizing: border-box !important;
+        background: #f8f9fa !important;
     }
     
     .ad-main-image .ad-main-img {
@@ -13421,13 +13427,13 @@ body:has(.ad-detail-content) .ad-detail-main,
         box-sizing: border-box !important;
     }
     
-    /* Thumbnaily - pod hero fotkou, s paddingem */
+    /* Thumbnaily - pod hlavní fotkou, kompaktní */
     .ad-thumbnails {
         width: 100% !important;
         max-width: 100% !important;
-        padding: 0.75rem 1rem !important;
+        padding: 0.5rem 0 !important;
         margin: 0 !important;
-        background: #f9fafb !important;
+        background: transparent !important;
         display: flex !important;
         gap: 0.5rem !important;
         overflow-x: auto !important;
@@ -13459,7 +13465,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         object-position: center !important;
     }
     
-    /* ===== SEKCE TEXTU - SAMOSTATNĚ POD FOTKOU ===== */
+    /* ===== SEKCE TEXTU - KOMPAKTNNÍ, POSTUPNĚ ===== */
     .ad-title-section,
     .ad-meta-section,
     .ad-description-section,
@@ -13470,7 +13476,7 @@ body:has(.ad-detail-content) .ad-detail-main,
         max-width: 100% !important;
         min-width: 0 !important;
         padding: 0 !important;
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
         box-sizing: border-box !important;
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
@@ -13483,43 +13489,27 @@ body:has(.ad-detail-content) .ad-detail-main,
     
     .ad-title-section {
         margin-top: 0 !important;
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
+        padding-bottom: 1rem !important;
+        border-bottom: 1px solid #e5e7eb !important;
     }
     
     .ad-meta-section {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
     }
     
     .ad-description-section {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
         max-height: none !important;
         overflow-y: visible !important;
     }
     
     .ad-contact-section {
-        margin-bottom: 1.5rem !important;
-    }
-    
-    .ad-title-section {
-        margin-bottom: 1.5rem !important;
-    }
-    
-    .ad-meta-section {
-        margin-bottom: 1.5rem !important;
-    }
-    
-    .ad-description-section {
-        margin-bottom: 1.5rem !important;
-        max-height: none !important;
-        overflow-y: visible !important;
-    }
-    
-    .ad-contact-section {
-        margin-bottom: 1.5rem !important;
+        margin-bottom: 1.25rem !important;
     }
     
     .ad-chat-section {
-        margin-top: 1.5rem !important;
+        margin-top: 1rem !important;
         padding: 0 !important;
     }
     
