@@ -874,6 +874,113 @@
             console.log('✅ Rating breakdown updated from data');
         }
 
+        // Render all reviews (stejně jako v profile.html)
+        function renderAllReviews(reviews, container) {
+            console.log('🎨 Rendering reviews:', reviews);
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = '<p class="no-reviews">Uživatel nemá žádné recenze.</p>';
+                return;
+            }
+
+            // Calculate average rating
+            const avgRating = (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1);
+            const totalReviews = reviews.length;
+
+            // Helper function to get time ago
+            function getTimeAgoHelper(date) {
+                if (!date) return 'Neznámé datum';
+                let reviewDate;
+                if (date.toDate && typeof date.toDate === 'function') {
+                    reviewDate = date.toDate();
+                } else if (date instanceof Date) {
+                    reviewDate = date;
+                } else {
+                    reviewDate = new Date(date);
+                }
+                
+                const now = new Date();
+                const diffMs = now - reviewDate;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Dnes';
+                if (diffDays === 1) return 'Včera';
+                if (diffDays < 7) return `Před ${diffDays} dny`;
+                if (diffDays < 30) return `Před ${Math.floor(diffDays / 7)} týdny`;
+                if (diffDays < 365) return `Před ${Math.floor(diffDays / 30)} měsíci`;
+                return `Před ${Math.floor(diffDays / 365)} lety`;
+            }
+            
+            // Helper function to create review card
+            function createReviewCardHelper(review) {
+                const stars = Array.from({length: 5}, (_, i) => 
+                    `<i class="fas fa-star ${i < (review.rating || 0) ? 'filled' : ''}"></i>`
+                ).join('');
+
+                const reviewerName = review.reviewerName || 
+                                    review.userName || 
+                                    review.authorName || 
+                                    review.fromUserName || 
+                                    review.name ||
+                                    'Anonymní';
+
+                const reviewText = review.comment || 
+                                  review.text || 
+                                  review.message || 
+                                  review.reviewText || 
+                                  review.description || 
+                                  'Žádný komentář';
+
+                const timeAgo = getTimeAgoHelper(review.updatedAt || review.createdAt);
+
+                // Escape HTML
+                function escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                }
+                
+                return `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="reviewer-info">
+                                <div class="reviewer-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="reviewer-details">
+                                    <h4>${escapeHtml(reviewerName)}</h4>
+                                    <span class="review-date">${timeAgo}</span>
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                <span class="stars">${stars}</span>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            <p>${escapeHtml(reviewText)}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = `
+                <div class="reviews-summary">
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">${avgRating}</span>
+                            <span class="stat-label">Průměrné hodnocení</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">${totalReviews}</span>
+                            <span class="stat-label">Celkem recenzí</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="reviews-list">
+                    ${reviews.map(review => createReviewCardHelper(review)).join('')}
+                </div>
+            `;
+        }
+
         // Update recent reviews from loaded data
         function updateRecentReviewsFromData(reviews) {
             console.log('📝 Updating reviews display with:', reviews);
@@ -905,7 +1012,14 @@
             });
 
             console.log('📝 Rendering', sortedReviews.length, 'reviews');
-            reviewsContainer.innerHTML = sortedReviews.map(review => createReviewCard(review)).join('');
+            // Use renderAllReviews function instead
+            const reviewsSection = document.querySelector('.reviews-section');
+            if (reviewsSection) {
+                const container = reviewsSection.querySelector('.reviews-list') || reviewsSection;
+                renderAllReviews(sortedReviews, container);
+            } else {
+                renderAllReviews(sortedReviews, reviewsContainer);
+            }
             console.log('✅ Reviews rendered to container');
         }
     </script>
