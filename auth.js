@@ -2001,6 +2001,14 @@ async function addService(serviceData) {
         }
         
         // Nahrát náhledový obrázek, nebo použít výchozí URL bez uploadu
+        console.log('🔍 Kontrola previewImage:', {
+            hasPreviewImage: !!serviceData.previewImage,
+            previewImageType: typeof serviceData.previewImage,
+            isFile: serviceData.previewImage instanceof File,
+            isBlob: serviceData.previewImage instanceof Blob,
+            name: serviceData.previewImage?.name,
+            size: serviceData.previewImage?.size
+        });
         if (serviceData.previewImage) {
             try {
                 console.log('📸 Nahrávám náhledový obrázek...', {
@@ -2027,6 +2035,7 @@ async function addService(serviceData) {
                     name: serviceData.previewImage.name
                 });
                 console.log('✅ Náhledový obrázek nahrán:', previewUrl);
+                console.log('✅ uploadedImages.length po přidání preview:', uploadedImages.length);
             } catch (uploadError) {
                 console.error('❌ Chyba při nahrávání náhledového obrázku:', uploadError);
                 console.error('❌ Error code:', uploadError.code);
