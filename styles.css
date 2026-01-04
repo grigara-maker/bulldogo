@@ -13858,6 +13858,13 @@ body:has(.ad-detail-content) .ad-detail-main,
         font-size: 1.5rem !important;
     }
     
+    /* Zarovnat tlačítko Začít chat na střed na telefonu */
+    .profile-chat-section {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    
     .ad-user-profile {
         width: 100% !important;
         max-width: 100% !important;
