@@ -1911,8 +1911,9 @@ function showInAppBrowserWarning(action = 'registrace') {
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
         background: radial-gradient(1200px 600px at 70% 10%, rgba(247,124,0,0.18), transparent 60%), rgba(0,0,0,0.65);
         backdrop-filter: blur(8px) saturate(110%);
         z-index: 100000;
@@ -1920,6 +1921,8 @@ function showInAppBrowserWarning(action = 'registrace') {
         align-items: center;
         justify-content: center;
         padding: 20px;
+        box-sizing: border-box;
+        overflow: hidden;
         animation: fadeIn 0.25s ease-in;
     `;
     
@@ -1947,11 +1950,13 @@ function showInAppBrowserWarning(action = 'registrace') {
             background: white;
             border-radius: 16px;
             padding: 24px;
-            max-width: 380px;
+            max-width: min(380px, calc(100vw - 40px));
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
             animation: slideUp 0.3s ease-out;
             position: relative;
+            margin: auto;
+            flex-shrink: 0;
         ">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="
