@@ -1927,7 +1927,7 @@ function showInAppBrowserWarning(action = 'registrace') {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 20px !important;
+        padding: 0 !important;
         margin: 0 !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
@@ -1959,11 +1959,11 @@ function showInAppBrowserWarning(action = 'registrace') {
             border-radius: 16px;
             padding: 24px;
             max-width: min(380px, calc(100vw - 40px));
-            width: 100%;
+            width: calc(100% - 40px);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
             animation: slideUp 0.3s ease-out;
             position: relative;
-            margin: auto;
+            margin: 20px;
             flex-shrink: 0;
         ">
             <div style="text-align: center; margin-bottom: 20px;">
