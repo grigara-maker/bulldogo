@@ -193,6 +193,35 @@
             font-size:14px;
             color:#374151;
         }
+        
+        /* Fix: Zajistit, aby sidebar byl klikatelný na mobilu */
+        @media (max-width: 768px) {
+            .sidebar.mobile-open {
+                z-index: 2000 !important;
+                pointer-events: auto !important;
+            }
+            
+            .sidebar.mobile-open * {
+                pointer-events: auto !important;
+            }
+            
+            .sidebar-overlay {
+                z-index: 1999 !important;
+                pointer-events: auto !important;
+            }
+            
+            /* Zajistit, aby nav-link byly klikatelné */
+            .sidebar.mobile-open .nav-link {
+                pointer-events: auto !important;
+                cursor: pointer !important;
+            }
+            
+            /* Zajistit, aby logo bylo klikatelné */
+            .sidebar.mobile-open .logo {
+                pointer-events: auto !important;
+                cursor: pointer !important;
+            }
+        }
     </style>
 </head>
 <body>
