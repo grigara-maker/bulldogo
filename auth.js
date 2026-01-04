@@ -1059,6 +1059,16 @@ function createAuthModal() {
 					<span class="close">&times;</span>
 				</div>
 			</div>
+            <style>
+                @media (max-width: 768px) {
+                    #forgotPasswordLink {
+                        text-align: center !important;
+                    }
+                    #forgotPasswordLink .forgot-password-btn {
+                        display: inline-block !important;
+                    }
+                }
+            </style>
             <form id="authForm" class="auth-form" action="javascript:void(0)" method="post">
                 <!-- Výběr typu registrace (pouze při registraci) -->
                 <div class="form-group registration-type" style="display: none;">
@@ -1146,7 +1156,7 @@ function createAuthModal() {
                 </div>
 
                 <div class="form-group" id="forgotPasswordLink" style="display: none;">
-                    <button type="button" id="btnForgotPassword" class="btn btn-link" style="font-size: 0.9rem; padding: 0.5rem 0; color: #6b7280; text-decoration: underline; cursor: pointer;">
+                    <button type="button" id="btnForgotPassword" class="btn btn-link forgot-password-btn" style="font-size: 0.9rem; padding: 0.5rem 0; color: #6b7280; text-decoration: underline; cursor: pointer;">
                         Zapomněli jste heslo?
                     </button>
                 </div>
