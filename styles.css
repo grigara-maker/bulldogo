@@ -12709,6 +12709,16 @@ body:has(.ad-detail-content) .ad-detail-main,
     scrollbar-color: #f77c00 #f1f1f1;
 }
 
+/* Desktop - zarovnat thumbnaily do řádky bez scrollování */
+@media (min-width: 769px) {
+    .ad-thumbnails {
+        flex-wrap: wrap !important;
+        overflow-x: visible !important;
+        justify-content: flex-start !important;
+        gap: 0.75rem !important;
+    }
+}
+
 .ad-thumbnails::-webkit-scrollbar {
     height: 6px;
 }
