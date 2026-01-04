@@ -1908,22 +1908,28 @@ function showInAppBrowserWarning(action = 'registrace') {
     const modal = document.createElement('div');
     modal.id = 'inAppBrowserWarning';
     modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
-        background: radial-gradient(1200px 600px at 70% 10%, rgba(247,124,0,0.18), transparent 60%), rgba(0,0,0,0.65);
-        backdrop-filter: blur(8px) saturate(110%);
-        z-index: 100000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        box-sizing: border-box;
-        overflow: hidden;
-        animation: fadeIn 0.25s ease-in;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-width: 100vw !important;
+        min-height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        background: radial-gradient(1200px 600px at 70% 10%, rgba(247,124,0,0.18), transparent 60%), rgba(0,0,0,0.65) !important;
+        backdrop-filter: blur(8px) saturate(110%) !important;
+        z-index: 100000 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        animation: fadeIn 0.25s ease-in !important;
     `;
     
     // Přidat keyframes pro animaci (pokud neexistují)
@@ -2028,7 +2034,7 @@ function showInAppBrowserWarning(action = 'registrace') {
                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(247, 124, 0, 0.3)';">
                     Otevřít v prohlížeči
                 </a>
-                <button onclick="document.getElementById('inAppBrowserWarning')?.remove();"
+                <button class="in-app-browser-close-btn"
                         style="
                             padding: 10px 20px;
                             background: transparent;
@@ -2048,23 +2054,40 @@ function showInAppBrowserWarning(action = 'registrace') {
         </div>
     `;
     
+    // Zablokovat scroll na body
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    document.body.style.overflow = 'hidden';
+    
     document.body.appendChild(modal);
     
     // Zavření při kliknutí na overlay
+    const closeModal = () => {
+        modal.remove();
+        document.body.style.overflow = originalOverflow;
+        document.body.style.position = originalPosition;
+    };
+    
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modal.remove();
+            closeModal();
         }
     });
     
     // Zavření při ESC
     const handleEsc = (e) => {
         if (e.key === 'Escape') {
-            modal.remove();
+            closeModal();
             document.removeEventListener('keydown', handleEsc);
         }
     };
     document.addEventListener('keydown', handleEsc);
+    
+    // Zavření při kliknutí na tlačítko Zavřít
+    const closeBtn = modal.querySelector('.in-app-browser-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
 }
 
 // Exportovat funkce globálně
