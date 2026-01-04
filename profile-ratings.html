@@ -897,6 +897,14 @@
             console.log('✅ Rating breakdown updated from data');
         }
 
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Render all reviews (stejně jako v profile.html)
         function renderAllReviews(reviews, container) {
             console.log('🎨 Rendering reviews:', reviews);
@@ -954,13 +962,6 @@
                                   'Žádný komentář';
 
                 const timeAgo = getTimeAgoHelper(review.updatedAt || review.createdAt);
-
-                // Escape HTML
-                function escapeHtml(text) {
-                    const div = document.createElement('div');
-                    div.textContent = text;
-                    return div.innerHTML;
-                }
                 
                 return `
                     <div class="review-card">
