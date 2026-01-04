@@ -2016,26 +2016,25 @@ function showInAppBrowserWarning(action = 'registrace') {
             </div>
             
             <div style="display: flex; gap: 10px; flex-direction: column;">
-                <a href="${window.location.href}" 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   style="
-                       display: block;
-                       text-align: center;
-                       padding: 12px 20px;
-                       background: linear-gradient(135deg, #f77c00 0%, #ff9500 100%);
-                       color: white;
-                       text-decoration: none;
-                       border-radius: 8px;
-                       font-weight: 600;
-                       font-size: 15px;
-                       transition: transform 0.2s, box-shadow 0.2s;
-                       box-shadow: 0 2px 8px rgba(247, 124, 0, 0.3);
-                   "
-                   onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(247, 124, 0, 0.4)';"
-                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(247, 124, 0, 0.3)';">
+                <button class="in-app-browser-open-btn"
+                        style="
+                            display: block;
+                            text-align: center;
+                            padding: 12px 20px;
+                            background: linear-gradient(135deg, #f77c00 0%, #ff9500 100%);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            font-weight: 600;
+                            font-size: 15px;
+                            cursor: pointer;
+                            transition: transform 0.2s, box-shadow 0.2s;
+                            box-shadow: 0 2px 8px rgba(247, 124, 0, 0.3);
+                        "
+                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(247, 124, 0, 0.4)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(247, 124, 0, 0.3)';">
                     Otevřít v prohlížeči
-                </a>
+                </button>
                 <button class="in-app-browser-close-btn"
                         style="
                             padding: 10px 20px;
