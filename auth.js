@@ -2056,18 +2056,20 @@ function showInAppBrowserWarning(action = 'registrace') {
         </div>
     `;
     
-    // Zablokovat scroll na body
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
+    // Zablokovat scroll na body a html
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     
+    // Přidat overlay přímo na body, ale zajistit, že je přes vše
     document.body.appendChild(modal);
     
     // Zavření při kliknutí na overlay
     const closeModal = () => {
         modal.remove();
-        document.body.style.overflow = originalOverflow;
-        document.body.style.position = originalPosition;
+        document.body.style.overflow = originalBodyOverflow || '';
+        document.documentElement.style.overflow = originalHtmlOverflow || '';
     };
     
     modal.addEventListener('click', (e) => {
