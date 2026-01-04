@@ -764,24 +764,10 @@
                     return dateB - dateA;
                 });
 
-                // Find container - use reviews-section or reviews-list
-                const reviewsSection = document.querySelector('.reviews-section');
-                let container = null;
-                if (reviewsSection) {
-                    container = reviewsSection.querySelector('.reviews-list') || reviewsSection;
-                } else {
-                    container = document.querySelector('.reviews-list');
-                }
+                console.log('✅ Reviews loaded, rendering', allReviews.length, 'reviews');
                 
-                if (!container) {
-                    console.error('❌ Reviews container not found!');
-                    return;
-                }
-                
-                console.log('✅ Reviews container found, rendering', allReviews.length, 'reviews');
-                
-                // Render reviews using same function as profile.html
-                renderAllReviews(allReviews, container);
+                // Display reviews using same function as profile-detail.js
+                await displayUserReviews(allReviews);
                 
                 // Update rating in statistics after loading reviews
                 updateRatingFromReviews(allReviews);
@@ -897,112 +883,159 @@
             console.log('✅ Rating breakdown updated from data');
         }
 
-        // Helper function to escape HTML
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // Helper function to get time ago (stejně jako v profile-detail.js)
+        function getTimeAgo(date) {
+            if (!date) return 'Neznámé datum';
+            let reviewDate;
+            if (date && date.toDate && typeof date.toDate === 'function') {
+                reviewDate = date.toDate();
+            } else if (date instanceof Date) {
+                reviewDate = date;
+            } else {
+                reviewDate = new Date(date);
+            }
+            
+            const now = new Date();
+            const diff = now - reviewDate;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            
+            if (days === 0) return 'Dnes';
+            if (days === 1) return 'Včera';
+            if (days < 7) return `Před ${days} dny`;
+            if (days < 30) return `Před ${Math.floor(days / 7)} týdny`;
+            if (days < 365) return `Před ${Math.floor(days / 30)} měsíci`;
+            return `Před ${Math.floor(days / 365)} lety`;
         }
 
-        // Render all reviews (stejně jako v profile.html)
-        function renderAllReviews(reviews, container) {
-            console.log('🎨 Rendering reviews:', reviews);
-            if (!reviews || reviews.length === 0) {
-                container.innerHTML = '<p class="no-reviews">Uživatel nemá žádné recenze.</p>';
-                return;
-            }
-
-            // Calculate average rating
-            const avgRating = (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1);
-            const totalReviews = reviews.length;
-
-            // Helper function to get time ago
-            function getTimeAgoHelper(date) {
-                if (!date) return 'Neznámé datum';
-                let reviewDate;
-                if (date.toDate && typeof date.toDate === 'function') {
-                    reviewDate = date.toDate();
-                } else if (date instanceof Date) {
-                    reviewDate = date;
+        // Create review card (stejně jako v profile-detail.js)
+        function createReviewCard(review) {
+            // Zpracovat createdAt (může být Timestamp nebo Date)
+            let createdAt;
+            if (review.createdAt) {
+                if (typeof review.createdAt.toDate === 'function') {
+                    createdAt = review.createdAt.toDate();
+                } else if (review.createdAt instanceof Date) {
+                    createdAt = review.createdAt;
                 } else {
-                    reviewDate = new Date(date);
+                    createdAt = new Date(review.createdAt);
                 }
-                
-                const now = new Date();
-                const diffMs = now - reviewDate;
-                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                
-                if (diffDays === 0) return 'Dnes';
-                if (diffDays === 1) return 'Včera';
-                if (diffDays < 7) return `Před ${diffDays} dny`;
-                if (diffDays < 30) return `Před ${Math.floor(diffDays / 7)} týdny`;
-                if (diffDays < 365) return `Před ${Math.floor(diffDays / 30)} měsíci`;
-                return `Před ${Math.floor(diffDays / 365)} lety`;
+            } else if (review.updatedAt) {
+                if (typeof review.updatedAt.toDate === 'function') {
+                    createdAt = review.updatedAt.toDate();
+                } else if (review.updatedAt instanceof Date) {
+                    createdAt = review.updatedAt;
+                } else {
+                    createdAt = new Date(review.updatedAt);
+                }
+            } else {
+                createdAt = new Date();
             }
             
-            // Helper function to create review card
-            function createReviewCardHelper(review) {
-                const stars = Array.from({length: 5}, (_, i) => 
-                    `<i class="fas fa-star ${i < (review.rating || 0) ? 'filled' : ''}"></i>`
-                ).join('');
-
-                const reviewerName = review.reviewerName || 
-                                    review.userName || 
-                                    review.authorName || 
-                                    review.fromUserName || 
-                                    review.name ||
-                                    'Anonymní';
-
-                const reviewText = review.comment || 
-                                  review.text || 
-                                  review.message || 
-                                  review.reviewText || 
-                                  review.description || 
-                                  'Žádný komentář';
-
-                const timeAgo = getTimeAgoHelper(review.updatedAt || review.createdAt);
-                
-                return `
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="reviewer-info">
-                                <div class="reviewer-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="reviewer-details">
-                                    <h4>${escapeHtml(reviewerName)}</h4>
-                                    <span class="review-date">${timeAgo}</span>
-                                </div>
-                            </div>
-                            <div class="review-rating">
-                                <span class="stars">${stars}</span>
-                            </div>
-                        </div>
-                        <div class="review-content">
-                            <p>${escapeHtml(reviewText)}</p>
-                        </div>
-                    </div>
-                `;
+            const timeAgo = getTimeAgo(createdAt);
+            
+            // Použít správná pole: text místo comment, reviewerName (už načtené)
+            const reviewText = review.text || review.comment || 'Recenze bez komentáře.';
+            const reviewerName = review.reviewerName || review.reviewerEmail?.split('@')[0] || 'Anonymní';
+            
+            // Vytvořit hvězdičky s lepším designem (stejně jako v profile-detail.js)
+            const filledStars = '★'.repeat(review.rating || 0);
+            const emptyStars = '☆'.repeat(5 - (review.rating || 0));
+            
+            // Escape HTML
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
             
-            container.innerHTML = `
-                <div class="reviews-summary">
-                    <div class="summary-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">${avgRating}</span>
-                            <span class="stat-label">Průměrné hodnocení</span>
+            return `
+                <div class="review-card-modern">
+                    <div class="review-card-header">
+                        <div class="reviewer-info-modern">
+                            <div class="reviewer-avatar-modern">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="reviewer-details-modern">
+                                <h4 class="reviewer-name">${escapeHtml(reviewerName)}</h4>
+                                <span class="review-date-modern">${timeAgo}</span>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">${totalReviews}</span>
-                            <span class="stat-label">Celkem recenzí</span>
+                        <div class="review-rating-modern">
+                            <div class="stars-container">
+                                <span class="stars-filled">${filledStars}</span>
+                                <span class="stars-empty">${emptyStars}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="reviews-list">
-                    ${reviews.map(review => createReviewCardHelper(review)).join('')}
+                    <div class="review-card-content">
+                        <p class="review-text">${escapeHtml(reviewText)}</p>
+                    </div>
                 </div>
             `;
+        }
+
+        // Display reviews (stejně jako v profile-detail.js)
+        async function displayUserReviews(reviews) {
+            const reviewsGrid = document.querySelector('.reviews-list');
+            if (!reviewsGrid) {
+                console.error('❌ Reviews container not found!');
+                return;
+            }
+            
+            if (!reviews || reviews.length === 0) {
+                reviewsGrid.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 60px 20px;
+                        background: white;
+                        border-radius: 16px;
+                        border: 2px dashed #e5e7eb;
+                    ">
+                        <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                        <p style="
+                            font-size: 16px;
+                            color: #6b7280;
+                            margin: 0;
+                            font-weight: 500;
+                        ">Uživatel zatím nemá žádné recenze.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Načíst jména recenzentů (pokud ještě nejsou načtené)
+            const reviewsWithNames = await Promise.all(
+                reviews.map(async (review) => {
+                    let reviewerName = review.reviewerName || review.reviewerEmail || 'Anonymní';
+                    
+                    // Pokud máme reviewerId, zkus načíst jméno z profilu
+                    if (review.reviewerId && !review.reviewerName) {
+                        try {
+                            const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+                            const reviewerProfileRef = doc(window.firebaseDb, 'users', review.reviewerId);
+                            const reviewerProfileSnap = await getDoc(reviewerProfileRef);
+                            
+                            if (reviewerProfileSnap.exists()) {
+                                const reviewerData = reviewerProfileSnap.data();
+                                reviewerName = reviewerData.name || 
+                                               (reviewerData.firstName && reviewerData.lastName 
+                                                ? `${reviewerData.firstName} ${reviewerData.lastName}`.trim()
+                                                : reviewerData.email?.split('@')[0] || reviewerName);
+                            }
+                        } catch (error) {
+                            console.warn('⚠️ Nepodařilo se načíst jméno recenzenta:', error);
+                        }
+                    }
+                    
+                    return {
+                        ...review,
+                        reviewerName: reviewerName
+                    };
+                })
+            );
+            
+            reviewsGrid.innerHTML = reviewsWithNames.map(review => createReviewCard(review)).join('');
         }
 
         // Update recent reviews from loaded data
