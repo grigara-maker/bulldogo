@@ -977,9 +977,11 @@
 
         // Display reviews (stejně jako v profile-detail.js)
         async function displayUserReviews(reviews) {
+            console.log('🎨 displayUserReviews called with', reviews?.length || 0, 'reviews');
             const reviewsGrid = document.querySelector('.reviews-list');
+            console.log('🔍 Looking for .reviews-list container:', reviewsGrid);
             if (!reviewsGrid) {
-                console.error('❌ Reviews container not found!');
+                console.error('❌ Reviews container (.reviews-list) not found!');
                 return;
             }
             
