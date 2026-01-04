@@ -878,11 +878,8 @@
         // Initialize auth state for profile page
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Profile page loaded');
-            // Hide content immediately until auth is checked
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.style.display = 'none';
-            }
+            // Immediately show empty state
+            showEmptyProfile();
             loadUserProfile();
         });
 
@@ -936,26 +933,32 @@
                         firebaseDb: !!window.firebaseDb
                     });
                     if (window.firebaseAuth && window.firebaseDb) {
-                        console.log('✅ Firebase available, setting up auth listener');
+                        console.log('✅ Firebase available, checking auth');
                         clearInterval(checkFirebase);
                         
-                        // Listen for auth state changes (this will fire immediately if user is already logged in)
+                        // Check if user is logged in
+                        const currentUser = window.firebaseAuth.currentUser;
+                        if (!currentUser) {
+                            // User is not logged in - redirect to login
+                            console.log('⚠️ Uživatel není přihlášen - přesměrování na přihlášení');
+                            if (typeof showAuthModal === 'function') {
+                                showAuthModal('login');
+                            } else {
+                                window.location.href = 'index.html';
+                            }
+                            return;
+                        }
+                        
+                        loadUserData();
+                        
+                        // Listen for auth state changes
                         window.firebaseAuth.onAuthStateChanged((user) => {
                             console.log('👤 Auth state changed on profile page:', user ? user.email : 'Not logged in');
-                            const mainContent = document.querySelector('.main-content');
                             if (user) {
-                                // User logged in - show content
-                                console.log('✅ Uživatel přihlášen, zobrazuji obsah');
-                                if (mainContent) {
-                                    mainContent.style.display = '';
-                                }
                                 loadUserData();
                             } else {
-                                // User not logged in - hide content and show login
-                                console.log('⚠️ Uživatel není přihlášen - zobrazuji přihlášení');
-                                if (mainContent) {
-                                    mainContent.style.display = 'none';
-                                }
+                                // User logged out - redirect to login
+                                console.log('⚠️ Uživatel se odhlásil - přesměrování na přihlášení');
                                 if (typeof showAuthModal === 'function') {
                                     showAuthModal('login');
                                 } else {
