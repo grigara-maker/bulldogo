@@ -1,0 +1,61 @@
+// Firebase Storage pravidla - VERIFIKOVANÁ VERZE
+// Tyto pravidla jsou kompatibilní s kódem v aplikaci
+// 
+// DŮLEŽITÉ: Zkopírujte tento obsah do Firebase Console → Storage → Rules → Edit
+// POZNÁMKA: Při testování v Rules simulátoru zvolte "Write" jako Simulation type
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ===== OBRÁZKY SLUŽEB/INZERÁTŮ =====
+    // Povolit přihlášeným uživatelům nahrávat obrázky služeb do jejich složek
+    // Cesty v kódu: services/{userId}/{timestamp}_preview.jpg, services/{userId}/{timestamp}_{i}.jpg
+    match /services/{userId}/{allPaths=**} {
+      // Každý může číst obrázky služeb
+      allow read: if true;
+      
+      // Pouze vlastník (userId odpovídá UID) může nahrávat a upravovat
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ===== PROFILOVÉ OBRÁZKY =====
+    // Povolit přihlášeným uživatelům nahrávat profilové obrázky
+    // POZNÁMKA: V kódu se používají cesty typu: services/{userId}/profile/avatar_{timestamp}.{ext}
+    // Takže tyto obrázky jsou pokryty pravidlem výše pro /services/{userId}/{allPaths=**}
+    // Toto pravidlo je pro případ, že byste chtěli použít samostatnou složku /profile-pictures/
+    match /profile-pictures/{userId}/{allPaths=**} {
+      // Každý může číst profilové obrázky
+      allow read: if true;
+      
+      // Pouze vlastník (userId odpovídá UID) může nahrávat, upravovat a mazat
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ===== OBRÁZKY V CHATU =====
+    // Povolit přihlášeným uživatelům nahrávat obrázky do chatu
+    // Cesta v kódu: chat/{conversationId}/{timestamp}_{filename}
+    match /chat/{conversationId}/{allPaths=**} {
+      // Každý přihlášený uživatel může číst obrázky z konverzací
+      allow read: if request.auth != null;
+      
+      // Každý přihlášený uživatel může nahrávat obrázky do konverzací
+      allow write: if request.auth != null;
+    }
+    
+    // ===== VÝCHOZÍ: ZAKÁZAT PŘÍSTUP =====
+    // Všechno ostatní je zakázané
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// DŮLEŽITÉ POZNÁMKY:
+// 1. Pravidla jsou kompatibilní s kódem v aplikaci
+// 2. Pokud se stále objevují chyby 404, problém je pravděpodobně v kódu, ne v pravidlech
+// 3. Chyby 404 znamenají, že soubory neexistují - buď se nenahrávají, nebo se mažou
+// 4. Chyby 403 znamenají, že pravidla blokují přístup - to by se mělo opravit těmito pravidly
+// 5. Zkontrolujte konzoli prohlížeče pro logy z uploadu (📸 Nahrávám náhledový obrázek...)
+

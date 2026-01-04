@@ -2075,6 +2075,10 @@ async function addService(serviceData) {
         }
 
         // Vytvořit službu s URL obrázků
+        console.log('💾 Příprava k uložení inzerátu do databáze...');
+        console.log('💾 Počet nahráných obrázků:', uploadedImages.length);
+        console.log('💾 Nahráné obrázky:', uploadedImages);
+        
         const { serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
         const serviceToSave = {
             ...serviceData,
@@ -2089,7 +2093,10 @@ async function addService(serviceData) {
         delete serviceToSave.previewImage;
         delete serviceToSave.additionalImages;
 
-        await addDoc(collection(db, 'users', authCurrentUser.uid, 'inzeraty'), serviceToSave);
+        console.log('💾 Ukládám inzerát do databáze...');
+        const docRef = await addDoc(collection(db, 'users', authCurrentUser.uid, 'inzeraty'), serviceToSave);
+        console.log('✅ Inzerát úspěšně uložen do databáze, ID:', docRef.id);
+        console.log('✅ Uložené obrázky:', serviceToSave.images);
 
         showMessage('Služba byla úspěšně přidána!', 'success');
         closeAddServiceModal();

@@ -524,23 +524,49 @@
                 }
 
                 // Odeslat přes existující Firebase funkci
+                console.log('📤 Příprava k odeslání inzerátu...');
+                console.log('📤 Data:', {
+                    title: data.title,
+                    category: data.category,
+                    location: data.location,
+                    hasPreviewImage: !!data.previewImage,
+                    previewImageSize: data.previewImage?.size,
+                    hasAdditionalImages: !!data.additionalImages?.length,
+                    additionalImagesCount: data.additionalImages?.length || 0
+                });
+                
                 if (typeof window.addService === 'function') {
+                    console.log('✅ addService funkce je dostupná, volám ji...');
                     disablePublish(true);
-                    const result = await window.addService(data);
-                    disablePublish(false);
                     
-                    // Pokud addService vrátila false (např. chybí předplatné), nepřesměrovávat
-                    if (result === false) {
-                        console.log('❌ Inzerát nebyl přidán - chybí předplatné');
-                        return;
+                    try {
+                        const result = await window.addService(data);
+                        console.log('📤 addService vrátila:', result);
+                        disablePublish(false);
+                        
+                        // Pokud addService vrátila false (např. chybí předplatné), nepřesměrovat
+                        if (result === false) {
+                            console.log('❌ Inzerát nebyl přidán - chybí předplatné nebo jiná chyba');
+                            return;
+                        }
+                        
+                        // Po úspěchu přesměrovat na moje inzeráty (pokud existuje stránka), nebo na homepage
+                        console.log('✅ Inzerát úspěšně přidán, přesměrovávám...');
+                        // Uložit log do sessionStorage pro pozdější zobrazení
+                        const logs = console.history || [];
+                        sessionStorage.setItem('lastUploadLogs', JSON.stringify(logs));
+                        setTimeout(() => {
+                            window.location.href = 'my-ads.html';
+                        }, 800);
+                    } catch (error) {
+                        console.error('❌ Chyba při volání addService:', error);
+                        disablePublish(false);
+                        alert('Chyba při ukládání inzerátu: ' + (error.message || error));
                     }
-                    
-                    // Po úspěchu přesměrovat na moje inzeráty (pokud existuje stránka), nebo na homepage
-                    setTimeout(() => {
-                        window.location.href = 'my-ads.html';
-                    }, 800);
                 } else {
-                    alert('Chyba: funkcionalita přidání služby není dostupná.');
+                    console.error('❌ addService funkce není dostupná!');
+                    console.error('❌ window.addService:', typeof window.addService);
+                    alert('Chyba: funkcionalita přidání služby není dostupná. Zkontrolujte, zda je načten soubor auth.js');
                 }
             });
         }
