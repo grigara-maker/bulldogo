@@ -723,6 +723,9 @@
 
                 // Update rating in statistics after loading reviews
                 updateRatingFromReviews(allReviews);
+                
+                // Render reviews to the container
+                updateRecentReviewsFromData(allReviews);
 
             } catch (error) {
                 console.error('❌ Error loading reviews:', error);
