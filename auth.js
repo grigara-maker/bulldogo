@@ -1062,10 +1062,15 @@ function createAuthModal() {
             <style>
                 @media (max-width: 768px) {
                     #forgotPasswordLink {
+                        display: flex !important;
+                        justify-content: center !important;
+                        align-items: center !important;
                         text-align: center !important;
                     }
                     #forgotPasswordLink .forgot-password-btn {
                         display: inline-block !important;
+                        text-align: center !important;
+                        margin: 0 auto !important;
                     }
                 }
             </style>
