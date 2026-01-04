@@ -716,9 +716,12 @@ function displayOtherAds(ads) {
         const escapedWebpUrl = webpUrl.replace(/"/g, '&quot;');
         const escapedTitle = (ad.title || '').replace(/"/g, '&quot;');
         
+        const defaultImageUrl = './fotky/team.jpg';
+        const escapedDefaultUrl = defaultImageUrl.replace(/"/g, '&quot;');
+        
         let imageHtml = `<picture>
             <source srcset="${escapedWebpUrl}" type="image/webp">
-            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; const newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg').replace('.jpg', '_200x200.jpg'); this.src = newUrl + (params ? '?' + params : ''); } else { console.error('❌ Image failed to load:', this.src); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block'; }" data-retry="0">
+            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="if(this.dataset.retry === '0') { this.dataset.retry='1'; const parts = this.src.split('?'); const baseUrl = parts[0]; const params = parts[1] || ''; let newUrl = baseUrl; if(baseUrl.includes('_preview.jpg')) { newUrl = baseUrl.replace('_preview.jpg', '_preview_200x200.jpg'); } else if(!baseUrl.includes('_200x200')) { newUrl = baseUrl.replace(/\\.(jpg|jpeg|png)$/i, '_200x200.$1'); } this.src = newUrl + (params ? '?' + params : ''); } else if(this.dataset.retry === '1') { this.dataset.retry='2'; const parts = this.src.split('?'); this.src = parts[0] + '?alt=media' + (parts[1] ? '&' + parts[1] : ''); } else { this.onerror=null; this.src='${escapedDefaultUrl}'; this.style.display='block'; }" data-retry="0">
         </picture>`;
         imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
         
