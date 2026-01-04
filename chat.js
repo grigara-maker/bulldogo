@@ -917,14 +917,14 @@ async function sendMessage() {
             if (conversationSnap.exists()) {
                 const convData = conversationSnap.data();
                 if (convData.listingId && convData.listingTitle) {
-                    // Zkontrolovat, zda už není systémová zpráva o inzerátu
+                    // Zkontrolovat, zda už není systémová zpráva o tomto konkrétním inzerátu
                     const existingMessagesSnapshot = await getDocs(messagesRef);
-                    const hasSystemMessage = existingMessagesSnapshot.docs.some(doc => {
+                    const hasSystemMessageForThisAd = existingMessagesSnapshot.docs.some(doc => {
                         const data = doc.data();
-                        return data.isAdInfo === true;
+                        return data.isAdInfo === true && data.adId === convData.listingId;
                     });
                     
-                    if (!hasSystemMessage) {
+                    if (!hasSystemMessageForThisAd) {
                         // Vytvořit systémovou zprávu s informacemi o inzerátu
                         // POZOR: senderId musí být ID aktuálního uživatele kvůli Firestore pravidlům
                         const systemMessageText = `📌 Tato konverzace se týká inzerátu: "${convData.listingTitle}"`;
@@ -941,7 +941,7 @@ async function sendMessage() {
                             createdAt: serverTimestamp()
                         });
                         
-                        console.log('✅ Systémová zpráva o inzerátu přidána');
+                        console.log('✅ Systémová zpráva o inzerátu přidána:', convData.listingId);
                     }
                 }
             }
