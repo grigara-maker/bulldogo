@@ -1303,6 +1303,12 @@ function setupAuthModalEvents() {
 
 // Zobrazení auth modalu
 function showAuthModal(type = 'login') {
+    // Kontrola in-app browseru při registraci
+    if (type === 'register' && isInAppBrowser()) {
+        showInAppBrowserWarning('registrace');
+        return;
+    }
+    
     let modal = document.getElementById('authModal');
     
     // Pokud modal neexistuje, vytvoř ho dynamicky
@@ -1884,6 +1890,184 @@ function humanizePhoneError(error) {
             return `Chyba při telefonním ověření: ${errorCode || 'neznámá chyba'}. Zkuste to znovu nebo kontaktujte podporu.`;
     }
 }
+
+// Detekce in-app browseru (Instagram, Facebook, Messenger, TikTok)
+function isInAppBrowser() {
+    if (typeof navigator === 'undefined') return false;
+    
+    const ua = navigator.userAgent || navigator.vendor || '';
+    const isInstagram = ua.includes('Instagram');
+    const isFacebook = ua.includes('FBAN') || ua.includes('FBAV');
+    
+    return isInstagram || isFacebook;
+}
+
+// Zobrazení varování pro in-app browser
+function showInAppBrowserWarning(action = 'registrace') {
+    // Vytvořit modal overlay
+    const modal = document.createElement('div');
+    modal.id = 'inAppBrowserWarning';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.2s ease-in;
+    `;
+    
+    // Přidat keyframes pro animaci (pokud neexistují)
+    if (!document.getElementById('inAppBrowserWarningStyles')) {
+        const style = document.createElement('style');
+        style.id = 'inAppBrowserWarningStyles';
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideUp {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    const actionText = action === 'registrace' ? 'registraci' : action === 'platba' ? 'platbu' : 'tuto akci';
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+            position: relative;
+        ">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="
+                    width: 64px;
+                    height: 64px;
+                    background: linear-gradient(135deg, #f77c00 0%, #ff9500 100%);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 20px;
+                    font-size: 32px;
+                ">⚠️</div>
+                <h2 style="
+                    margin: 0 0 12px 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #1f2937;
+                ">Registrace a platby nejsou v tomto prohlížeči podporovány</h2>
+                <p style="
+                    margin: 0;
+                    color: #6b7280;
+                    font-size: 16px;
+                    line-height: 1.6;
+                ">
+                    Pro dokončení ${actionText} prosím otevřete web v Safari nebo Chrome.
+                </p>
+            </div>
+            
+            <div style="
+                background: #f9fafb;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 24px;
+                border: 1px solid #e5e7eb;
+            ">
+                <h3 style="
+                    margin: 0 0 12px 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #374151;
+                ">Jak otevřít v Safari/Chrome:</h3>
+                <ol style="
+                    margin: 0;
+                    padding-left: 20px;
+                    color: #4b5563;
+                    font-size: 14px;
+                    line-height: 1.8;
+                ">
+                    <li>Klikněte na tlačítko níže</li>
+                    <li>Nebo otevřete menu aplikace a zvolte "Otevřít v prohlížeči"</li>
+                    <li>V Safari/Chrome pak dokončete ${actionText}</li>
+                </ol>
+            </div>
+            
+            <div style="display: flex; gap: 12px; flex-direction: column;">
+                <a href="${window.location.href}" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   style="
+                       display: block;
+                       text-align: center;
+                       padding: 14px 24px;
+                       background: linear-gradient(135deg, #f77c00 0%, #ff9500 100%);
+                       color: white;
+                       text-decoration: none;
+                       border-radius: 8px;
+                       font-weight: 600;
+                       font-size: 16px;
+                       transition: transform 0.2s, box-shadow 0.2s;
+                   "
+                   onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 12px rgba(247, 124, 0, 0.4)';"
+                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                    Otevřít v prohlížeči
+                </a>
+                <button onclick="document.getElementById('inAppBrowserWarning')?.remove();"
+                        style="
+                            padding: 12px 24px;
+                            background: transparent;
+                            border: 1px solid #d1d5db;
+                            color: #6b7280;
+                            border-radius: 8px;
+                            font-weight: 500;
+                            font-size: 14px;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        "
+                        onmouseover="this.style.background='#f3f4f6';"
+                        onmouseout="this.style.background='transparent';">
+                    Zavřít
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Zavření při kliknutí na overlay
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Zavření při ESC
+    const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', handleEsc);
+        }
+    };
+    document.addEventListener('keydown', handleEsc);
+}
+
+// Exportovat funkce globálně
+window.isInAppBrowser = isInAppBrowser;
+window.showInAppBrowserWarning = showInAppBrowserWarning;
 
 // Zobrazení zprávy (banner ve stylu pejska s gradientem)
 function showMessage(message, type = 'info', options = {}) {

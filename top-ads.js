@@ -573,6 +573,14 @@ async function checkPackageForTop(durationDays) {
 }
 
 async function processPayment() {
+    // Kontrola in-app browseru
+    if (typeof window.isInAppBrowser === 'function' && window.isInAppBrowser()) {
+        if (typeof window.showInAppBrowserWarning === 'function') {
+            window.showInAppBrowserWarning('platba');
+        }
+        return;
+    }
+    
     // Kontrola souhlasu s obchodními podmínkami
     const termsCheckbox = document.getElementById('termsCheckbox');
     if (!termsCheckbox || !termsCheckbox.checked) {
