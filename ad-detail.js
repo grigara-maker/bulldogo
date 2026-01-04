@@ -567,7 +567,7 @@ window.changeMainImage = function(imageSrc) {
                 thumbnailElement.setAttribute('data-image-index', index + 1);
                 thumbnailElement.style.cursor = 'pointer';
                 thumbnailElement.innerHTML = `
-                    <img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="${img}" alt="Obrázek ${index + 2}" loading="lazy" decoding="async" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
                     <div class="no-image-placeholder" style="display: none;">
                         <i class="fas fa-image"></i>
                     </div>
@@ -719,7 +719,7 @@ function displayOtherAds(ads) {
         
         let imageHtml = `<picture>
             <source srcset="${escapedWebpUrl}" type="image/webp">
-            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <img src="${optimizedImageUrl}" alt="${escapedTitle}" loading="lazy" decoding="async" width="400" height="300" onerror="console.error('❌ Image failed to load:', this.src); this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';">
         </picture>`;
         imageHtml += '<div class="no-image" style="display:none;"><i class="fas fa-image"></i></div>';
         

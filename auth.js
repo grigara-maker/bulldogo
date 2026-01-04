@@ -2016,7 +2016,11 @@ async function addService(serviceData) {
                     contentType: serviceData.previewImage.type || 'image/jpeg'
                 });
                 console.log('✅ Upload úspěšný, získávám URL...');
+                console.log('🔍 previewSnapshot.ref:', previewSnapshot.ref);
+                console.log('🔍 previewSnapshot.ref.fullPath:', previewSnapshot.ref.fullPath);
                 const previewUrl = await getDownloadURL(previewSnapshot.ref);
+                console.log('🔗 Získaná URL:', previewUrl);
+                console.log('🔗 URL obsahuje token:', previewUrl.includes('token='));
                 uploadedImages.push({
                     url: previewUrl,
                     isPreview: true,
