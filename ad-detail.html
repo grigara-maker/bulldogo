@@ -122,6 +122,23 @@
             color: white !important;
         }
         
+        /* Mobile: Zarovnání tlačítek na střed */
+        @media (max-width: 768px) {
+            .ad-chat-section,
+            .ad-report-section {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                width: 100% !important;
+            }
+            
+            .ad-chat-section button,
+            .ad-report-section button {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+        }
+        
         /* Ad Title Styles */
         .ad-title {
             font-size: 1.3rem !important;
