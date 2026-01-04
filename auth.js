@@ -1061,7 +1061,7 @@ function createAuthModal() {
 			</div>
             <style>
                 @media (max-width: 768px) {
-                    #forgotPasswordLink {
+                    #forgotPasswordLink:not([style*="display: none"]):not([style*="display:none"]) {
                         display: flex !important;
                         justify-content: center !important;
                         align-items: center !important;
