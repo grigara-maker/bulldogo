@@ -757,11 +757,34 @@
                     reviews: allReviews
                 });
 
+                // Sort by date (newest first)
+                allReviews.sort((a, b) => {
+                    const dateA = new Date(a.updatedAt?.toDate?.() || a.updatedAt || a.createdAt?.toDate?.() || a.createdAt || 0);
+                    const dateB = new Date(b.updatedAt?.toDate?.() || b.updatedAt || b.createdAt?.toDate?.() || b.createdAt || 0);
+                    return dateB - dateA;
+                });
+
+                // Find container - use reviews-section or reviews-list
+                const reviewsSection = document.querySelector('.reviews-section');
+                let container = null;
+                if (reviewsSection) {
+                    container = reviewsSection.querySelector('.reviews-list') || reviewsSection;
+                } else {
+                    container = document.querySelector('.reviews-list');
+                }
+                
+                if (!container) {
+                    console.error('❌ Reviews container not found!');
+                    return;
+                }
+                
+                console.log('✅ Reviews container found, rendering', allReviews.length, 'reviews');
+                
+                // Render reviews using same function as profile.html
+                renderAllReviews(allReviews, container);
+                
                 // Update rating in statistics after loading reviews
                 updateRatingFromReviews(allReviews);
-                
-                // Render reviews to the container
-                updateRecentReviewsFromData(allReviews);
 
             } catch (error) {
                 console.error('❌ Error loading reviews:', error);
