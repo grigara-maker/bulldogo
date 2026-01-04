@@ -1066,11 +1066,15 @@ function createAuthModal() {
                         justify-content: center !important;
                         align-items: center !important;
                         text-align: center !important;
+                        width: 100% !important;
                     }
-                    #forgotPasswordLink .forgot-password-btn {
+                    #forgotPasswordLink .forgot-password-btn,
+                    #forgotPasswordLink #btnForgotPassword {
                         display: inline-block !important;
                         text-align: center !important;
                         margin: 0 auto !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
                     }
                 }
             </style>
