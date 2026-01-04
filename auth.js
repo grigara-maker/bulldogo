@@ -1913,13 +1913,14 @@ function showInAppBrowserWarning(action = 'registrace') {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.75);
+        background: radial-gradient(1200px 600px at 70% 10%, rgba(247,124,0,0.18), transparent 60%), rgba(0,0,0,0.65);
+        backdrop-filter: blur(8px) saturate(110%);
         z-index: 100000;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 20px;
-        animation: fadeIn 0.2s ease-in;
+        animation: fadeIn 0.25s ease-in;
     `;
     
     // Přidat keyframes pro animaci (pokud neexistují)
@@ -1932,8 +1933,8 @@ function showInAppBrowserWarning(action = 'registrace') {
                 to { opacity: 1; }
             }
             @keyframes slideUp {
-                from { transform: translateY(20px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
+                from { transform: translateY(30px) scale(0.95); opacity: 0; }
+                to { transform: translateY(0) scale(1); opacity: 1; }
             }
         `;
         document.head.appendChild(style);
@@ -1945,36 +1946,38 @@ function showInAppBrowserWarning(action = 'registrace') {
         <div style="
             background: white;
             border-radius: 16px;
-            padding: 32px;
-            max-width: 500px;
+            padding: 24px;
+            max-width: 380px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
             animation: slideUp 0.3s ease-out;
             position: relative;
         ">
-            <div style="text-align: center; margin-bottom: 24px;">
+            <div style="text-align: center; margin-bottom: 20px;">
                 <div style="
-                    width: 64px;
-                    height: 64px;
+                    width: 56px;
+                    height: 56px;
                     background: linear-gradient(135deg, #f77c00 0%, #ff9500 100%);
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 20px;
-                    font-size: 32px;
+                    margin: 0 auto 16px;
+                    font-size: 28px;
+                    box-shadow: 0 4px 16px rgba(247, 124, 0, 0.3);
                 ">⚠️</div>
                 <h2 style="
-                    margin: 0 0 12px 0;
-                    font-size: 24px;
+                    margin: 0 0 10px 0;
+                    font-size: 20px;
                     font-weight: 700;
                     color: #1f2937;
-                ">Registrace a platby nejsou v tomto prohlížeči podporovány</h2>
+                    line-height: 1.3;
+                ">Tento prohlížeč není podporován</h2>
                 <p style="
                     margin: 0;
                     color: #6b7280;
-                    font-size: 16px;
-                    line-height: 1.6;
+                    font-size: 14px;
+                    line-height: 1.5;
                 ">
                     Pro dokončení ${actionText} prosím otevřete web v Safari nebo Chrome.
                 </p>
@@ -1982,53 +1985,47 @@ function showInAppBrowserWarning(action = 'registrace') {
             
             <div style="
                 background: #f9fafb;
-                border-radius: 12px;
-                padding: 20px;
-                margin-bottom: 24px;
+                border-radius: 10px;
+                padding: 14px;
+                margin-bottom: 20px;
                 border: 1px solid #e5e7eb;
             ">
-                <h3 style="
-                    margin: 0 0 12px 0;
-                    font-size: 16px;
-                    font-weight: 600;
-                    color: #374151;
-                ">Jak otevřít v Safari/Chrome:</h3>
-                <ol style="
+                <p style="
                     margin: 0;
-                    padding-left: 20px;
                     color: #4b5563;
-                    font-size: 14px;
-                    line-height: 1.8;
+                    font-size: 13px;
+                    line-height: 1.6;
+                    text-align: center;
                 ">
-                    <li>Klikněte na tlačítko níže</li>
-                    <li>Nebo otevřete menu aplikace a zvolte "Otevřít v prohlížeči"</li>
-                    <li>V Safari/Chrome pak dokončete ${actionText}</li>
-                </ol>
+                    <strong style="color: #374151;">Jak otevřít v prohlížeči:</strong><br>
+                    Klikněte na tlačítko níže nebo v menu aplikace zvolte "Otevřít v Safari/Chrome"
+                </p>
             </div>
             
-            <div style="display: flex; gap: 12px; flex-direction: column;">
+            <div style="display: flex; gap: 10px; flex-direction: column;">
                 <a href="${window.location.href}" 
                    target="_blank" 
                    rel="noopener noreferrer"
                    style="
                        display: block;
                        text-align: center;
-                       padding: 14px 24px;
+                       padding: 12px 20px;
                        background: linear-gradient(135deg, #f77c00 0%, #ff9500 100%);
                        color: white;
                        text-decoration: none;
                        border-radius: 8px;
                        font-weight: 600;
-                       font-size: 16px;
+                       font-size: 15px;
                        transition: transform 0.2s, box-shadow 0.2s;
+                       box-shadow: 0 2px 8px rgba(247, 124, 0, 0.3);
                    "
-                   onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 12px rgba(247, 124, 0, 0.4)';"
-                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                   onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(247, 124, 0, 0.4)';"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(247, 124, 0, 0.3)';">
                     Otevřít v prohlížeči
                 </a>
                 <button onclick="document.getElementById('inAppBrowserWarning')?.remove();"
                         style="
-                            padding: 12px 24px;
+                            padding: 10px 20px;
                             background: transparent;
                             border: 1px solid #d1d5db;
                             color: #6b7280;
@@ -2036,10 +2033,10 @@ function showInAppBrowserWarning(action = 'registrace') {
                             font-weight: 500;
                             font-size: 14px;
                             cursor: pointer;
-                            transition: background 0.2s;
+                            transition: background 0.2s, border-color 0.2s;
                         "
-                        onmouseover="this.style.background='#f3f4f6';"
-                        onmouseout="this.style.background='transparent';">
+                        onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#9ca3af';"
+                        onmouseout="this.style.background='transparent'; this.style.borderColor='#d1d5db';">
                     Zavřít
                 </button>
             </div>
