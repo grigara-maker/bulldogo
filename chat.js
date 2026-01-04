@@ -701,7 +701,7 @@ function renderMessages() {
     
     container.innerHTML = messages.map(msg => {
         // Systémová zpráva o inzerátu
-        if (msg.isAdInfo && msg.senderId === 'system') {
+        if (msg.isAdInfo) {
             const adLink = msg.adUrl ? `<a href="${msg.adUrl}" style="color: #f77c00; text-decoration: underline; font-weight: 600;">Zobrazit inzerát</a>` : '';
             return `
                 <div class="ig-row" style="justify-content: center; margin: 16px 0;">
@@ -910,37 +910,45 @@ async function sendMessage() {
         console.log('✅ Zpráva uložena:', messageDocRef.id);
         
         // Pokud konverzace má listingId a listingTitle, přidat systémovou zprávu o inzerátu (pokud ještě není)
-        const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
-        const conversationSnap = await getDoc(conversationRef);
-        
-        if (conversationSnap.exists()) {
-            const convData = conversationSnap.data();
-            if (convData.listingId && convData.listingTitle) {
-                // Zkontrolovat, zda už není systémová zpráva o inzerátu
-                const existingMessagesSnapshot = await getDocs(messagesRef);
-                const hasSystemMessage = existingMessagesSnapshot.docs.some(doc => {
-                    const data = doc.data();
-                    return data.senderId === 'system' && data.isAdInfo === true;
-                });
-                
-                if (!hasSystemMessage) {
-                    // Vytvořit systémovou zprávu s informacemi o inzerátu
-                    const systemMessageText = `📌 Tato konverzace se týká inzerátu: "${convData.listingTitle}"`;
-                    const adUrl = `ad-detail.html?id=${convData.listingId}&userId=${convData.participants.find(uid => uid !== currentUser.uid)}`;
-                    
-                    await addDoc(messagesRef, {
-                        senderId: 'system',
-                        isAdInfo: true,
-                        text: systemMessageText,
-                        adUrl: adUrl,
-                        adId: convData.listingId,
-                        adTitle: convData.listingTitle,
-                        createdAt: serverTimestamp()
+        // Použijeme try-catch, aby to neblokovalo odesílání zprávy
+        try {
+            const conversationRef = doc(window.firebaseDb, 'conversations', currentConversationId);
+            const conversationSnap = await getDoc(conversationRef);
+            
+            if (conversationSnap.exists()) {
+                const convData = conversationSnap.data();
+                if (convData.listingId && convData.listingTitle) {
+                    // Zkontrolovat, zda už není systémová zpráva o inzerátu
+                    const existingMessagesSnapshot = await getDocs(messagesRef);
+                    const hasSystemMessage = existingMessagesSnapshot.docs.some(doc => {
+                        const data = doc.data();
+                        return data.isAdInfo === true;
                     });
                     
-                    console.log('✅ Systémová zpráva o inzerátu přidána');
+                    if (!hasSystemMessage) {
+                        // Vytvořit systémovou zprávu s informacemi o inzerátu
+                        // POZOR: senderId musí být ID aktuálního uživatele kvůli Firestore pravidlům
+                        const systemMessageText = `📌 Tato konverzace se týká inzerátu: "${convData.listingTitle}"`;
+                        const otherUserId = convData.participants.find(uid => uid !== currentUser.uid);
+                        const adUrl = `ad-detail.html?id=${convData.listingId}&userId=${otherUserId}`;
+                        
+                        await addDoc(messagesRef, {
+                            senderId: currentUser.uid, // Musí být ID přihlášeného uživatele kvůli pravidlům
+                            isAdInfo: true,
+                            text: systemMessageText,
+                            adUrl: adUrl,
+                            adId: convData.listingId,
+                            adTitle: convData.listingTitle,
+                            createdAt: serverTimestamp()
+                        });
+                        
+                        console.log('✅ Systémová zpráva o inzerátu přidána');
+                    }
                 }
             }
+        } catch (systemMessageError) {
+            // Nechat tichý fallback - systémová zpráva není kritická
+            console.warn('⚠️ Nepodařilo se přidat systémovou zprávu o inzerátu:', systemMessageError);
         }
         
         // Aktualizovat konverzaci (zpráva s obrázky nebo textem)
