@@ -262,8 +262,20 @@ async function setupRealtimeListener() {
                 }
             });
             
-            // Seřadit podle data vytvoření (nejnovější první) v JavaScriptu
+            // Seřadit: TOP inzeráty podle topActivatedAt (nejnovější první), pak klasické podle createdAt
             allServices.sort((a, b) => {
+                // TOP mají přednost
+                if (a.isTop && !b.isTop) return -1;
+                if (!a.isTop && b.isTop) return 1;
+                
+                // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+                if (a.isTop && b.isTop) {
+                    const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+                    const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+                    return bTopDate - aTopDate;
+                }
+                
+                // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
                 const dateA = new Date(a.createdAt);
                 const dateB = new Date(b.createdAt);
                 return dateB - dateA;
@@ -504,15 +516,41 @@ function initLocalFallback() {
             console.log('⚠️ Žádné uložené služby, vytvářím testovací...');
             createTestServices();
         }
-        // Konzistence: řadit dle createdAt (nejnovější první)
-        allServices.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        filteredServices = [...allServices];
-        // TOP služby vždy první i v lokálním fallbacku
-        filteredServices.sort((a, b) => {
+        // Konzistence: TOP inzeráty podle topActivatedAt (nejnovější první), pak klasické podle createdAt
+        allServices.sort((a, b) => {
+            // TOP mají přednost
             if (a.isTop && !b.isTop) return -1;
             if (!a.isTop && b.isTop) return 1;
-            return 0;
+            
+            // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+            if (a.isTop && b.isTop) {
+                const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+                const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+                return bTopDate - aTopDate;
+            }
+            
+            // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        
+        filteredServices = [...allServices];
+        // TOP služby vždy první i v lokálním fallbacku, řadit podle topActivatedAt
+        filteredServices.sort((a, b) => {
+            // TOP mají přednost
+            if (a.isTop && !b.isTop) return -1;
+            if (!a.isTop && b.isTop) return 1;
+            
+            // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+            if (a.isTop && b.isTop) {
+                const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+                const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+                return bTopDate - aTopDate;
+            }
+            
+            // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateB - dateA;
         });
         console.log('📊 Služby připraveny:', { allServices: allServices.length, filteredServices: filteredServices.length });
         
