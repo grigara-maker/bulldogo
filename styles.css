@@ -17412,6 +17412,8 @@ html:has(.ad-detail-content) {
     padding-bottom: 0 !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
+    /* Zajistit fixní velikost i během načítání */
+    contain: layout size !important; /* Zabraňuje změně velikosti během načítání */
 }
 
 .ad-thumb img,
