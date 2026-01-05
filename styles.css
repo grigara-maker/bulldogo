@@ -854,7 +854,6 @@
 
 .ads-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
     gap: 24px !important;
     max-width: 1600px !important;
     margin: 0 auto !important;
@@ -862,19 +861,14 @@
     justify-content: start !important;
     align-items: stretch !important;
     grid-auto-flow: row !important;
+    /* Desktop: 4 sloupce s fixní šířkou */
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
-/* Desktop: 4 sloupce s fixní šířkou */
+/* Desktop: 4 sloupce */
 @media (min-width: 1200px) {
     .ads-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    }
-    
-    /* Zajistit, že jeden prvek má stejnou šířku jako ostatní */
-    .ads-grid > .ad-card:only-child {
-        grid-column: span 1 !important;
-        max-width: calc((1600px - 72px) / 4) !important;
-        width: 100% !important;
     }
 }
 
@@ -883,12 +877,6 @@
     .ads-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
-    
-    .ads-grid > .ad-card:only-child {
-        grid-column: span 1 !important;
-        max-width: calc((100% - 48px) / 3) !important;
-        width: 100% !important;
-    }
 }
 
 /* Mobil: 1 sloupec */
@@ -896,12 +884,14 @@
     .ads-grid {
         grid-template-columns: 1fr !important;
     }
-    
-    .ads-grid > .ad-card:only-child {
-        grid-column: span 1 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-    }
+}
+
+/* Zajistit, že každá karta má správnou šířku - vždy jen jeden sloupec */
+.ads-grid > .ad-card {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
 }
 
 /* Zajistit, že loading zabere všechny sloupce */
