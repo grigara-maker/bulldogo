@@ -861,18 +861,26 @@
                         let adReviewsCount = 0;
                         for (const adDoc of inzeratySnap.docs) {
                             try {
-                                const reviewsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty', adDoc.id, 'reviews');
+                                const adId = adDoc.id;
+                                const adData = adDoc.data();
+                                console.log(`📋 Checking ad ${adId}:`, adData.title || 'No title');
+                                
+                                const reviewsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty', adId, 'reviews');
                                 const reviewsSnap = await getDocs(reviewsRef);
+                                console.log(`📋 Found ${reviewsSnap.size} reviews for ad ${adId}`);
+                                
                                 reviewsSnap.forEach(reviewDoc => {
                                     const reviewData = reviewDoc.data();
+                                    console.log(`📋 Review from ad ${adId}:`, reviewData);
                                     reviewData.id = reviewDoc.id;
                                     reviewData.type = 'ad';
-                                    reviewData.adId = adDoc.id;
+                                    reviewData.adId = adId;
                                     userReviews.push(reviewData);
                                     adReviewsCount++;
                                 });
                             } catch (reviewError) {
                                 console.warn(`⚠️ Error loading reviews for ad ${adDoc.id}:`, reviewError.message);
+                                console.warn(`⚠️ Error details:`, reviewError);
                             }
                         }
                         console.log('✅ Ad reviews loaded via alternative method:', adReviewsCount);
