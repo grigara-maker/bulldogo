@@ -235,15 +235,20 @@
     <script>
         // Load user ratings from Firebase + refresh při návratu
         document.addEventListener('DOMContentLoaded', () => {
-            loadUserRatings();
+            // Nevolat loadRatingsData hned - počkat na auth state
             loadUserProfile();
         });
         window.addEventListener('pageshow', () => {
-            loadRatingsData();
-            loadUserData?.();
+            // Počkat na auth state před načtením dat
+            if (window.firebaseAuth?.currentUser) {
+                loadRatingsData();
+                loadUserData?.();
+            }
         });
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) loadRatingsData();
+            if (!document.hidden && window.firebaseAuth?.currentUser) {
+                loadRatingsData();
+            }
         });
 
         // Load user profile data
@@ -273,13 +278,11 @@
                             return;
                         }
                         
-                        loadUserData();
-                        loadRatingsData();
-                        
-                        // Listen for auth state changes
+                        // Listen for auth state changes FIRST
                         window.firebaseAuth.onAuthStateChanged((user) => {
-                            console.log('👤 Auth state changed on profile page:', user ? user.email : 'Not logged in');
+                            console.log('👤 Auth state changed on profile-ratings page:', user ? user.email : 'Not logged in');
                             if (user) {
+                                console.log('✅ User logged in, loading data...');
                                 loadUserData();
                                 loadRatingsData();
                             } else {
@@ -292,6 +295,14 @@
                                 }
                             }
                         });
+                        
+                        // Pokud je uživatel už přihlášen, načíst data
+                        const currentUser = window.firebaseAuth.currentUser;
+                        if (currentUser) {
+                            console.log('✅ User already logged in, loading data immediately');
+                            loadUserData();
+                            loadRatingsData();
+                        }
                     }
                 }, 100);
             } catch (error) {
@@ -300,20 +311,9 @@
         }
 
         async function loadUserRatings() {
-            try {
-                // Wait for Firebase to be available
-                const checkFirebase = setInterval(() => {
-                    if (window.firebaseAuth && window.firebaseDb) {
-                        clearInterval(checkFirebase);
-                        const currentUser = window.firebaseAuth.currentUser;
-                        if (currentUser) {
-                        loadRatingsData();
-                        }
-                    }
-                }, 100);
-            } catch (error) {
-                console.error('Chyba při načítání hodnocení:', error);
-            }
+            // Tato funkce je zastaralá - používá se loadRatingsData() přímo
+            // Necháme ji pro kompatibilitu, ale nevoláme ji
+            console.log('⚠️ loadUserRatings() is deprecated, use loadRatingsData() instead');
         }
 
         // Global variable for reviews (stejně jako v profile-detail.js)
