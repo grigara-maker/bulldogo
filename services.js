@@ -703,16 +703,22 @@ function displayServices(list) {
         // Vytvořit kopii pro řazení
         servicesToRender = [...servicesToRender];
         
-        // Seřadit: TOP nejnovější první, pak klasické nejnovější
+        // Seřadit: TOP nejnovější první (podle topActivatedAt), pak klasické nejnovější
         servicesToRender.sort((a, b) => {
-            const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
-            const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
-            
             // TOP mají přednost
             if (a.isTop && !b.isTop) return -1;
             if (!a.isTop && b.isTop) return 1;
             
-            // V rámci stejné skupiny (TOP/klasické) řadit podle data - nejnovější první
+            // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+            if (a.isTop && b.isTop) {
+                const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+                const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+                return bTopDate - aTopDate;
+            }
+            
+            // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
+            const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+            const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
             return bDate - aDate;
         });
     }
@@ -1348,16 +1354,22 @@ function filterServices() {
         return matchesSearch && matchesCategory && matchesRegion && isVisible;
     });
 
-    // TOP inzeráty vždy první, v rámci skupin řadit podle data (nejnovější první)
+    // TOP inzeráty vždy první, v rámci TOP řadit podle data topování (nejnovější první)
     filteredAds.sort((a, b) => {
-        const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
-        const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
-        
         // TOP mají přednost
         if (a.isTop && !b.isTop) return -1;
         if (!a.isTop && b.isTop) return 1;
         
-        // V rámci stejné skupiny (TOP/klasické) řadit podle data - nejnovější první
+        // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+        if (a.isTop && b.isTop) {
+            const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+            const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+            return bTopDate - aTopDate;
+        }
+        
+        // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
+        const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+        const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
         return bDate - aDate;
     });
 
@@ -1659,9 +1671,17 @@ function sortServices() {
         }
     });
 
-    // TOP vždy nahoře, ale uvnitř skupin zachovat výše provedené řazení
+    // TOP vždy nahoře, seřadit TOP podle topActivatedAt (nejnovější první)
     const top = base.filter(s => !!s.isTop);
     const rest = base.filter(s => !s.isTop);
+    
+    // Seřadit TOP inzeráty podle data topování (nejnovější první)
+    top.sort((a, b) => {
+        const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+        const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+        return bTopDate - aTopDate;
+    });
+    
     const result = [...top, ...rest];
 
     filteredServices = result;
