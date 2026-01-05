@@ -861,7 +861,12 @@
     justify-content: start !important;
     align-items: stretch !important;
     grid-auto-flow: row !important;
-    /* Desktop: 4 sloupce s fixní šířkou */
+    /* Desktop: 4 sloupce s fixní šířkou - vždy stejná struktura i pro jeden prvek */
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+/* Zajistit, že i když je jen jeden inzerát, grid má stále stejnou strukturu */
+.ads-grid:has(> .ad-card:only-child) {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
@@ -896,10 +901,10 @@
 
 /* Zajistit, že i jeden inzerát má stejnou velikost jako když jich je více */
 .ads-grid > .ad-card:only-child {
-    max-width: none !important;
+    grid-column: 1 / 2 !important; /* Zabere jen první sloupec */
     width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
-    grid-column: span 1 !important;
 }
 
 /* Zajistit, že loading zabere všechny sloupce */
