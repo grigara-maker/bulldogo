@@ -17426,11 +17426,23 @@ html:has(.ad-detail-content) {
     width: 100% !important;
     max-height: none !important;
     min-width: 100% !important;
-    padding-bottom: 0 !important;
+    padding-bottom: 75% !important; /* Fallback pro fixní velikost během načítání */
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
     position: relative !important;
     box-sizing: border-box !important;
+}
+
+/* Pokud prohlížeč podporuje aspect-ratio, použij ho místo padding-bottom */
+@supports (aspect-ratio: 4 / 3) {
+    .ad-thumb,
+    .ad-card .ad-thumb,
+    .ad-card.is-top .ad-thumb,
+    #servicesGrid .ad-card .ad-thumb,
+    .ads-grid .ad-card .ad-thumb {
+        padding-bottom: 0 !important;
+        height: auto !important;
+    }
 }
 
 .ad-thumb img,
