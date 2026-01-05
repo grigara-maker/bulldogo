@@ -565,7 +565,7 @@ async function processPayment() {
                 if (url) {
                     // Text už je změněný na začátku funkce, jen přesměrovat
                     setTimeout(() => {
-                        window.location.assign(url);
+                    window.location.assign(url);
                     }, 300);
                     return true; // stop
                 }
@@ -827,15 +827,15 @@ function checkAuthForChat() {
     // Check if user is authenticated
     const currentUser = window.firebaseAuth?.currentUser;
     if (currentUser) {
-        // User is logged in, allow access to chat
-        window.location.href = 'chat.html';
-    } else {
-        // User is not logged in, show auth modal
+                // User is logged in, allow access to chat
+                window.location.href = 'chat.html';
+            } else {
+                // User is not logged in, show auth modal
         if (typeof showAuthModal === 'function') {
             showAuthModal('login');
         } else if (typeof window.showAuthModal === 'function') {
             window.showAuthModal('login');
-        } else {
+    } else {
             // Fallback if auth modal is not available yet
             window.location.href = 'chat.html';
         }

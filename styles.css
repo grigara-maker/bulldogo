@@ -16206,14 +16206,29 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
 /* Ads Grid for Admin - POUZE pokud není použito na stránce služeb */
 .ads-grid:not(#servicesGrid) {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 1.5rem;
     margin-top: 1.5rem;
 }
 
+/* Zajistit, že i jeden admin inzerát má stejnou velikost */
+.ads-grid:not(#servicesGrid) > .ad-card-admin:only-child {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Tablet: 3 sloupce pro admin grid */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .ads-grid:not(#servicesGrid) {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+}
+
 /* Zajistit dva sloupce na mobilních zařízeních i pro admin */
-@media (max-width: 768px) {
-    .ads-grid {
+@media (max-width: 767px) {
+    .ads-grid:not(#servicesGrid) {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.75rem !important;
     }
@@ -16225,6 +16240,10 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .ad-card-admin:hover {

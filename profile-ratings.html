@@ -813,7 +813,7 @@
                 
                 // 1. Načíst recenze na profilu uživatele (users/{userId}/reviews)
                 try {
-                    const profileReviewsRef = collection(window.firebaseDb, 'users', userId, 'reviews');
+                const profileReviewsRef = collection(window.firebaseDb, 'users', userId, 'reviews');
                     const profileReviewsSnap = await getDocs(profileReviewsRef);
                     profileReviewsSnap.forEach(doc => {
                         const reviewData = doc.data();
