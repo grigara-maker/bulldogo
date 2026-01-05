@@ -861,6 +861,13 @@
     width: 100% !important; /* Plná šířka containeru */
     justify-content: start !important; /* Zarovnat grid vlevo, nevycentrovat */
     align-items: stretch !important; /* Všechny karty mají stejnou výšku */
+    grid-auto-flow: row !important; /* Zajistit, že prvky jdou do řádků, ne do sloupců */
+}
+
+/* Zajistit, že i když je jen jeden prvek, má stejnou šířku jako ostatní */
+.ads-grid > .ad-card:only-child {
+    max-width: calc((100% - 72px) / 4) !important; /* (100% - 3*gap) / 4 sloupců */
+    width: 100% !important;
 }
 
 /* Na hlavní stránce zmenšit grid, aby inzeráty nebyly až u kraje */
