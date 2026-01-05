@@ -804,7 +804,21 @@ function displayServices(list) {
         noServices.style.display = 'none';
     }
 
-    grid.innerHTML = finalServices.map(service => createAdCard(service, showActions)).join('');
+    // Zabraň změně velikosti při filtrování - použij requestAnimationFrame
+    requestAnimationFrame(() => {
+        // Nastavit minimální výšku gridu, aby se zabránilo změně velikosti
+        const currentHeight = grid.offsetHeight;
+        if (currentHeight > 0) {
+            grid.style.minHeight = currentHeight + 'px';
+        }
+        
+        grid.innerHTML = finalServices.map(service => createAdCard(service, showActions)).join('');
+        
+        // Po renderování odstranit min-height
+        requestAnimationFrame(() => {
+            grid.style.minHeight = '';
+        });
+    });
     
     // Optimalizace: Intersection Observer pro lepší lazy loading
     if ('IntersectionObserver' in window) {

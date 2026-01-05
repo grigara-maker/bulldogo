@@ -863,6 +863,9 @@
     grid-auto-flow: row !important;
     /* Desktop: 4 sloupce s fixní šířkou - vždy stejná struktura i pro jeden prvek */
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    /* Zabraň změně velikosti při filtrování */
+    contain: layout !important;
+    min-height: 0 !important;
 }
 
 /* Zajistit, že i když je jen jeden inzerát, grid má stále stejnou strukturu */
@@ -948,6 +951,9 @@
     padding: 0 !important;
     float: none !important;
     clear: both !important;
+    /* Zabraň změně velikosti při filtrování */
+    contain: layout style paint !important;
+    will-change: transform !important;
 }
 
 .ad-card:hover {
