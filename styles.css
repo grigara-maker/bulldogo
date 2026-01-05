@@ -966,7 +966,6 @@
     width: 100% !important; 
     aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
     height: auto !important; /* Automatická výška podle aspect-ratio */
-    min-height: 0 !important;
     min-width: 100% !important;
     background: white !important;
     display: block !important;
@@ -976,8 +975,8 @@
     position: relative !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
-    /* Zajistit fixní velikost i během načítání - použít min-height pro starší prohlížeče */
-    min-height: calc(100% * 3 / 4) !important; /* 3/4 výšky pro aspect-ratio 4:3 */
+    /* Zajistit fixní velikost - kontejner má vždy stejnou velikost */
+    box-sizing: border-box !important;
 }
 .ad-thumb img { 
     width: 100% !important; 
@@ -17407,13 +17406,12 @@ html:has(.ad-detail-content) {
     height: auto !important;
     width: 100% !important;
     max-height: none !important;
-    min-height: 0 !important;
     min-width: 100% !important;
     padding-bottom: 0 !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
-    /* Zajistit fixní velikost i během načítání */
-    contain: layout size !important; /* Zabraňuje změně velikosti během načítání */
+    position: relative !important;
+    box-sizing: border-box !important;
 }
 
 .ad-thumb img,
