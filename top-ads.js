@@ -640,11 +640,23 @@ async function processPayment() {
         // Pokračovat dál, pokud kontrola selže (nechceme blokovat platbu kvůli chybě)
     }
     
+    // UI: loading - ZOBRAZIT OKAMŽITĚ po rychlých kontrolách
+    const payButton = document.querySelector('.payment-actions .btn-primary');
+    const originalText = payButton ? payButton.innerHTML : null;
+    if (payButton) {
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
+        payButton.disabled = true;
+    }
+    
     // Kontrola balíčku před topováním
     const packageCheck = await checkPackageForTop(selectedPricing.duration);
     if (!packageCheck.valid) {
         const message = packageCheck.message || 'Pro topování inzerátů potřebujete aktivní balíček.';
         showPackageWarningModal(message);
+        if (payButton && originalText) {
+            payButton.innerHTML = originalText;
+            payButton.disabled = false;
+        }
         return;
     }
     // Mapování Stripe Price IDs (nahraďte skutečnými ID)
@@ -704,14 +716,11 @@ async function processPayment() {
     
     if (!priceId) {
         alert("Chybí Stripe cena pro vybranou délku topování.");
+        if (payButton && originalText) {
+            payButton.innerHTML = originalText;
+            payButton.disabled = false;
+        }
         return;
-    }
-    // UI: loading
-    const payButton = document.querySelector('.payment-actions .btn-primary');
-    const originalText = payButton ? payButton.innerHTML : null;
-    if (payButton) {
-        payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
-        payButton.disabled = true;
     }
     // Uložit pending aktivaci TOP (pro návrat ze Stripe)
     try {

@@ -436,6 +436,14 @@ async function processPayment() {
         try { if (typeof window.showAuthModal === 'function') window.showAuthModal('login'); } catch (_) {}
         return;
     }
+    
+    // UI: loading - ZOBRAZIT OKAMŽITĚ po rychlých kontrolách
+    const payButton = document.querySelector('.payment-actions .btn-primary');
+    const originalText = payButton ? payButton.innerHTML : null;
+    if (payButton) {
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
+        payButton.disabled = true;
+    }
     // Mapování Stripe Price IDs (nahraďte skutečnými ID z Stripe)
     const STRIPE_PRICE_IDS = {
         hobby: "price_1Sf26X1aQBd6ajy2BPS7ioTv",
@@ -480,14 +488,11 @@ async function processPayment() {
     if (!priceId) priceId = STRIPE_PRICE_IDS[planId];
     if (!priceId) {
         showMessage("Chybí Stripe cena pro vybraný balíček.", "error");
+        if (payButton && originalText) {
+            payButton.innerHTML = originalText;
+            payButton.disabled = false;
+        }
         return;
-    }
-    // UI: loading
-        const payButton = document.querySelector('.payment-actions .btn-primary');
-    const originalText = payButton ? payButton.innerHTML : null;
-    if (payButton) {
-        payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
-        payButton.disabled = true;
     }
     // Uložit pending plán (pro návrat ze Stripe – mapování + okamžitý badge)
     try {
