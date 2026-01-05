@@ -241,8 +241,8 @@
         window.addEventListener('pageshow', () => {
             // Počkat na auth state před načtením dat
             if (window.firebaseAuth?.currentUser) {
-                loadRatingsData();
-                loadUserData?.();
+            loadRatingsData();
+            loadUserData?.();
             }
         });
         document.addEventListener('visibilitychange', () => {
@@ -363,7 +363,7 @@
                 } else {
                     // Pokud nejsou recenze, použít data z profilu
                     console.log('📊 Používám data z profilu (žádné recenze)');
-                    updateRatingsDisplay(userProfile);
+                updateRatingsDisplay(userProfile);
                 }
                 
                 // Zobrazit recenze - POČKAT až se rating aktualizuje
@@ -826,26 +826,57 @@
                     console.warn('⚠️ Error loading profile reviews:', profileError);
                 }
                 
-                // 2. Načíst recenze na inzerátech uživatele pomocí collectionGroup
+                // 2. Načíst recenze na inzerátech uživatele - projít všechny inzeráty
                 try {
+                    // Nejdříve zkusit collectionGroup (rychlejší, ale může selhat kvůli oprávněním)
+                    try {
                 const adReviewsGroup = collectionGroup(window.firebaseDb, 'reviews');
-                    const adReviewsSnap = await getDocs(adReviewsGroup);
-                    adReviewsSnap.forEach(docSnap => {
-                        const reviewData = docSnap.data();
-                        // Zkontrolovat, zda recenze patří k inzerátu tohoto uživatele
+                        const adReviewsSnap = await getDocs(adReviewsGroup);
+                        let adReviewsCount = 0;
+                        adReviewsSnap.forEach(docSnap => {
+                            const reviewData = docSnap.data();
+                            // Zkontrolovat, zda recenze patří k inzerátu tohoto uživatele
                     const parent = docSnap.ref.parent; // reviews collection
                     const adDoc = parent?.parent; // adId document
                     const inzeraty = adDoc?.parent; // 'inzeraty' collection
                     const userDoc = inzeraty?.parent; // user uid document
                     
                     if (userDoc && userDoc.id === userId && inzeraty.id === 'inzeraty') {
-                            reviewData.id = docSnap.id;
-                            reviewData.type = 'ad';
-                            reviewData.adId = adDoc.id;
-                            userReviews.push(reviewData);
+                                reviewData.id = docSnap.id;
+                                reviewData.type = 'ad';
+                                reviewData.adId = adDoc.id;
+                                userReviews.push(reviewData);
+                                adReviewsCount++;
+                            }
+                        });
+                        console.log('✅ Ad reviews loaded from collectionGroup:', adReviewsCount);
+                    } catch (collectionGroupError) {
+                        console.warn('⚠️ CollectionGroup failed, trying alternative method:', collectionGroupError.message);
+                        
+                        // Alternativní metoda: projít všechny inzeráty uživatele
+                        const inzeratyRef = collection(window.firebaseDb, 'users', userId, 'inzeraty');
+                        const inzeratySnap = await getDocs(inzeratyRef);
+                        console.log('📋 Found ads for user:', inzeratySnap.size);
+                        
+                        let adReviewsCount = 0;
+                        for (const adDoc of inzeratySnap.docs) {
+                            try {
+                                const reviewsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty', adDoc.id, 'reviews');
+                                const reviewsSnap = await getDocs(reviewsRef);
+                                reviewsSnap.forEach(reviewDoc => {
+                                    const reviewData = reviewDoc.data();
+                                    reviewData.id = reviewDoc.id;
+                                    reviewData.type = 'ad';
+                                    reviewData.adId = adDoc.id;
+                                    userReviews.push(reviewData);
+                                    adReviewsCount++;
+                                });
+                            } catch (reviewError) {
+                                console.warn(`⚠️ Error loading reviews for ad ${adDoc.id}:`, reviewError.message);
+                            }
                         }
-                    });
-                    console.log('✅ Ad reviews loaded from collectionGroup');
+                        console.log('✅ Ad reviews loaded via alternative method:', adReviewsCount);
+                    }
                 } catch (adReviewsError) {
                     console.warn('⚠️ Error loading ad reviews:', adReviewsError);
                 }
@@ -910,12 +941,12 @@
             // Update overall rating display
             const ratingNumber = document.querySelector('.rating-number');
             if (ratingNumber) {
-                ratingNumber.textContent = avgRating.toFixed(1);
+                    ratingNumber.textContent = avgRating.toFixed(1);
             }
 
             const ratingCount = document.querySelector('.rating-count');
             if (ratingCount) {
-                ratingCount.textContent = `Založeno na ${reviews.length} hodnoceních`;
+                    ratingCount.textContent = `Založeno na ${reviews.length} hodnoceních`;
             }
             
             // Update rating breakdown
@@ -924,7 +955,7 @@
             // Update statistics card
             const ratingElement = document.querySelector('.stat-card:nth-child(2) .stat-number');
             if (ratingElement) {
-                ratingElement.textContent = avgRating.toFixed(1);
+                    ratingElement.textContent = avgRating.toFixed(1);
                 console.log('📝 Updated rating from reviews:', avgRating.toFixed(1), 'reviews:', reviews.length);
             }
             
@@ -1240,18 +1271,18 @@
                 });
                 return;
             }
-            
+
             // Fallback: použít předané recenze
             if (!reviews || reviews.length === 0) {
                 console.log('📝 No reviews found, showing empty state');
                 const reviewsContainer = document.querySelector('.reviews-list');
                 if (reviewsContainer) {
-                    reviewsContainer.innerHTML = `
+                reviewsContainer.innerHTML = `
                         <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 2px dashed #e5e7eb;">
                             <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
                             <p style="font-size: 16px; color: #6b7280; margin: 0; font-weight: 500;">Uživatel zatím nemá žádné recenze.</p>
-                        </div>
-                    `;
+                    </div>
+                `;
                 }
                 return;
             }
