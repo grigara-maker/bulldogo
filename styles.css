@@ -866,7 +866,8 @@
 
 /* Zajistit, že i když je jen jeden prvek, má stejnou šířku jako ostatní */
 .ads-grid > .ad-card:only-child {
-    max-width: calc((100% - 72px) / 4) !important; /* (100% - 3*gap) / 4 sloupců */
+    grid-column: 1 / 2 !important; /* Zajistit, že zabere jen první sloupec */
+    max-width: 100% !important; /* Ale může být 100% šířky prvního sloupce */
     width: 100% !important;
 }
 
