@@ -1206,7 +1206,14 @@
 
         // Update recent reviews from loaded data
         function updateRecentReviewsFromData(reviews) {
-            console.log('📝 Updating reviews display with:', reviews);
+            console.log('📝 Updating reviews display with:', reviews?.length || 0, 'reviews');
+            
+            // Pokud jsou recenze načtené v userReviews, použít je
+            if (userReviews && userReviews.length > 0) {
+                console.log('📝 Using userReviews instead:', userReviews.length);
+                displayUserReviews();
+                return;
+            }
             
             const reviewsContainer = document.querySelector('.reviews-list');
             if (!reviewsContainer) {
@@ -1218,10 +1225,9 @@
             if (!reviews || reviews.length === 0) {
                 console.log('📝 No reviews found, showing empty state');
                 reviewsContainer.innerHTML = `
-                    <div class="no-reviews">
-                        <i class="fas fa-star"></i>
-                        <h3>Zatím nemáte žádná hodnocení</h3>
-                        <p>Jakmile získáte první hodnocení od zákazníků, zobrazí se zde.</p>
+                    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 2px dashed #e5e7eb;">
+                        <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                        <p style="font-size: 16px; color: #6b7280; margin: 0; font-weight: 500;">Uživatel zatím nemá žádné recenze.</p>
                     </div>
                 `;
                 return;
@@ -1235,7 +1241,7 @@
             });
 
             console.log('📝 Rendering', sortedReviews.length, 'reviews');
-            // Use renderAllReviews function instead
+            // Use renderAllReviews function
             const reviewsSection = document.querySelector('.reviews-section');
             if (reviewsSection) {
                 const container = reviewsSection.querySelector('.reviews-list') || reviewsSection;
