@@ -307,7 +307,7 @@
                         clearInterval(checkFirebase);
                         const currentUser = window.firebaseAuth.currentUser;
                         if (currentUser) {
-                            loadRatingsData();
+                        loadRatingsData();
                         }
                     }
                 }, 100);
@@ -329,6 +329,11 @@
 
                 console.log('✅ Načítám hodnocení pro uživatele:', currentUser.uid);
 
+                // Načíst recenze PRVNÍ - před aktualizací display
+                await loadUserReviews(currentUser.uid);
+                console.log('📚 Načteno recenzí:', userReviews.length);
+                console.log('📚 Recenze data:', userReviews);
+
                 // Load user profile to get rating data
                 const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
                 const profileRef = doc(window.firebaseDb, 'users', currentUser.uid, 'profile', 'profile');
@@ -339,15 +344,24 @@
                     userProfile = profileSnap.data();
                 }
 
-                // Update ratings display (basic info from profile)
-                updateRatingsDisplay(userProfile);
+                // Aktualizovat rating display z načtených recenzí (ne z profilu)
+                if (userReviews.length > 0) {
+                    console.log('📊 Aktualizuji rating z recenzí:', userReviews.length);
+                    updateRatingFromReviews(userReviews);
+                } else {
+                    // Pokud nejsou recenze, použít data z profilu
+                    console.log('📊 Používám data z profilu (žádné recenze)');
+                    updateRatingsDisplay(userProfile);
+                }
                 
-                // Načíst recenze pomocí stejné logiky jako v profile-detail.js
-                await loadUserReviews(currentUser.uid);
+                // Zobrazit recenze - POČKAT až se rating aktualizuje
+                console.log('🎨 Zobrazuji recenze, userReviews.length:', userReviews.length);
                 await displayUserReviews();
+                console.log('✅ Recenze zobrazeny');
 
             } catch (error) {
                 console.error('❌ Chyba při načítání dat hodnocení:', error);
+                console.error('Error stack:', error.stack);
             }
         }
 
@@ -800,17 +814,17 @@
                 
                 // 2. Načíst recenze na inzerátech uživatele pomocí collectionGroup
                 try {
-                    const adReviewsGroup = collectionGroup(window.firebaseDb, 'reviews');
+                const adReviewsGroup = collectionGroup(window.firebaseDb, 'reviews');
                     const adReviewsSnap = await getDocs(adReviewsGroup);
                     adReviewsSnap.forEach(docSnap => {
                         const reviewData = docSnap.data();
                         // Zkontrolovat, zda recenze patří k inzerátu tohoto uživatele
-                        const parent = docSnap.ref.parent; // reviews collection
-                        const adDoc = parent?.parent; // adId document
-                        const inzeraty = adDoc?.parent; // 'inzeraty' collection
-                        const userDoc = inzeraty?.parent; // user uid document
-                        
-                        if (userDoc && userDoc.id === userId && inzeraty.id === 'inzeraty') {
+                    const parent = docSnap.ref.parent; // reviews collection
+                    const adDoc = parent?.parent; // adId document
+                    const inzeraty = adDoc?.parent; // 'inzeraty' collection
+                    const userDoc = inzeraty?.parent; // user uid document
+                    
+                    if (userDoc && userDoc.id === userId && inzeraty.id === 'inzeraty') {
                             reviewData.id = docSnap.id;
                             reviewData.type = 'ad';
                             reviewData.adId = adDoc.id;
@@ -844,7 +858,7 @@
                 }
                 
                 console.log('✅ Total user reviews loaded:', userReviews.length);
-                
+
             } catch (error) {
                 console.error('❌ Error loading user reviews:', error);
                 console.error('Error details:', {
@@ -859,9 +873,13 @@
         function updateRatingFromReviews(reviews) {
             console.log('🔄 Updating rating from reviews:', reviews.length);
             
+            if (!reviews || reviews.length === 0) {
+                console.log('⚠️ No reviews provided to updateRatingFromReviews');
+                return;
+            }
+            
             // Calculate average rating
-            const avgRating = reviews.length > 0 ? 
-                (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length) : 0;
+            const avgRating = reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length;
             
             // Calculate rating breakdown
             const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -875,38 +893,25 @@
             // Update overall rating display
             const ratingNumber = document.querySelector('.rating-number');
             if (ratingNumber) {
-                if (reviews.length > 0) {
-                    ratingNumber.textContent = avgRating.toFixed(1);
-                } else {
-                    ratingNumber.textContent = '-';
-                }
+                ratingNumber.textContent = avgRating.toFixed(1);
             }
 
             const ratingCount = document.querySelector('.rating-count');
             if (ratingCount) {
-                if (reviews.length > 0) {
-                    ratingCount.textContent = `Založeno na ${reviews.length} hodnoceních`;
-                } else {
-                    ratingCount.textContent = 'Zatím žádná hodnocení';
-                }
+                ratingCount.textContent = `Založeno na ${reviews.length} hodnoceních`;
             }
             
             // Update rating breakdown
             updateRatingBreakdownFromData(breakdown, reviews.length);
             
-            // Update reviews list
-            updateRecentReviewsFromData(reviews);
-            
             // Update statistics card
             const ratingElement = document.querySelector('.stat-card:nth-child(2) .stat-number');
             if (ratingElement) {
-                if (reviews.length > 0) {
-                    ratingElement.textContent = avgRating.toFixed(1);
-                } else {
-                    ratingElement.textContent = '-';
-                }
+                ratingElement.textContent = avgRating.toFixed(1);
                 console.log('📝 Updated rating from reviews:', avgRating.toFixed(1), 'reviews:', reviews.length);
             }
+            
+            // NEPŘEPISOVAT recenze zde - to se dělá v displayUserReviews()
         }
 
         // Update rating breakdown from calculated data
@@ -1206,30 +1211,30 @@
 
         // Update recent reviews from loaded data
         function updateRecentReviewsFromData(reviews) {
-            console.log('📝 Updating reviews display with:', reviews?.length || 0, 'reviews');
+            console.log('📝 updateRecentReviewsFromData called with:', reviews?.length || 0, 'reviews');
+            console.log('📝 userReviews.length:', userReviews?.length || 0);
             
-            // Pokud jsou recenze načtené v userReviews, použít je
+            // VŽDY použít userReviews pokud jsou načtené (mají přednost)
             if (userReviews && userReviews.length > 0) {
-                console.log('📝 Using userReviews instead:', userReviews.length);
-                displayUserReviews();
+                console.log('📝 Using userReviews (preferred):', userReviews.length);
+                displayUserReviews().catch(err => {
+                    console.error('❌ Error in displayUserReviews:', err);
+                });
                 return;
             }
             
-            const reviewsContainer = document.querySelector('.reviews-list');
-            if (!reviewsContainer) {
-                console.error('❌ Reviews container (.reviews-list) not found!');
-                return;
-            }
-            console.log('✅ Reviews container found');
-
+            // Fallback: použít předané recenze
             if (!reviews || reviews.length === 0) {
                 console.log('📝 No reviews found, showing empty state');
-                reviewsContainer.innerHTML = `
-                    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 2px dashed #e5e7eb;">
-                        <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
-                        <p style="font-size: 16px; color: #6b7280; margin: 0; font-weight: 500;">Uživatel zatím nemá žádné recenze.</p>
-                    </div>
-                `;
+                const reviewsContainer = document.querySelector('.reviews-list');
+                if (reviewsContainer) {
+                    reviewsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 2px dashed #e5e7eb;">
+                            <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                            <p style="font-size: 16px; color: #6b7280; margin: 0; font-weight: 500;">Uživatel zatím nemá žádné recenze.</p>
+                        </div>
+                    `;
+                }
                 return;
             }
 
@@ -1240,15 +1245,14 @@
                 return dateB - dateA;
             });
 
-            console.log('📝 Rendering', sortedReviews.length, 'reviews');
-            // Use renderAllReviews function
-            const reviewsSection = document.querySelector('.reviews-section');
-            if (reviewsSection) {
-                const container = reviewsSection.querySelector('.reviews-list') || reviewsSection;
-                renderAllReviews(sortedReviews, container);
-            } else {
-                renderAllReviews(sortedReviews, reviewsContainer);
+            console.log('📝 Rendering', sortedReviews.length, 'reviews using renderAllReviews');
+            const reviewsContainer = document.querySelector('.reviews-list');
+            if (!reviewsContainer) {
+                console.error('❌ Reviews container (.reviews-list) not found!');
+                return;
             }
+            
+            renderAllReviews(sortedReviews, reviewsContainer);
             console.log('✅ Reviews rendered to container');
         }
     </script>
