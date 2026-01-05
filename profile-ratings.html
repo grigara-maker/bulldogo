@@ -1061,6 +1061,8 @@
                 return;
             }
             
+            console.log('📝 displayUserReviews called, userReviews.length:', userReviews.length);
+            
             if (userReviews.length === 0) {
                 reviewsGrid.innerHTML = `
                     <div style="
@@ -1114,6 +1116,92 @@
             );
             
             reviewsGrid.innerHTML = reviewsWithNames.map(review => createReviewCard(review)).join('');
+            console.log('✅ Reviews displayed:', reviewsWithNames.length);
+        }
+        
+        // Render all reviews function (stejně jako v profile.html)
+        function renderAllReviews(reviews, container) {
+            console.log('🎨 renderAllReviews called with', reviews?.length || 0, 'reviews');
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; border: 2px dashed #e5e7eb;">
+                        <i class="fas fa-star" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                        <p style="font-size: 16px; color: #6b7280; margin: 0; font-weight: 500;">Uživatel zatím nemá žádné recenze.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Helper function to get time ago
+            function getTimeAgoHelper(date) {
+                if (!date) return 'Neznámé datum';
+                let reviewDate;
+                if (date.toDate && typeof date.toDate === 'function') {
+                    reviewDate = date.toDate();
+                } else if (date instanceof Date) {
+                    reviewDate = date;
+                } else {
+                    reviewDate = new Date(date);
+                }
+                
+                const now = new Date();
+                const diffMs = now - reviewDate;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Dnes';
+                if (diffDays === 1) return 'Včera';
+                if (diffDays < 7) return `Před ${diffDays} dny`;
+                if (diffDays < 30) return `Před ${Math.floor(diffDays / 7)} týdny`;
+                if (diffDays < 365) return `Před ${Math.floor(diffDays / 30)} měsíci`;
+                return `Před ${Math.floor(diffDays / 365)} lety`;
+            }
+            
+            // Helper function to escape HTML
+            function escapeHtml(str) {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+            
+            // Helper function to create review card
+            function createReviewCardHelper(review) {
+                const rating = review.rating || 0;
+                const filledStars = '★'.repeat(rating);
+                const emptyStars = '☆'.repeat(5 - rating);
+                const text = review.text || review.comment || 'Žádný komentář';
+                const reviewerName = review.reviewerName || review.reviewerEmail?.split('@')[0] || 'Anonymní';
+                const timeAgo = getTimeAgoHelper(review.createdAt || review.updatedAt);
+                
+                return `
+                    <div class="review-card-modern" style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div class="review-card-header" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div class="reviewer-info-modern" style="display: flex; align-items: center; gap: 12px;">
+                                <div class="reviewer-avatar-modern" style="width: 40px; height: 40px; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user" style="color: #6b7280;"></i>
+                                </div>
+                                <div class="reviewer-details-modern">
+                                    <h4 class="reviewer-name" style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">${escapeHtml(reviewerName)}</h4>
+                                    <span class="review-date-modern" style="font-size: 14px; color: #6b7280;">${timeAgo}</span>
+                                </div>
+                            </div>
+                            <div class="review-rating-modern">
+                                <div class="stars-container" style="font-size: 18px;">
+                                    <span class="stars-filled" style="color: #fbbf24;">${filledStars}</span>
+                                    <span class="stars-empty" style="color: #d1d5db;">${emptyStars}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-card-content">
+                            <p class="review-text" style="margin: 0; color: #374151; line-height: 1.6;">${escapeHtml(text)}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Render reviews
+            container.innerHTML = reviews.map(review => createReviewCardHelper(review)).join('');
+            console.log('✅ Reviews rendered:', reviews.length);
         }
 
         // Update recent reviews from loaded data
