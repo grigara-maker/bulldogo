@@ -462,7 +462,7 @@
                 const chatLink = document.querySelector('.nav-menu a[href="chat.html"]');
                 if (btnLogin) btnLogin.addEventListener('click', (e) => { e.preventDefault(); if (typeof showAuthModal === 'function') showAuthModal('login'); });
                 if (btnRegister) btnRegister.addEventListener('click', (e) => { e.preventDefault(); if (typeof showAuthModal === 'function') showAuthModal('register'); });
-                if (chatLink) chatLink.addEventListener('click', (e) => { e.preventDefault(); window.location.href = 'chat.html'; });
+                if (chatLink) chatLink.addEventListener('click', (e) => { e.preventDefault(); if (typeof checkAuthForChat === 'function') checkAuthForChat(); else if (typeof window.checkAuthForChat === 'function') window.checkAuthForChat(); else window.location.href = 'chat.html'; });
             } catch (_) {}
         });
     </script>

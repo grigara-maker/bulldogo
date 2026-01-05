@@ -817,18 +817,25 @@ document.querySelectorAll('a[href="chat.html"]').forEach(link => {
 
 function checkAuthForChat() {
     // Check if user is authenticated
-    if (window.firebaseAuth) {
-        window.firebaseAuth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is logged in, allow access to chat
-                window.location.href = 'chat.html';
-            } else {
-                // User is not logged in, show auth modal
-                callAuthModal('login');
-            }
-        });
+    const currentUser = window.firebaseAuth?.currentUser;
+    if (currentUser) {
+        // User is logged in, allow access to chat
+        window.location.href = 'chat.html';
     } else {
-        // Firebase not loaded yet, show auth modal
-        callAuthModal('login');
+        // User is not logged in, show auth modal
+        if (typeof callAuthModal === 'function') {
+            callAuthModal('login');
+        } else if (typeof showAuthModal === 'function') {
+            showAuthModal('login');
+        } else {
+            // Fallback if auth modal is not available yet
+            window.location.href = 'chat.html';
+        }
     }
 }
+
+// Export for global use
+window.checkAuthForChat = checkAuthForChat;
+
+// Export for global use
+window.checkAuthForChat = checkAuthForChat;

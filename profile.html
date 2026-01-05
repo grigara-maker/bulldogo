@@ -205,7 +205,7 @@
                             <i class="fas fa-fire"></i>
                             <span>Topovat</span>
                         </button>
-                        <button class="quick-action-btn" onclick="window.location.href='chat.html'">
+                        <button class="quick-action-btn" onclick="if(typeof checkAuthForChat === 'function') checkAuthForChat(); else if(typeof window.checkAuthForChat === 'function') window.checkAuthForChat(); else window.location.href='chat.html';">
                             <i class="fas fa-comment-alt"></i>
                             <span>Chat</span>
                         </button>
