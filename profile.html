@@ -1233,8 +1233,8 @@
                         // Load reviewer info if reviewerId exists
                         if (reviewData.reviewerId) {
                             try {
-                                // Try loading from user's main profile document (simpler path)
-                                const userDocRef = doc(window.firebaseDb, 'users', reviewData.reviewerId);
+                                // Try loading from user's profile/profile document
+                                const userDocRef = doc(window.firebaseDb, 'users', reviewData.reviewerId, 'profile', 'profile');
                                 const userDocSnap = await getDoc(userDocRef);
                                 if (userDocSnap.exists()) {
                                     const userData = userDocSnap.data();
