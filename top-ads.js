@@ -803,10 +803,14 @@ async function processPayment() {
                         return true;
                     }
                     if (url) {
-                        // Zobrazit animaci přesměrování před přesměrováním na platební bránu
-                        showRedirectAnimation(() => {
+                        // Změnit text tlačítka na "Přesměrovávám..."
+                        if (payButton) {
+                            payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
+                        }
+                        // Krátké zpoždění pro zobrazení změny textu, pak přesměrovat
+                        setTimeout(() => {
                             window.location.assign(url);
-                        });
+                        }, 300);
                         return true;
                     }
                 } catch (e) {
@@ -827,33 +831,6 @@ async function processPayment() {
             }
         }
     })();
-}
-
-// Funkce pro zobrazení animace přesměrování
-function showRedirectAnimation(callback) {
-    // Vytvořit overlay element
-    const overlay = document.createElement('div');
-    overlay.id = 'redirect-overlay';
-    overlay.innerHTML = `
-        <div class="redirect-animation-content">
-            <div class="redirect-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-            </div>
-            <h2 class="redirect-title">Přesměrovávám na platební bránu...</h2>
-            <p class="redirect-subtitle">Prosím čekejte</p>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    
-    // Zobrazit s fade-in efektem
-    setTimeout(() => {
-        overlay.classList.add('active');
-    }, 10);
-    
-    // Po krátké animaci zavolat callback (přesměrování)
-    setTimeout(() => {
-        if (callback) callback();
-    }, 1500); // 1.5 sekundy animace před přesměrováním
 }
 
 function showSuccess() {
