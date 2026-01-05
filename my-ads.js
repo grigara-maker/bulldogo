@@ -413,6 +413,11 @@ function setupMyAdsEventListeners() {
         categoryFilter.addEventListener('change', filterAds);
     }
     
+    const regionFilter = document.getElementById('regionFilter');
+    if (regionFilter) {
+        regionFilter.addEventListener('change', filterAds);
+    }
+    
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
         sortSelect.addEventListener('change', sortAds);
