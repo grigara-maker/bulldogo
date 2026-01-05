@@ -297,8 +297,8 @@
                         });
                         
                         // Pokud je uživatel už přihlášen, načíst data
-                        const currentUser = window.firebaseAuth.currentUser;
-                        if (currentUser) {
+                        const existingUser = window.firebaseAuth.currentUser;
+                        if (existingUser) {
                             console.log('✅ User already logged in, loading data immediately');
                             loadUserData();
                             loadRatingsData();
