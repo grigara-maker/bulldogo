@@ -262,17 +262,17 @@ async function setupRealtimeListener() {
                 }
             });
             
-            // Seřadit: TOP inzeráty podle topActivatedAt (nejnovější první), pak klasické podle createdAt
+            // Seřadit: TOP inzeráty podle data přidání (createdAt) - nejnovější první, pak klasické podle createdAt
             allServices.sort((a, b) => {
                 // TOP mají přednost
                 if (a.isTop && !b.isTop) return -1;
                 if (!a.isTop && b.isTop) return 1;
                 
-                // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+                // Pokud jsou oba TOP, řadit podle data přidání (createdAt) - nejnovější první
                 if (a.isTop && b.isTop) {
-                    const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-                    const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-                    return bTopDate - aTopDate;
+                    const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+                    const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+                    return bDate - aDate;
                 }
                 
                 // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
@@ -454,17 +454,17 @@ async function tryAlternativeLoadMethod() {
             
             await Promise.all(loadPromises);
             
-            // Seřadit: TOP inzeráty podle topActivatedAt (nejnovější první), pak klasické podle createdAt
+            // Seřadit: TOP inzeráty podle data přidání (createdAt) - nejnovější první, pak klasické podle createdAt
             services.sort((a, b) => {
                 // TOP mají přednost
                 if (a.isTop && !b.isTop) return -1;
                 if (!a.isTop && b.isTop) return 1;
                 
-                // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+                // Pokud jsou oba TOP, řadit podle data přidání (createdAt) - nejnovější první
                 if (a.isTop && b.isTop) {
-                    const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-                    const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-                    return bTopDate - aTopDate;
+                    const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+                    const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+                    return bDate - aDate;
                 }
                 
                 // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
@@ -528,17 +528,17 @@ function initLocalFallback() {
             console.log('⚠️ Žádné uložené služby, vytvářím testovací...');
             createTestServices();
         }
-        // Konzistence: TOP inzeráty podle topActivatedAt (nejnovější první), pak klasické podle createdAt
+        // Konzistence: TOP inzeráty podle data přidání (createdAt) - nejnovější první, pak klasické podle createdAt
         allServices.sort((a, b) => {
             // TOP mají přednost
             if (a.isTop && !b.isTop) return -1;
             if (!a.isTop && b.isTop) return 1;
             
-            // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+            // Pokud jsou oba TOP, řadit podle data přidání (createdAt) - nejnovější první
             if (a.isTop && b.isTop) {
-                const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-                const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-                return bTopDate - aTopDate;
+                const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+                const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+                return bDate - aDate;
             }
             
             // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
@@ -546,17 +546,17 @@ function initLocalFallback() {
         });
         
         filteredServices = [...allServices];
-        // TOP služby vždy první i v lokálním fallbacku, řadit podle topActivatedAt
+        // TOP služby vždy první i v lokálním fallbacku, řadit podle data přidání (createdAt)
         filteredServices.sort((a, b) => {
             // TOP mají přednost
             if (a.isTop && !b.isTop) return -1;
             if (!a.isTop && b.isTop) return 1;
             
-            // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+            // Pokud jsou oba TOP, řadit podle data přidání (createdAt) - nejnovější první
             if (a.isTop && b.isTop) {
-                const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-                const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-                return bTopDate - aTopDate;
+                const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+                const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+                return bDate - aDate;
             }
             
             // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
@@ -753,17 +753,17 @@ function displayServices(list) {
         // Vytvořit kopii pro řazení
         servicesToRender = [...servicesToRender];
         
-        // Seřadit: TOP nejnovější první (podle topActivatedAt), pak klasické nejnovější
+        // Seřadit: TOP nejnovější první (podle data přidání createdAt), pak klasické nejnovější
         servicesToRender.sort((a, b) => {
             // TOP mají přednost
             if (a.isTop && !b.isTop) return -1;
             if (!a.isTop && b.isTop) return 1;
             
-            // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+            // Pokud jsou oba TOP, řadit podle data přidání (createdAt) - nejnovější první
             if (a.isTop && b.isTop) {
-                const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-                const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-                return bTopDate - aTopDate;
+                const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+                const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+                return bDate - aDate;
             }
             
             // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
@@ -1404,17 +1404,17 @@ function filterServices() {
         return matchesSearch && matchesCategory && matchesRegion && isVisible;
     });
 
-    // TOP inzeráty vždy první, v rámci TOP řadit podle data topování (nejnovější první)
+    // TOP inzeráty vždy první, v rámci TOP řadit podle data přidání (createdAt) - nejnovější první
     filteredAds.sort((a, b) => {
         // TOP mají přednost
         if (a.isTop && !b.isTop) return -1;
         if (!a.isTop && b.isTop) return 1;
         
-        // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+        // Pokud jsou oba TOP, řadit podle data přidání (createdAt) - nejnovější první
         if (a.isTop && b.isTop) {
-            const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-            const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-            return bTopDate - aTopDate;
+            const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+            const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+            return bDate - aDate;
         }
         
         // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
@@ -1721,15 +1721,15 @@ function sortServices() {
         }
     });
 
-    // TOP vždy nahoře, seřadit TOP podle topActivatedAt (nejnovější první)
+    // TOP vždy nahoře, seřadit TOP podle data přidání (createdAt) - nejnovější první
     const top = base.filter(s => !!s.isTop);
     const rest = base.filter(s => !s.isTop);
     
-    // Seřadit TOP inzeráty podle data topování (nejnovější první)
+    // Seřadit TOP inzeráty podle data přidání (createdAt) - nejnovější první
     top.sort((a, b) => {
-        const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
-        const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
-        return bTopDate - aTopDate;
+        const aDate = new Date(a.createdAt?.toDate?.() || a.createdAt || 0);
+        const bDate = new Date(b.createdAt?.toDate?.() || b.createdAt || 0);
+        return bDate - aDate;
     });
     
     const result = [...top, ...rest];
