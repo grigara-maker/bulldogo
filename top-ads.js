@@ -641,7 +641,7 @@ async function processPayment() {
     }
     
     // UI: loading - ZOBRAZIT OKAMŽITĚ po rychlých kontrolách
-    const payButton = document.querySelector('.payment-actions .btn-primary');
+    const payButton = document.getElementById('payButtonTopAds') || document.querySelector('.payment-actions .btn-primary');
     const originalText = payButton ? payButton.innerHTML : null;
     if (payButton) {
         payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
@@ -803,11 +803,7 @@ async function processPayment() {
                         return true;
                     }
                     if (url) {
-                        // Změnit text tlačítka na "Přesměrovávám..."
-                        if (payButton) {
-                            payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Přesměrovávám...';
-                        }
-                        // Krátké zpoždění pro zobrazení změny textu, pak přesměrovat
+                        // Text už je změněný na začátku funkce, jen přesměrovat
                         setTimeout(() => {
                             window.location.assign(url);
                         }, 300);
