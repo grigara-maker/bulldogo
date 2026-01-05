@@ -871,7 +871,7 @@
 
         // Update rating in statistics from reviews
         function updateRatingFromReviews(reviews) {
-            console.log('🔄 Updating rating from reviews:', reviews.length);
+            console.log('🔄 updateRatingFromReviews called with:', reviews?.length || 0, 'reviews');
             
             if (!reviews || reviews.length === 0) {
                 console.log('⚠️ No reviews provided to updateRatingFromReviews');
@@ -889,6 +889,9 @@
                     breakdown[rating]++;
                 }
             });
+            
+            console.log('📊 Rating breakdown:', breakdown);
+            console.log('📊 Average rating:', avgRating.toFixed(1));
             
             // Update overall rating display
             const ratingNumber = document.querySelector('.rating-number');
@@ -911,7 +914,8 @@
                 console.log('📝 Updated rating from reviews:', avgRating.toFixed(1), 'reviews:', reviews.length);
             }
             
-            // NEPŘEPISOVAT recenze zde - to se dělá v displayUserReviews()
+            // NEPŘEPISOVAT recenze zde - to se dělá v displayUserReviews() po načtení
+            // updateRecentReviewsFromData(reviews); // ODSTRANĚNO - způsobovalo přepisování
         }
 
         // Update rating breakdown from calculated data
