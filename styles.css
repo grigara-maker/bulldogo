@@ -982,6 +982,17 @@
     flex-grow: 0 !important;
     /* Zajistit fixní velikost - kontejner má vždy stejnou velikost */
     box-sizing: border-box !important;
+    /* Zajistit fixní velikost i během načítání - použít padding-bottom jako fallback */
+    padding-bottom: 75% !important; /* 3/4 = 75% pro aspect-ratio 4:3 */
+    height: 0 !important;
+}
+
+/* Zajistit, aby aspect-ratio mělo přednost, ale padding-bottom zajistí velikost během načítání */
+@supports (aspect-ratio: 4 / 3) {
+    .ad-thumb {
+        padding-bottom: 0 !important;
+        height: auto !important;
+    }
 }
 .ad-thumb img { 
     width: 100% !important; 
@@ -992,6 +1003,9 @@
     visibility: visible !important;
     opacity: 1 !important;
     border-radius: 0; /* Odstranit zaoblené rohy pro mobilní zařízení */
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
 }
 
 /* Oranžový loading spinner pro načítající se obrázky */
