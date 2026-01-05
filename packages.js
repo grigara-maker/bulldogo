@@ -823,10 +823,10 @@ function checkAuthForChat() {
         window.location.href = 'chat.html';
     } else {
         // User is not logged in, show auth modal
-        if (typeof callAuthModal === 'function') {
-            callAuthModal('login');
-        } else if (typeof showAuthModal === 'function') {
+        if (typeof showAuthModal === 'function') {
             showAuthModal('login');
+        } else if (typeof window.showAuthModal === 'function') {
+            window.showAuthModal('login');
         } else {
             // Fallback if auth modal is not available yet
             window.location.href = 'chat.html';
