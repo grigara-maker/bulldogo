@@ -894,6 +894,23 @@
     min-width: 0 !important;
 }
 
+/* Zajistit, že i jeden inzerát má stejnou velikost jako když jich je více */
+.ads-grid > .ad-card:only-child {
+    max-width: calc((100% - 72px) / 4) !important; /* 4 sloupce, 3 mezery po 24px = 72px */
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .ads-grid > .ad-card:only-child {
+        max-width: calc((100% - 48px) / 3) !important; /* 3 sloupce, 2 mezery po 24px = 48px */
+    }
+}
+
+@media (max-width: 767px) {
+    .ads-grid > .ad-card:only-child {
+        max-width: 100% !important; /* Na mobilu plná šířka */
+    }
+}
+
 /* Zajistit, že loading zabere všechny sloupce */
 .ads-grid > .loading-services {
     grid-column: 1 / -1 !important;
