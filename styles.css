@@ -976,6 +976,8 @@
     position: relative !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
+    /* Zajistit fixní velikost i během načítání - použít min-height pro starší prohlížeče */
+    min-height: calc(100% * 3 / 4) !important; /* 3/4 výšky pro aspect-ratio 4:3 */
 }
 .ad-thumb img { 
     width: 100% !important; 
