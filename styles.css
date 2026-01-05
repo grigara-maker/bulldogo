@@ -975,6 +975,8 @@
     width: 100% !important; 
     aspect-ratio: 4 / 3 !important; /* FIXNÍ poměr stran - stejný všude */
     height: auto !important; /* Automatická výška podle aspect-ratio */
+    min-height: 0 !important;
+    min-width: 100% !important;
     background: white !important;
     display: block !important;
     visibility: visible !important;
@@ -982,6 +984,7 @@
     overflow: hidden !important;
     position: relative !important;
     flex-shrink: 0 !important;
+    flex-grow: 0 !important;
 }
 .ad-thumb img { 
     width: 100% !important; 
@@ -17412,7 +17415,10 @@ html:has(.ad-detail-content) {
     width: 100% !important;
     max-height: none !important;
     min-height: 0 !important;
+    min-width: 100% !important;
     padding-bottom: 0 !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
 }
 
 .ad-thumb img,
