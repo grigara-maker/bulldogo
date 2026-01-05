@@ -731,18 +731,16 @@ function renderMessages() {
         // Zpracovat obrázky
         let imagesHtml = '';
         if (msg.images && msg.images.length > 0) {
-            // Vytvořit unikátní ID pro tuto zprávu (pro event listenery)
-            const messageId = msg.id || `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            // Převést URL stringy na formát pro openImageViewer
+            const imageObjects = msg.images.map(imgUrl => ({ url: imgUrl }));
+            const imagesJson = JSON.stringify(imageObjects).replace(/"/g, '&quot;');
             imagesHtml = `<div class="ig-images" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 8px;">
                 ${msg.images.map((imgUrl, imgIndex) => {
                     const escapedUrl = imgUrl.replace(/"/g, '&quot;');
-                    return `<img src="${escapedUrl}" alt="Obrázek" loading="lazy" style="width: 100%; max-width: 300px; border-radius: 8px; cursor: pointer; object-fit: cover;" class="ig-chat-image" data-message-id="${messageId}" data-image-index="${imgIndex}">
+                    return `<img src="${escapedUrl}" alt="Obrázek" loading="lazy" style="width: 100%; max-width: 300px; border-radius: 8px; cursor: pointer; object-fit: cover;" class="ig-chat-image" data-images="${imagesJson}" data-image-index="${imgIndex}">
                 `;
                 }).join('')}
             </div>`;
-            // Uložit obrázky do globálního objektu pro pozdější použití
-            if (!window.chatMessageImages) window.chatMessageImages = {};
-            window.chatMessageImages[messageId] = msg.images.map(imgUrl => ({ url: imgUrl }));
         }
         
         return `
@@ -764,10 +762,15 @@ function renderMessages() {
         img.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const messageId = this.getAttribute('data-message-id');
+            const imagesJson = this.getAttribute('data-images');
             const imageIndex = parseInt(this.getAttribute('data-image-index'), 10);
-            if (window.chatMessageImages && window.chatMessageImages[messageId] && typeof window.openImageViewer === 'function') {
-                window.openImageViewer(window.chatMessageImages[messageId], imageIndex);
+            if (imagesJson && typeof window.openImageViewer === 'function') {
+                try {
+                    const images = JSON.parse(imagesJson.replace(/&quot;/g, '"'));
+                    window.openImageViewer(images, imageIndex);
+                } catch (err) {
+                    console.error('Chyba při parsování obrázků:', err);
+                }
             }
         });
     });
