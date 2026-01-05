@@ -1455,7 +1455,22 @@ console.log(`
                 row-gap: 12px;
                 padding: 14px;
             }
-            .cookie-banner__actions { justify-content: flex-end; }
+            .cookie-banner__actions { 
+                justify-content: center; 
+                flex-wrap: wrap;
+            }
+            .cookie-banner__actions .btn {
+                font-size: 12px !important;
+                padding: 8px 12px !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .cookie-banner__actions .btn-outline {
+                font-size: 11px !important;
+                padding: 8px 10px !important;
+            }
         }
     `;
     document.head.appendChild(cookieStyleEl);
