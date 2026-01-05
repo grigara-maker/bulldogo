@@ -342,8 +342,9 @@
                 // Update ratings display (basic info from profile)
                 updateRatingsDisplay(userProfile);
                 
-                // Načíst a zobrazit všechny recenze
-                await loadAndDisplayAllReviews(currentUser.uid);
+                // Načíst recenze pomocí stejné logiky jako v profile-detail.js
+                await loadUserReviews(currentUser.uid);
+                await displayUserReviews();
 
             } catch (error) {
                 console.error('❌ Chyba při načítání dat hodnocení:', error);
