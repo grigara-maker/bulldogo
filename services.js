@@ -454,8 +454,20 @@ async function tryAlternativeLoadMethod() {
             
             await Promise.all(loadPromises);
             
-            // Seřadit podle data vytvoření
+            // Seřadit: TOP inzeráty podle topActivatedAt (nejnovější první), pak klasické podle createdAt
             services.sort((a, b) => {
+                // TOP mají přednost
+                if (a.isTop && !b.isTop) return -1;
+                if (!a.isTop && b.isTop) return 1;
+                
+                // Pokud jsou oba TOP, řadit podle topActivatedAt (nejnovější první)
+                if (a.isTop && b.isTop) {
+                    const aTopDate = new Date(a.topActivatedAt?.toDate?.() || a.topActivatedAt || 0);
+                    const bTopDate = new Date(b.topActivatedAt?.toDate?.() || b.topActivatedAt || 0);
+                    return bTopDate - aTopDate;
+                }
+                
+                // Pro klasické inzeráty řadit podle data vytvoření - nejnovější první
                 const dateA = new Date(a.createdAt);
                 const dateB = new Date(b.createdAt);
                 return dateB - dateA;
