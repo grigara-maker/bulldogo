@@ -933,7 +933,7 @@
     background: white !important;
     border-radius: 15px !important;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1) !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease !important;
     border: 1px solid #f0f0f0 !important;
     width: 100% !important;
@@ -952,7 +952,7 @@
     float: none !important;
     clear: both !important;
     /* Zabraň změně velikosti při filtrování */
-    contain: layout style paint !important;
+    contain: layout style !important;
     will-change: transform !important;
 }
 
@@ -982,7 +982,7 @@
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    overflow: hidden !important;
+    overflow: hidden !important; /* Obrázky musí být ořezané */
     position: relative !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
@@ -991,6 +991,7 @@
     /* Zajistit fixní velikost i během načítání - použít padding-bottom jako fallback */
     padding-bottom: 75% !important; /* 3/4 = 75% pro aspect-ratio 4:3 */
     height: 0 !important;
+    border-radius: 15px 15px 0 0 !important; /* Zaoblené rohy nahoře */
 }
 
 /* Zajistit, aby aspect-ratio mělo přednost, ale padding-bottom zajistí velikost během načítání */
@@ -1044,7 +1045,7 @@
     padding: 12px 14px 90px !important; 
     position: relative;
     text-align: left !important; /* Zarovnání textů vlevo */
-    overflow: hidden !important;
+    overflow: visible !important; /* Umožnit stínům tlačítek vyčnívat */
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     width: 100% !important; /* Zajistit plnou šířku */
