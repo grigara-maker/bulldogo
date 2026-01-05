@@ -893,19 +893,31 @@
                 try {
                     const rootReviewsRef = collection(window.firebaseDb, 'reviews');
                     const rootReviewsSnap = await getDocs(rootReviewsRef);
+                    console.log('📋 Root reviews collection size:', rootReviewsSnap.size);
+                    let rootReviewsCount = 0;
                     rootReviewsSnap.forEach(doc => {
                         const reviewData = doc.data();
-                        if (reviewData.reviewedUserId === userId) {
+                        console.log('📋 Root review:', doc.id, reviewData);
+                        // Zkontrolovat různé možné pole pro userId
+                        const matchesUserId = 
+                            reviewData.reviewedUserId === userId ||
+                            reviewData.userId === userId ||
+                            reviewData.targetUserId === userId ||
+                            (reviewData.toUserId === userId);
+                        
+                        if (matchesUserId) {
                             // Zkontrolovat, zda už není v seznamu
                             const exists = userReviews.some(r => r.id === doc.id);
                             if (!exists) {
                                 reviewData.id = doc.id;
                                 reviewData.type = reviewData.type || 'unknown';
                                 userReviews.push(reviewData);
+                                rootReviewsCount++;
+                                console.log('📋 Added root review:', doc.id);
                             }
                         }
                     });
-                    console.log('✅ Root reviews checked');
+                    console.log('✅ Root reviews checked, added:', rootReviewsCount);
                 } catch (rootError) {
                     console.warn('⚠️ Error loading root reviews (this is OK if collection doesn\'t exist):', rootError.message);
                 }
