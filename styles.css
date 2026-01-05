@@ -869,6 +869,43 @@
     grid-column: 1 / 2 !important; /* Zajistit, že zabere jen první sloupec */
     max-width: 100% !important; /* Ale může být 100% šířky prvního sloupce */
     width: 100% !important;
+    min-width: 0 !important; /* Zajistit, aby flex/grid správně fungoval */
+}
+
+/* Zajistit, že grid má vždy správnou strukturu i při načítání */
+.ads-grid > .loading-services {
+    grid-column: 1 / -1 !important; /* Loading zabere všechny sloupce */
+}
+
+/* Zajistit, že jeden prvek má fixní šířku jako ostatní - použít calc pro přesný výpočet */
+@media (min-width: 1200px) {
+    .ads-grid > .ad-card:only-child {
+        max-width: calc((1600px - 72px) / 4) !important; /* (max-width - 3*gap) / 4 sloupců */
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .ads-grid > .ad-card:only-child {
+        max-width: calc((100% - 72px) / 4) !important; /* (100% - 3*gap) / 4 sloupců */
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .ads-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .ads-grid > .ad-card:only-child {
+        max-width: calc((100% - 48px) / 3) !important; /* (100% - 2*gap) / 3 sloupců */
+    }
+}
+
+@media (max-width: 767px) {
+    .ads-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .ads-grid > .ad-card:only-child {
+        max-width: 100% !important;
+    }
 }
 
 /* Na hlavní stránce zmenšit grid, aby inzeráty nebyly až u kraje */
