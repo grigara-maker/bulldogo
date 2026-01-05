@@ -14008,11 +14008,22 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
         overflow-x: hidden !important;
     }
     
+    .ad-user-profile {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 1rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+    
     .user-other-ads {
         width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        padding: 1rem 0 !important;
+        padding: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         box-sizing: border-box !important;
@@ -14020,7 +14031,8 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
     }
     
     .user-other-ads .ads-grid,
-    #otherAdsGrid {
+    #otherAdsGrid,
+    #userServicesGrid {
         grid-template-columns: 1fr !important;
         gap: 12px !important;
         width: 100% !important;
@@ -14030,10 +14042,12 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
         overflow-x: hidden !important;
         padding: 0 !important;
         margin: 0 !important;
+        display: grid !important;
     }
     
     .user-other-ads .ad-card,
-    #otherAdsGrid .ad-card {
+    #otherAdsGrid .ad-card,
+    #userServicesGrid .ad-card {
         width: 100% !important;
         max-width: 100% !important;
         display: flex !important;
@@ -14042,35 +14056,61 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
         padding: 12px !important;
         min-height: auto !important;
         height: auto !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
     }
     
     .user-other-ads .ad-thumb,
-    #otherAdsGrid .ad-thumb {
+    #otherAdsGrid .ad-thumb,
+    #userServicesGrid .ad-thumb {
         width: 120px !important;
         min-width: 120px !important;
+        max-width: 120px !important;
         height: 90px !important;
         flex-shrink: 0 !important;
+        aspect-ratio: 4 / 3 !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
     }
     
     .user-other-ads .ad-thumb img,
-    #otherAdsGrid .ad-thumb img {
+    #otherAdsGrid .ad-thumb img,
+    #userServicesGrid .ad-thumb img {
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important;
+        border-radius: 8px !important;
     }
     
     .user-other-ads .ad-body,
-    #otherAdsGrid .ad-body {
+    #otherAdsGrid .ad-body,
+    #userServicesGrid .ad-body {
         flex: 1 !important;
         padding: 0 !important;
+        padding-bottom: 0 !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
         min-width: 0 !important;
+        position: relative !important;
+    }
+    
+    .user-other-ads .ad-actions,
+    #otherAdsGrid .ad-actions,
+    #userServicesGrid .ad-actions {
+        position: static !important;
+        transform: none !important;
+        left: auto !important;
+        bottom: auto !important;
+        margin-top: auto !important;
+        padding-top: 8px !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
     }
     
     .user-other-ads .ad-title,
-    #otherAdsGrid .ad-title {
+    #otherAdsGrid .ad-title,
+    #userServicesGrid .ad-title {
         font-size: 0.95rem !important;
         line-height: 1.3 !important;
         margin-bottom: 6px !important;
@@ -14078,19 +14118,40 @@ body:has(.ad-detail-content) .main-content .ad-detail-content,
         -webkit-line-clamp: 2 !important;
         -webkit-box-orient: vertical !important;
         overflow: hidden !important;
+        color: #111827 !important;
+        font-weight: 600 !important;
     }
     
     .user-other-ads .ad-meta-details,
-    #otherAdsGrid .ad-meta-details {
+    #otherAdsGrid .ad-meta-details,
+    #userServicesGrid .ad-meta-details {
         display: flex !important;
         flex-wrap: wrap !important;
         gap: 8px !important;
         font-size: 0.8rem !important;
+        margin-bottom: 4px !important;
     }
     
     .user-other-ads .ad-meta-item,
-    #otherAdsGrid .ad-meta-item {
+    #otherAdsGrid .ad-meta-item,
+    #userServicesGrid .ad-meta-item {
         font-size: 0.75rem !important;
+    }
+    
+    .user-other-ads .ad-location,
+    #otherAdsGrid .ad-location,
+    #userServicesGrid .ad-location {
+        font-size: 0.85rem !important;
+        color: #6b7280 !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .user-other-ads .ad-price,
+    #otherAdsGrid .ad-price,
+    #userServicesGrid .ad-price {
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 4px !important;
     }
     
     .user-other-ads h4 {
@@ -16204,65 +16265,102 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
 }
 
 /* Ads Grid for Admin - POUZE pokud není použito na stránce služeb */
+/* Admin grid - stejný jako hlavní grid */
 .ads-grid:not(#servicesGrid) {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-/* Zajistit, že i jeden admin inzerát má stejnou velikost */
-.ads-grid:not(#servicesGrid) > .ad-card-admin:only-child {
-    grid-column: span 1 !important;
+    display: grid !important;
+    gap: 24px !important;
+    max-width: 1600px !important;
+    margin: 0 auto !important;
+    margin-top: 1.5rem !important;
     width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
+    justify-content: start !important;
+    align-items: stretch !important;
+    grid-auto-flow: row !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
-/* Tablet: 3 sloupce pro admin grid */
+/* Desktop: 4 sloupce */
+@media (min-width: 1200px) {
+    .ads-grid:not(#servicesGrid) {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+}
+
+/* Tablet: 3 sloupce */
 @media (min-width: 768px) and (max-width: 1199px) {
     .ads-grid:not(#servicesGrid) {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
 }
 
-/* Zajistit dva sloupce na mobilních zařízeních i pro admin */
+/* Mobil: 1 sloupec */
 @media (max-width: 767px) {
     .ads-grid:not(#servicesGrid) {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem !important;
+        grid-template-columns: 1fr !important;
     }
 }
 
+/* Admin inzeráty - stejný styl jako hlavní inzeráty */
+.ads-grid:not(#servicesGrid) > .ad-card-admin {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Zajistit, že i jeden admin inzerát má stejnou velikost */
+.ads-grid:not(#servicesGrid) > .ad-card-admin:only-child {
+    grid-column: 1 / 2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Admin karta - stejný vzhled jako hlavní karta */
 .ad-card-admin {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    border: 1px solid #f0f0f0 !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    position: relative !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    text-align: left !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    float: none !important;
+    clear: both !important;
 }
 
 .ad-card-admin:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(247, 124, 0, 0.2);
+    border: 2px solid #f77c00;
 }
 
-.ad-card-header {
+.ad-card-admin .ad-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
+    padding: 12px 14px 0;
+    margin-bottom: 0;
 }
 
-.ad-card-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #2c3e50;
+.ad-card-admin .ad-card-header h3 {
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    color: #111827;
     flex: 1;
+    font-weight: 600;
 }
 
 .top-badge {
@@ -16277,22 +16375,27 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     gap: 0.3rem;
 }
 
-.ad-card-body {
-    margin-bottom: 1rem;
+.ad-card-admin .ad-card-body {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 12px 14px 90px !important;
+    margin: 0 !important;
+    position: relative !important;
 }
 
-.ad-description {
+.ad-card-admin .ad-description {
     color: #6b7280;
     font-size: 0.9rem;
     line-height: 1.6;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
-.ad-meta {
+.ad-card-admin .ad-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     font-size: 0.85rem;
     color: #6b7280;
 }
@@ -16320,13 +16423,14 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     color: white;
 }
 
-.ad-stats {
+.ad-card-admin .ad-stats {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     font-size: 0.85rem;
     color: #9ca3af;
-    padding-top: 1rem;
+    padding-top: 0.5rem;
+    margin-top: auto;
     border-top: 1px solid #e5e7eb;
 }
 
@@ -16336,10 +16440,19 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     gap: 0.3rem;
 }
 
-.ad-card-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
+.ad-card-admin .ad-card-actions {
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.75rem !important;
+    width: calc(100% - 28px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .ad-card-actions .btn {
@@ -17824,4 +17937,5 @@ html:has(.ad-detail-content) {
         height: 60px !important;
     }
 }
+
 
