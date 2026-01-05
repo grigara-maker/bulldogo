@@ -731,12 +731,14 @@ function renderMessages() {
         // Zpracovat obrázky
         let imagesHtml = '';
         if (msg.images && msg.images.length > 0) {
+            // Převést URL stringy na formát pro openImageViewer
+            const imageObjects = msg.images.map(imgUrl => ({ url: imgUrl }));
+            const imagesJson = JSON.stringify(imageObjects).replace(/"/g, '&quot;');
             imagesHtml = `<div class="ig-images" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 8px;">
-                ${msg.images.map(imgUrl => {
+                ${msg.images.map((imgUrl, imgIndex) => {
                     const escapedUrl = imgUrl.replace(/"/g, '&quot;');
-                    return `<a href="${escapedUrl}" target="_blank" rel="noopener">
-                        <img src="${escapedUrl}" alt="Obrázek" loading="lazy" style="width: 100%; max-width: 300px; border-radius: 8px; cursor: pointer; object-fit: cover;">
-                    </a>`;
+                    return `<img src="${escapedUrl}" alt="Obrázek" loading="lazy" style="width: 100%; max-width: 300px; border-radius: 8px; cursor: pointer; object-fit: cover;" onclick="if(typeof window.openImageViewer === 'function') { const imgs = JSON.parse('${imagesJson}'.replace(/&quot;/g, '\"')); window.openImageViewer(imgs, ${imgIndex}); }">
+                `;
                 }).join('')}
             </div>`;
         }
