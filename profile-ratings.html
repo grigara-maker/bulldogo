@@ -866,12 +866,26 @@
                                 console.log(`📋 Checking ad ${adId}:`, adData.title || 'No title');
                                 
                                 const reviewsRef = collection(window.firebaseDb, 'users', userId, 'inzeraty', adId, 'reviews');
+                                console.log(`📋 Reviews collection path: users/${userId}/inzeraty/${adId}/reviews`);
                                 const reviewsSnap = await getDocs(reviewsRef);
                                 console.log(`📋 Found ${reviewsSnap.size} reviews for ad ${adId}`);
                                 
+                                if (reviewsSnap.size === 0) {
+                                    console.log(`⚠️ No reviews found for ad ${adId}, checking if collection exists...`);
+                                    // Zkusit zkontrolovat, jestli kolekce vůbec existuje
+                                    console.log(`📋 Reviews collection reference:`, reviewsRef.path);
+                                }
+                                
                                 reviewsSnap.forEach(reviewDoc => {
                                     const reviewData = reviewDoc.data();
-                                    console.log(`📋 Review from ad ${adId}:`, reviewData);
+                                    console.log(`📋 Review from ad ${adId} (ID: ${reviewDoc.id}):`, reviewData);
+                                    // Normalizovat pole - podporovat obě varianty
+                                    if (reviewData.fromUserId && !reviewData.reviewerId) {
+                                        reviewData.reviewerId = reviewData.fromUserId;
+                                    }
+                                    if (reviewData.fromUserEmail && !reviewData.reviewerEmail) {
+                                        reviewData.reviewerEmail = reviewData.fromUserEmail;
+                                    }
                                     reviewData.id = reviewDoc.id;
                                     reviewData.type = 'ad';
                                     reviewData.adId = adId;
