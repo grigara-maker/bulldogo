@@ -15580,8 +15580,6 @@ body.chat-page .message.other .message-content { margin-right: auto !important; 
     .tab-btn.active:hover {
         color: white !important;
     }
-        order: 0 !important;
-    }
     
     /* Chat mobile */
     .ig-chat {
