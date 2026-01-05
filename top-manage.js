@@ -264,7 +264,7 @@ function renderTopManageCard(ad) {
     }
 
     return `
-        <article class="ad-card${isTop ? ' is-top' : ''}" data-category="${ad.category || ''}" data-status="${status}" ${topStyle}>
+        <article class="ad-card${isTop ? ' is-top' : ''}" data-category="${ad.category || ''}" data-status="${status}" ${topStyle} onclick="topManageView('${ad.id}')" style="cursor: pointer;">
             <div class="ad-thumb">
                 ${imageHtml}
             </div>
@@ -274,15 +274,8 @@ function renderTopManageCard(ad) {
                 ${formattedPrice ? `<div class="ad-price">${formattedPrice}</div>` : ''}
                 <div class="ad-location">${getLocationName(ad.location || '') || 'Neuvedeno'}</div>
                 ${isTop ? `
-                <div style="margin-top:12px; padding:8px; background:rgba(255,138,0,0.1); border-radius:6px; font-size:13px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                        <span style="color:#666;"><strong>TOP do:</strong></span>
-                        <span style="color:#f77c00; font-weight:600;">${topUntilText}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="color:#666;"><strong>Zbývá:</strong></span>
-                        <span style="color:#f77c00; font-weight:600;">${remainingText}</span>
-                    </div>
+                <div style="margin-top:8px; padding:6px 8px; background:rgba(255,138,0,0.1); border-radius:6px; font-size:12px; color:#f77c00; font-weight:600;">
+                    TOP: Zbývá ${remainingText}
                 </div>
                 ` : ''}
             </div>
@@ -290,16 +283,6 @@ function renderTopManageCard(ad) {
             <div class="ad-badge-top"><i class="fas fa-fire"></i> TOP</div>
             <div class="ad-flames" aria-hidden="true"></div>
             ` : ''}
-            <div class="ad-actions" style="position: static; transform:none; justify-content:flex-start; gap:8px; margin-top:10px;">
-                <button class="btn-activate" onclick="topManageExtend('${ad.id}')" title="Prodloužit (přejít na platbu)"><i class="fas fa-credit-card"></i></button>
-                <button class="btn-edit" onclick="topManageView('${ad.id}')" title="Zobrazit detail inzerátu"><i class="fas fa-eye"></i></button>
-                <button class="btn-delete" onclick="topManageCancel('${ad.id}')" title="Zrušit topování"><i class="fas fa-ban"></i></button>
-            </div>
-            <div class="quick-actions" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-                <button class="btn btn-secondary" onclick="topManageExtendQuick('${ad.id}', 1)" title="Prodloužit o 1 den">1 den</button>
-                <button class="btn btn-secondary" onclick="topManageExtendQuick('${ad.id}', 7)" title="Prodloužit o 1 týden">1 týden</button>
-                <button class="btn btn-secondary" onclick="topManageExtendQuick('${ad.id}', 30)" title="Prodloužit o 1 měsíc">1 měsíc</button>
-            </div>
         </article>
     `;
 }
