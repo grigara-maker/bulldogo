@@ -432,17 +432,163 @@ function setupMyAdsEventListeners() {
     }
 }
 
+// Helper funkce pro normalizaci textu (stejně jako v services.js)
+function normalize(text) {
+    if (!text) return '';
+    return String(text)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+}
+
+// Mapování: název kraje → kód (pro robustní porovnávání)
+function getRegionCode(input) {
+    const val = (input || '').toString().trim();
+    if (!val) return '';
+    // Pokud už je to kód, vrať bez změny
+    const validCodes = [
+        'Kdekoliv', 'CelaCeskaRepublika', 'CelaSlovenskaRepublika',
+        'Praha','Stredocesky','Jihocesky','Plzensky','Karlovarsky','Ustecky','Liberecky','Kralovehradecky','Pardubicky','Vysocina','Jihomoravsky','Olomoucky','Zlinsky','Moravskoslezsky',
+        'Bratislavsky','Trnavsky','Trenciansky','Nitriansky','Zilinsky','Banskobystricky','Presovsky','Kosicky'
+    ];
+    if (validCodes.includes(val)) return val;
+    
+    // Mapování názvů na kódy
+    const regionMap = {
+        'kdekoliv': 'Kdekoliv',
+        'celá česká republika': 'CelaCeskaRepublika',
+        'celá čr': 'CelaCeskaRepublika',
+        'celaceskarepublika': 'CelaCeskaRepublika',
+        'celá slovenská republika': 'CelaSlovenskaRepublika',
+        'celaslovenskarepublika': 'CelaSlovenskaRepublika',
+        'hlavní město praha': 'Praha',
+        'praha': 'Praha',
+        'středočeský kraj': 'Stredocesky',
+        'stredocesky': 'Stredocesky',
+        'jihočeský kraj': 'Jihocesky',
+        'jihocesky': 'Jihocesky',
+        'plzeňský kraj': 'Plzensky',
+        'plzensky': 'Plzensky',
+        'karlovarský kraj': 'Karlovarsky',
+        'karlovarsky': 'Karlovarsky',
+        'ústecký kraj': 'Ustecky',
+        'ustecky': 'Ustecky',
+        'liberecký kraj': 'Liberecky',
+        'liberecky': 'Liberecky',
+        'královéhradecký kraj': 'Kralovehradecky',
+        'kralovehradecky': 'Kralovehradecky',
+        'pardubický kraj': 'Pardubicky',
+        'pardubicky': 'Pardubicky',
+        'kraj vysočina': 'Vysocina',
+        'vysočina': 'Vysocina',
+        'jihomoravský kraj': 'Jihomoravsky',
+        'jihomoravsky': 'Jihomoravsky',
+        'olomoucký kraj': 'Olomoucky',
+        'olomoucky': 'Olomoucky',
+        'zlínský kraj': 'Zlinsky',
+        'zlinsky': 'Zlinsky',
+        'moravskoslezský kraj': 'Moravskoslezsky',
+        'moravskoslezsky': 'Moravskoslezsky'
+    };
+    
+    const normalized = normalize(val);
+    return regionMap[normalized] || val;
+}
+
+// Získání názvu lokace s diakritikou
+function getLocationName(location) {
+    if (!location) return '';
+    
+    if (typeof location === 'object') {
+        if (location.name) location = location.name;
+        else if (location.code) location = location.code;
+        else if (location.city) location = location.city;
+        else location = String(location);
+    }
+    
+    const locStr = String(location).trim();
+    
+    const locations = {
+        'Kdekoliv': 'Kdekoliv',
+        'CelaCeskaRepublika': 'Celá Česká republika',
+        'CelaSlovenskaRepublika': 'Celá Slovenská republika',
+        'Praha': 'Hlavní město Praha',
+        'Stredocesky': 'Středočeský kraj',
+        'Jihocesky': 'Jihočeský kraj',
+        'Plzensky': 'Plzeňský kraj',
+        'Karlovarsky': 'Karlovarský kraj',
+        'Ustecky': 'Ústecký kraj',
+        'Liberecky': 'Liberecký kraj',
+        'Kralovehradecky': 'Královéhradecký kraj',
+        'Pardubicky': 'Pardubický kraj',
+        'Vysocina': 'Kraj Vysočina',
+        'Jihomoravsky': 'Jihomoravský kraj',
+        'Olomoucky': 'Olomoucký kraj',
+        'Zlinsky': 'Zlínský kraj',
+        'Moravskoslezsky': 'Moravskoslezský kraj'
+    };
+    
+    return locations[locStr] || locStr;
+}
+
 // Filtrování inzerátů
 function filterAds() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const categoryFilter = document.getElementById('categoryFilter').value;
+    const regionFilter = (document.getElementById('regionFilter')?.value || '').trim();
+    const regionCode = getRegionCode(regionFilter);
     
     let filteredAds = userAds.filter(ad => {
         const matchesSearch = ad.title.toLowerCase().includes(searchTerm) || 
                              ad.description.toLowerCase().includes(searchTerm);
         const matchesCategory = !categoryFilter || ad.category === categoryFilter;
         
-        return matchesSearch && matchesCategory;
+        // Filtrování podle kraje
+        let matchesRegion = true;
+        if (regionFilter && regionFilter.trim()) {
+            // Podpora různých polí pro kraj: location / region / serviceRegion
+            const storedLocRaw = ad?.location || ad?.region || ad?.serviceRegion || '';
+            const locCode = getRegionCode(storedLocRaw);
+            const loc = normalize(storedLocRaw || '');
+            const serviceLoc = storedLocRaw.toString().trim();
+            const regionFilterFormatted = getLocationName(regionFilter);
+            const serviceLocFormatted = getLocationName(serviceLoc);
+            
+            if (regionFilter === 'Kdekoliv') {
+                matchesRegion = serviceLoc === 'Kdekoliv' || loc === 'Kdekoliv' || serviceLocFormatted === 'Kdekoliv';
+            } else if (regionFilter === 'CelaCeskaRepublika') {
+                const normalizedServiceLoc = serviceLoc.toLowerCase().trim();
+                const normalizedFormatted = serviceLocFormatted.toLowerCase().trim();
+                matchesRegion = serviceLoc === 'CelaCeskaRepublika' || 
+                               serviceLoc === 'Celá Česká republika' ||
+                               serviceLoc === 'Celá ČR' ||
+                               normalizedServiceLoc === 'celá česká republika' ||
+                               normalizedServiceLoc === 'celá čr' ||
+                               normalizedServiceLoc === 'celaceskarepublika' ||
+                               loc === 'Celá Česká republika' ||
+                               loc === 'Celá ČR' ||
+                               loc === 'CelaCeskaRepublika' ||
+                               serviceLocFormatted === 'Celá Česká republika' ||
+                               serviceLocFormatted === 'Celá ČR' ||
+                               normalizedFormatted === 'celá česká republika' ||
+                               normalizedFormatted === 'celá čr' ||
+                               locCode === 'CelaCeskaRepublika';
+            } else if (regionFilter === 'CelaSlovenskaRepublika') {
+                matchesRegion = serviceLoc === 'CelaSlovenskaRepublika' || 
+                               serviceLoc === 'Celá Slovenská republika' ||
+                               loc === 'Celá Slovenská republika' ||
+                               loc === 'CelaSlovenskaRepublika' ||
+                               serviceLocFormatted === 'Celá Slovenská republika';
+            } else if (regionCode) {
+                matchesRegion = (locCode && locCode === regionCode) || 
+                               (loc === regionFilterFormatted) ||
+                               (serviceLoc === regionFilter) ||
+                               (serviceLocFormatted === regionFilterFormatted);
+            }
+        }
+        
+        return matchesSearch && matchesCategory && matchesRegion;
     });
     
     // TOP inzeráty vždy první
